@@ -27,8 +27,20 @@ const salesDeductionRoutes = require('./routes/sales_deduction_routes')
 const customSearchRoutes = require('./routes/custom_search_routes')
 
 
+//add common routes
+const employeesRoutes = require('./routes/common/employees_routes')
+const teamsRoutes = require('./routes/common/teams_routes')
+const managerRoutes = require('./routes/common/managers_routes')
+const positionRolesRoutes = require('./routes/common/positions_roles_routes')
+const departmentsRoutes = require('./routes/common/departments_routes')
+
+
 //new added for experiment 
 const salesAgentsRoutes2 = require('./routes/sales_agents_route2')
+
+
+const csdPerformanceMetricsRoutes = require('./routes/csd/csd_performance_metrics_routes')
+const avgEmailResponseTimeRoutes = require('./routes/csd/average_email_response_time_routes')
 
 const app = express()
 
@@ -60,8 +72,18 @@ app.use('/api', salesDeductionRoutes)
 app.use("/api", customSearchRoutes)
 
 
-//new added for production 
+
+//new added 
 app.use("/api/prod", salesAgentsRoutes2)
+app.use("/api/prod", teamsRoutes)  // common routes for teams, including sales teams and other departments
+app.use("/api/prod", managerRoutes)  // common routes for managers, including sales managers and other departments
+app.use("/api", employeesRoutes)  // common routes for employees, including sales agents and other departments
+app.use("/api", positionRolesRoutes)  // common routes for positions and roles, including sales positions/roles and other departments
+app.use("/api", departmentsRoutes)  // common routes for departments, including sales teams and other departments
+
+app.use('/api', avgEmailResponseTimeRoutes )
+app.use('/api', csdPerformanceMetricsRoutes)
+
 
 
 // app.use("/api", importExportDataRoutes(io))  // in test, we can pass fake io if needed

@@ -47,12 +47,28 @@
             id="role"
             class="mt-1 block w-full px-4 py-2 text-sm border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
           >
+          <!-- NOTE to myself:
+             I will use option value = 'employee' for all the staff  except for the sales related roles and postions
+             But later I will  replace the option value = 'employee'  expcept for the standarduser  this standuser option are still need to be replace
+             later. My main goal for this is to make  this flexible as possible. 
+
+             Right now, I will just add all the positon to staticly for the dropdown, but later I will make this dynamic by fetching the role and position from the backend.
+          -->
            <!-- For now all standarduser is consider admin -->
             <option value="standarduser">Admin</option>
             <!-- <option value="standarduser">Power User</option> -->
             <option value="unitmanager">Unit Manager</option>
             <option value="lm">Local Manager</option>
             <option value="salesagent">Sales Agent</option>
+            <option value="employee">CSD & Collections Manager</option>
+            <option value="employee">CSD Assistant Manager</option>
+            <option value="employee">Collection Assistant Manager</option>
+            <option value="employee">CSD & Collections Quality Analyst/ Trainer</option>
+            <option value="employee">CSD Team Leader</option>
+            <option value="employee">Collection Team Leader</option>
+            <option value="employee">CSD Agent</option>
+            <option value="employee">Collection Agent</option>
+             
           </select>
         </div>
 
@@ -120,17 +136,65 @@ const login = async () => {
   }
 
   
+
+  
   // if (authStore.state.user?.role == 'user' && authStore.state.token){
   //   alert('Login is Successful for user')
   //   router.push('/')
   //   return
   // }
 
-   if (authStore.state.token) {
+  //  if (authStore.state.token) {
+  //   alert("Login is Successful")
+    
+  //   router.push('/')
+  //   return
+  // }
+
+  // if(authStore.state.token) {
+  //   alert("Login is Successful")
+  //   if(authStore.state.user?.role == 'admin' || (authStore.state.user?.role == 'manager' && authStore.state.user?.level == 5 )){
+  //      router.push('/select_department')
+  //   } else if (['csd', 'collection', 'purchasing', 'hradmin', 'it', 'uploading'].includes(authStore.state.user?.department_code)) {
+  //     router.push(`/${authStore.state.user?.department_code}`)
+  //   }
+  //   // for now sales will go to legacy route ..
+  //   else {
+  //     router.push('/')
+  //   }
+  // }
+
+
+  if (authStore.state.token) {
     alert("Login is Successful")
-    router.push('/')
-    return
-  }
+
+    const user = authStore.state.user
+
+    // ✅ STEP 1: Who can select department
+    if (
+      user.role === 'admin' ||
+      (user.role === 'manager' && user.level >= 5)
+    ) {
+      return router.push('/select_department')
+    }
+
+    // ✅ STEP 2: Department routing
+    const departmentRoutes = {
+      csd: '/csd',
+      collection: '/collection',
+      purchasing: '/purchasing',
+      hradmin: '/hr',
+      it: '/it',
+      uploading: '/uploading'
+    }
+
+    if (departmentRoutes[user.department_code]) {
+      return router.push(departmentRoutes[user.department_code])
+    }
+
+    // ✅ STEP 3: fallback (sales legacy)
+    return router.push('/')
+}
 
 
   if (authStore.state.error) {

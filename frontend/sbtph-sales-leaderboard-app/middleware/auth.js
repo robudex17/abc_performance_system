@@ -17,7 +17,8 @@ export default defineNuxtRouteMiddleware((to, from) => {
       // Redirect based on role
       if (authStore.state.user?.role === 'admin'  || authStore.state.user?.role !== 'poweruser' || authStore.state.user?.role === 'manager') {
         console.log('Redirecting admin to /admin')
-        return navigateTo('/')
+        // return navigateTo('/')
+        return navigateTo('/select_department')
       } else if (authStore.state.user?.role === 'user') {
         console.log('Redirecting user to /user-home')
         return navigateTo('/')

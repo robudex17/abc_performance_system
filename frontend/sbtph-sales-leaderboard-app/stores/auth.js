@@ -139,6 +139,8 @@ export const useAuthStore = defineStore('auth', () => {
         // for now all standarduser is consider admin
         }else if (loginas == 'standarduser'){
             loginType = 'standardusers_login'
+        }else if (loginas == 'employee'){
+            loginType = 'employees_login'
         }
        
         try {

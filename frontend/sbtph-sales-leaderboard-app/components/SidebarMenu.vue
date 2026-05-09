@@ -162,7 +162,13 @@
                { name: 'Manage Sales Agents', route: '/admin/agent2/manage_sales_agents', icon: ['fas', 'user-tie'] },
 
               ]
-            }
+            },
+
+            {
+              name: 'Switch Department',
+              route: '/select_department',
+              icon: ['fas', 'layer-group']
+            },
           ];
       }else if (currentUser.role === 'manager' && currentUser.login_type == 'salesagentuser'  && currentUser.agent_type == 2){
         menuItems = [

@@ -17,7 +17,16 @@ exports.monthMap = {
 exports.monthNames = [
          "January", "February", "March", "April", "May", "June",
         "July", "August", "September", "October", "November", "December"
-]
+],
+
+exports.parseYearMonth = (yearMonth) => { 
+    const date  = new Date(`${yearMonth}-01`)
+    
+    return {
+        year: date.getFullYear(),
+        month: date.toLocaleString('en-US', { month: 'long' })
+    }
+}
 
 
      // Cell style functions
@@ -49,7 +58,11 @@ exports.getDataBorder = () => ({
                     return roundOff + '%'
                 }
                 return '0%'
-   }     
+   }    
+   
+exports.getPointsAndPercentage = (score_board_table , percent) => {
+    
+}
 
 
 

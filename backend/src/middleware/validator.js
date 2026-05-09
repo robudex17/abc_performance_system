@@ -163,6 +163,39 @@ validator.validateNewAndUpdateAgent = [
 
 ]
 
+validator.validateNewAndUpdateEmployee = [
+
+    check('id').trim().notEmpty().withMessage('Agent Id is Required')
+    .isInt().withMessage('Numbers are only allowed in Agent ID')
+    .isLength({min:4}).withMessage('Agent ID must atleast 4 digits'),
+
+     check('extension').trim().notEmpty().withMessage('Extension is Required')
+    .isInt().withMessage('Numbers are only allowed in Extension')
+    .isLength({min:4}).withMessage('Extension must atleast 4 digits'),
+
+    //  check('market_id').trim().notEmpty().withMessage('Market Id is Required'),
+
+     check('team_id').trim().notEmpty().withMessage('Team Id is Required'),
+    
+     check('manager_id').trim().notEmpty().withMessage('Manager Id is Required'),
+    
+    check('position_id').trim().notEmpty().withMessage('Position Id is Required'),
+    
+    check('department_code').trim().notEmpty().withMessage('Department Code is Required'),
+
+    check('firstname').trim().notEmpty().withMessage('Agent Firstname is Required'),
+
+    check('lastname').trim().notEmpty().withMessage('Agent Lastname is Required'),
+
+    check('db_name').trim().notEmpty().withMessage('Agent DB Name is Required'),
+
+    check('email').trim().notEmpty().withMessage('Email is Required')
+    .isEmail().withMessage('Invalid email format')
+
+
+]
+
+
 validator.validateNewAndUpdateStandardUser = [
 
     check('id').trim().notEmpty().withMessage('Agent Id is Required')

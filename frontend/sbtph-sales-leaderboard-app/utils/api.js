@@ -1,5 +1,7 @@
 //const HTTPADDR = `http://localhost:8080/api`
 
+import Csd_performance_metrics from "~/pages/csd/csd_performance_metrics.vue"
+
 const config = useRuntimeConfig()
 
 const HTTPADDR = config.public.apiUrl
@@ -78,6 +80,23 @@ const API = {
 
   // newly added for production
    salesAgents2: `${HTTPADDR}/prod/sales_agents`,
+   teams2: `${HTTPADDR}/prod/teams`,
+   fetchManagers2: `${HTTPADDR}/prod/managers`,
+
+   employees: `${HTTPADDR}/employees`,
+
+   positions_roles: {
+      'positions': `${HTTPADDR}/positions`,
+      'roles': `${HTTPADDR}/roles`
+   }, 
+
+  departments: `${HTTPADDR}/departments`,
+
+ 
+  agent_email_response_time:  `${HTTPADDR}/agent_email_response_time`,
+  csd_performance_metrics: `${HTTPADDR}/csd_performance_metrics`,
+
+   
 }
 
 export default API 
