@@ -114,6 +114,7 @@ export const csdMenu = [
               
            
                 { name: 'CSD Performance Metrics', route: '/csd/csd_performance_metrics', icon: ['fas', 'user-tie'] },
+                { name: 'CSD Evaluation', route: '/csd/csd_evaluation', icon: ['fas', 'user-tie'] },
                 { name: 'Upload CSD Metrics Data', route: '/csd/upload_sales_evaluation_data', icon: ['fas', 'fa-upload'] },
                 { name: 'Teams', route: '/csd/manage_teams', icon: ['fas', 'user-tie'] },
                 // { name: 'export', route: '/admin/export_to_excel', icon: ['fas', 'fa-file-excel'] },

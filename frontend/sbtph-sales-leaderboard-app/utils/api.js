@@ -95,6 +95,16 @@ const API = {
  
   agent_email_response_time:  `${HTTPADDR}/agent_email_response_time`,
   csd_performance_metrics: `${HTTPADDR}/csd_performance_metrics`,
+ csd_performance_metrics_submit: `${HTTPADDR}/csd_performance_metrics/submit`,
+ csd_performance_metrics_review: `${HTTPADDR}/csd_performance_metrics/review`,
+
+ csd_leaderboard : `${HTTPADDR}/csd_leaderboard`,
+ csd_evaluation: `${HTTPADDR}/csd_evaluation`,
+
+ csd_entities: {
+    'metrics': `${HTTPADDR}/csd_performance_metrics`,
+    'evaluation': `${HTTPADDR}/csd_evaluation`
+ }
 
    
 }

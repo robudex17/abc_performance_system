@@ -3,7 +3,7 @@ const { validationResult } = require('express-validator')
 
 
 exports.fetchDepartments = async (req, res, next) => {
-    console.log(req)
+
     
     // const connection =  await pool.getConnection()
 

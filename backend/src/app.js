@@ -40,7 +40,9 @@ const salesAgentsRoutes2 = require('./routes/sales_agents_route2')
 
 
 const csdPerformanceMetricsRoutes = require('./routes/csd/csd_performance_metrics_routes')
-const avgEmailResponseTimeRoutes = require('./routes/csd/average_email_response_time_routes')
+const csdLeadboardRoutes = require('./routes/csd/csd_leaderboard_routes')
+const csdEvaluationRoute = require('./routes/csd/csd_evaluation_routes')
+
 
 const app = express()
 
@@ -81,8 +83,10 @@ app.use("/api", employeesRoutes)  // common routes for employees, including sale
 app.use("/api", positionRolesRoutes)  // common routes for positions and roles, including sales positions/roles and other departments
 app.use("/api", departmentsRoutes)  // common routes for departments, including sales teams and other departments
 
-app.use('/api', avgEmailResponseTimeRoutes )
+
 app.use('/api', csdPerformanceMetricsRoutes)
+app.use('/api',  csdLeadboardRoutes)
+app.use('/api', csdEvaluationRoute)
 
 
 

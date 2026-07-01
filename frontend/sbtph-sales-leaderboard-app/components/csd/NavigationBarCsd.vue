@@ -39,7 +39,20 @@
                     v-model="yearMonth"
                     class="border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-300"
                   />
+
+                <select v-if="route.path == '/csd'"
+                  class="p-2 border rounded bg-gray-50 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  v-model="scope"
+                >
+              
+                <option v-for="opt in ['agent', 'team_leader', 'team', ]" :key="opt" :value="opt">{{ opt.toUpperCase()  }}</option>
+
+                </select>                  
+
+
                 </div>
+
+         
 
                 <!-- Submit Button -->
                 <button
@@ -76,7 +89,7 @@
 <script setup>
     import { ref, watch,computed } from "vue";
     
-    import { months, monthMap } from '@/utils/constants'
+    import { months, monthMap, isFutureMonth } from '@/utils/constants'
 
 
     //get the current user
@@ -106,6 +119,7 @@
 
 
     const employementStatus = ref('Hired')
+    const scope = ref('agent')
 
 
     const fetchCsdEmployees = () => {
@@ -128,10 +142,18 @@
    const SubmitYearMonth = () => {   
           const currentRoute = router.currentRoute.value 
 
+          if(yearMonth.value){
+             if(isFutureMonth(yearMonth.value)){
+               alert('Cannot Select Future Year-Month')
+               return
+             }
+          }
+
           router.push( {
              path: currentRoute.path,
              query: {
-               year_month : yearMonth.value
+               year_month : yearMonth.value,
+               scope:  scope.value,
              } 
 
           })

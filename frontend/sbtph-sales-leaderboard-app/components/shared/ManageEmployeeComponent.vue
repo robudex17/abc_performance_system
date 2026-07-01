@@ -821,6 +821,8 @@
       employee_status:'',
       active_agent: '',
       changed_assignment: false,
+      department_code: '',
+      department_id: ''
     });
 
 
@@ -855,6 +857,8 @@
         manager_role: employee.manager_role,
         team_id: employee.team_id,
         team_name: employee.team_name,
+        department_code: employee.department_code,
+        department_id: employee.department_id,
         market_id: employee.market_id || '',
         market_name: employee.market_name || '',
         position_id: employee.position_id,
@@ -1156,6 +1160,8 @@
         active_agent: '',
         employee_status: '',
         changed_assignment: false,
+        department_code: '',
+        department_id: ''
       };
       imagePreview.value = null;
     };

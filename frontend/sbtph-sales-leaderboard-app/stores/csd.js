@@ -3,9 +3,7 @@ import { reactive } from 'vue'
 
 import API from '~/utils/api'
 
-
-
-export const csdStore = defineStore('csdStore', () => {
+export const useCsdStore = defineStore('csdStore', () => {
     //call auth store fetch the token on the localstorage 
     //save it to state.token
     const authStore = useAuthStore()
@@ -17,17 +15,87 @@ export const csdStore = defineStore('csdStore', () => {
     const state = reactive({
     
         csdPerformanceMertics: [],
-        loading:false,
+        csdLeaderboard: [],
+        csdEvaluation: [],
+        loading: false,
         error: null
     })
 
-  
-    const fetchCsdPerformanceMetrics = async (employee_id, metrics_type, queryString) =>{
+
+
+      // Action to fetch sales leaderboard
+    const fetchLeaderboard = async ( scope , employee_id,queryString) => {
+        state.loading = true
+        state.error = null
+
+        
+        let url = `${API.csd_leaderboard}`
+        
+        if(scope){
+            url = `${API.csd_leaderboard}/${scope}`
+        }
+
+        if(employee_id){
+            url = `${url}/${employee_id}`
+        }
+   
+        try {
+            // Build the URL
+            url = new URL(`${url}`)
+            
+
+            if (queryString) {
+                Object.keys(queryString).forEach((key) =>
+                    url.searchParams.append(key, queryString[key])
+                )
+            }
+
+        
+      
+            // Fetch leaderboard data
+            const response = await fetch(url,{
+                method: 'GET',
+                headers: {
+                  'Content-Type': 'application/json',
+                  'Authorization': `Bearer ${token}`,
+                },
+            })
+
+            if(!response.ok && response.status == 403){
+                const errors = await response.json()
+                if (errors.message == 'Invalid Access Token'){
+                    localStorage.removeItem('jwt')
+                    alert('Your Session has been expired, Please Login again.')
+                    location.reload()
+                }
+            }
+            if (!response.ok) {
+               
+                state.csdLeaderboardleaderboard = []
+                throw new Error(`Error: ${response.status} ${response.statusText}`)
+            }
+            
+        
+            const data = await response.json()
+
+            state.csdLeaderboard = data
+     
+           
+        } catch (error) {
+            console.error('Failed to fetch leaderboard:', error)
+            state.
+            state.error = error.message
+        } finally {
+            state.loading = false
+        }
+    }
+    //entity  value can be either 'metrics' or 'evaluation' to determine which state to update after submit or review action
+    const fetchCsdOrEvaluationPerformanceMetrics = async (employee_id, entity_type, entity, queryString) =>{
         state.loading = true;
         state.error = null;
-
-        let url = `${API.csd_performance_metrics}/${metrics_type}`
-
+        let  url = `${API.csd_entities[entity]}/${entity_type}`
+    
+        
         if(employee_id){
             url = `${url}/${employee_id}`
         }
@@ -65,24 +133,43 @@ export const csdStore = defineStore('csdStore', () => {
             
             const data = await response.json();
 
-           
-            state.csdPerformanceMertics = data;
+            if(entity == 'metrics'){
+                state.csdPerformanceMertics = data;
+            }else if (entity == 'evaluation'){
+                state.csdEvaluation = data;
+            }
+            state.loading = false
         } catch (error) {
-            const customError = new Error(`Failed to fetch sales agents evaluation: ${error.message}`);
+            const customError = new Error(`Failed to fetch ${entity} ${entity_type}: ${error.message}`);
             customError.originalError = error;  // Attach the original error
             throw customError;
         }
     }
 
-    const addCsdPerformanceMetrics = async (employee_id, metrics_type, query, body) => {
+    const addCsdPerformanceMetricsOrEvaluation = async (employee_id, entity_type, entity, queryString, body) => {
         state.loading = true
         state.error = null
 
-        let url = `${API.csd_performance_metrics}/${metrics_type}`
+        
 
+        let  url = `${API.csd_entities[entity]}/${entity_type}`
+    
+        
         if(employee_id){
             url = `${url}/${employee_id}`
         }
+
+
+      
+
+        url = new URL(`${url}`)
+        if (queryString) {
+         Object.keys(queryString).forEach((key) =>
+                    url.searchParams.append(key, queryString[key])
+            )
+         }
+
+
        
         try {
             const response = await fetch(`${url}`, {
@@ -108,6 +195,7 @@ export const csdStore = defineStore('csdStore', () => {
                 
                 const errors = await response.json()
                 throw new Error(errors || "An unknown error occurred");
+                
             }
 
             
@@ -117,22 +205,36 @@ export const csdStore = defineStore('csdStore', () => {
            alert(data.message )
         } catch (error) {
             console.log(error.message)
+            
             state.error = error.message
         } finally {
             state.loading = false
         }
     }
   
-    const updateCsdPerformanceMetrics = async (employee_id, metrics_type, query, body) => {
+    const updateCsdPerformanceMetricsOrEvaluation = async (employee_id, entity_type, entity, queryString, body) => {
         state.loading = true
         state.error = null
 
-        let url = `${API.csd_performance_metrics}/${metrics_type}`
 
-
+        let  url = `${API.csd_entities[entity]}/${entity_type}`
+    
+        
         if(employee_id){
             url = `${url}/${employee_id}`
         }
+
+
+
+        url = new URL(`${url}`)
+        if (queryString) {
+         Object.keys(queryString).forEach((key) =>
+                    url.searchParams.append(key, queryString[key])
+            )
+         }
+
+
+     
        
         try {
             const response = await fetch(`${url}`, {
@@ -171,13 +273,28 @@ export const csdStore = defineStore('csdStore', () => {
         }
     }
 
-    const deleteAgentTarget = async (agent_id, query, target_date) => {
+    const deleteCsdPerformanceMetricsOrEvaluation= async (employee_id, entity_type, entity, queryString, body) => {
         state.loading = true
         state.error = null
-        console.log(`the endpoint is: ${API.agentTargetShipok}/${agent_id}`)
+        
+        let  url = `${API.csd_entities[entity]}/${entity_type}`
+    
+        
+        if(employee_id){
+            url = `${url}/${employee_id}`
+        }
+        url = new URL(`${url}`)
+        if (queryString) {
+         Object.keys(queryString).forEach((key) =>
+                    url.searchParams.append(key, queryString[key])
+            )
+         }
+
+
         try {
-            const response = await fetch(`${API.agentTargetShipok}/${agent_id}?month=${query.month}&year=${query.year}`, {
+            const response = await fetch(url, {
                 method: 'DELETE',
+                body: JSON.stringify(body),
                 headers: {
                   'Content-Type': 'application/json',
                   'Authorization': `Bearer ${token}`,
@@ -202,23 +319,23 @@ export const csdStore = defineStore('csdStore', () => {
             }
   
            
-           await fetchSalesAgentDetails(agent_id, query, 'salesAgentTargetShipok')
-           alert(`Target for agentid: ${agent_id} is delete` )
-        } catch (error) {
-            console.log(error)
-            state.error = error.message
-        } finally {
-            state.loading = false
-        }
+            const data = await response.json()
+            
+            alert(data.message )
+            } catch (error) {
+                console.log(error)
+                state.error = error.message
+            } finally {
+                state.loading = false
+            }
     }
 
-
-
-    const submitSalesEvaluation = async (agent_id, data) => {
+    const submitPerformanceMetricsOrEvaluation = async (employee_id, data, submit_type, query_string) => {
+        
         state.loading = true
         state.error = null
         try {
-            const response = await fetch(`${API.salesAgentsEvaluation}/${agent_id}`, {
+            const response = await fetch(`${API.csd_performance_metrics_submit}/${submit_type}/${employee_id}`, {
                 method: 'POST',
                 body: JSON.stringify(data),
                 headers: {
@@ -243,18 +360,11 @@ export const csdStore = defineStore('csdStore', () => {
                 throw new Error(errors || "An unknown error occurred");
             }
   
-           let month 
-           let year 
 
-           if(agent_id == 'all' ){
-            month = data[0].month
-            year = data[0].year
-           }else{
-            month = data.month
-            year = data.year
-           }
-           await fetchSalesEvaluation({month: month, year: year})
-           alert(`Submitting evaluation for : ${agent_id} is successful` )
+           await fetchCsdPerformanceMetrics(null, 'all', query_string )
+
+          
+           alert(`Submitting evaluation for : ${employee_id} is successful` )
         } catch (error) {
             console.log(error.message)
             state.error = error.message
@@ -263,12 +373,12 @@ export const csdStore = defineStore('csdStore', () => {
         }
     }
     
-    const reviewSalesEvaluation = async (agent_id, data) => {
+    const reviewPerformanceMetricsOrEvaluation = async (employee_id, data, review_type, query_string) => {
         state.loading = true
         state.error = null
    
         try {
-            const response = await fetch(`${API.salesAgentsEvaluation}/${agent_id}`, {
+            const response = await fetch(`${API.csd_performance_metrics_review}/${review_type}/${employee_id}`, {
                 method: 'DELETE',
                 body: JSON.stringify(data),
                 headers: {
@@ -295,13 +405,15 @@ export const csdStore = defineStore('csdStore', () => {
             }
   
            
-           await fetchSalesEvaluation({month: data.month, year: data.year})
+          
            let message 
-           if (agent_id == 'all') {
-               message = `Sales Evaluation Data For ${agent_id} are marked for review`
+           if (employee_id == 'all') {
+               message = `Peformance Metrics Data For ${employee_id} are marked for review`
            }else {
-                message = `Sales Evaluation Data for : ${agent_id} is marked for review`
+                message = `Performance Metrics Data for : ${employee_id} is marked for review`
            }
+
+           await fetchCsdOrEvaluationPerformanceMetrics(null, 'all', 'metrics', query_string )
 
            alert(message)
         } catch (error) {
@@ -367,16 +479,18 @@ export const csdStore = defineStore('csdStore', () => {
     }
     
 
-
     return {
         state, 
         
-        submitSalesEvaluation,
-        reviewSalesEvaluation,
+        submitPerformanceMetricsOrEvaluation,
+        reviewPerformanceMetricsOrEvaluation,
         addUpdateDeleteDeduction,
-        fetchCsdPerformanceMetrics,
-        addCsdPerformanceMetrics,
-        updateCsdPerformanceMetrics,
+        fetchCsdOrEvaluationPerformanceMetrics,
+        addCsdPerformanceMetricsOrEvaluation,
+        updateCsdPerformanceMetricsOrEvaluation,
+        deleteCsdPerformanceMetricsOrEvaluation,
+        fetchLeaderboard,
+        
     }
 })
 

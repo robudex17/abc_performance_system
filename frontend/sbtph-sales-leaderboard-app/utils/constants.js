@@ -90,5 +90,66 @@ export const setRatingColor = (agent) => {
     return 'text-red-600'
   }
 }
+
+
+export const getDescriptionColor =(description) => {
+  switch (description) {
+    case 'EXCEPTIONAL':
+      return 'text-purple-600 ';
+
+    case 'VERY SATIFACTORY':
+      return 'font-bold text-blue-500 ';
+
+    case 'SATISFACTORY':
+      return 'font-bold text-green-600 ';
+
+    case 'UNSATISFACTORY':
+      return 'font-bold text-orange-600 ';
+
+    case 'POOR':
+      return 'font-bold text-red-600 ';
+
+    default:
+      return 'font-bold text-gray-600 bg-gray-100';
+  }
+}   
+
+
+export const getColorByValue =(value) => {
+  const score = parseFloat(value);
+
+  if (score >= 0 && score <= 60.40) {
+    return 'text-red-600';
+  }
+
+  if (score >= 60.50 && score <= 70.40) {
+    return 'text-orange-600 ';
+  }
+
+  if (score >= 70.50 && score <= 80.40) {
+    return 'text-green-600 ';
+  }
+
+  if (score >= 80.50 && score <= 90.40) {
+    return 'text-blue-500 ';
+  }
+
+  if (score >= 90.50 && score <= 100) {
+    return 'text-purple-600 ';
+  }
+
+  return 'text-gray-600 bg-gray-100';
+}
+ 
+
+  export const isFutureMonth = (inputYearMonth) => {
+      const now = new Date();
+      const currentYear = now.getFullYear();
+      const currentMonth = String(now.getMonth() + 1).padStart(2, '0');
+      const currentYearMonth = `${currentYear}-${currentMonth}`;
+
+    return inputYearMonth > currentYearMonth;
+  }
+
       
 

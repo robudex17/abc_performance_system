@@ -59,8 +59,7 @@ exports.fetchEmployees = async (req,res, next ) => {
                         t.name AS team_name,
 
                         d.code AS department_code,
-
-                       
+                        d.id AS department_id,
 
                         el.username,
                         el.status AS login_status,
@@ -274,9 +273,12 @@ exports.updateEmployee = async (req, res, next) => {
     // return
     const { 
         id, firstname, lastname, db_name, email, extension, image_link,
-        position_id, manager_id, market_id, team_id, department_id, end_date, start_date, 
+        position_id, manager_id, market_id, team_id, department_id,  department_code, end_date, start_date, 
         employee_status, changed_assignment, active_employee,  effective_to,  effective_from, changed_info, changed_date_hire,
     } = req.body;
+
+
+
 
 
     let imageLink = req.file ? `/images/${req.file.filename}` : image_link;
@@ -296,6 +298,9 @@ exports.updateEmployee = async (req, res, next) => {
         if(employee_status == 'Resigned' && active_employee == 'false'){
             return res.status(400).json({ message: "Cannot Edit update the employee with Resigned status and active_employee = 'false" });
         }
+
+
+
 
         //check if id is valid and exist in the database
         const [employeeResult] = await connection.execute(
@@ -376,7 +381,7 @@ exports.updateEmployee = async (req, res, next) => {
             await connection.execute(
                 `INSERT INTO employee_assignments 
                 (employee_id, position_id, market_id, team_id, manager_id, department_id, effective_from, effective_to) 
-                VALUES (?, ?, ?, ?, ?, ?, NULL)`,
+                VALUES (?, ?, ?, ?, ?, ?,?, NULL)`,
                 [id, position_id, market_id, team_id, manager_id, department_id, effective_from]
             );
 

@@ -105,8 +105,7 @@
         try {
             employeeData.department_code = 'csd'
             console.log('data from the child component for update', employeeData)
-            
-           
+        
             await employeesStore.updateEmployee(employeeData, 'csd', route.query);
 
              fethEmployees()

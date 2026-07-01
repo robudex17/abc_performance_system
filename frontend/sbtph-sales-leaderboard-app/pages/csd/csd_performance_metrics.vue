@@ -5,17 +5,19 @@
     <!-- <div v-if="useFeedbackStore.state.loading">
       <spinner></spinner>
     </div> -->
+  
+
    
     <div >
 
         <h1 class="text-3xl font-extrabold text-gray-800 mb-6 text-center">Customer Service Performance Metrics</h1>
         <!-- Agents Table -->
-        <div class="overflow-x-auto shadow-xl rounded-lg">
-          <table class="w-full table-auto border-collapse bg-white">
+       <div class="relative overflow-x-auto overflow-y-auto max-h-[80vh] shadow-xl rounded-lg">
+          <table class="min-w-max table-auto border-collapse bg-white">
             <!-- Table Head -->
                 <thead>
                 <tr class="bg-gradient-to-r from-blue-200 to-blue-300 text-gray-800">
-                    <th  colspan="7" class="py-0.5 px-4 text-center text-xs font-bold text-green-900 ">EMPLOYEE</th>
+                    <th  colspan="8" class="py-0.5 px-4 text-center text-xs font-bold text-green-900 ">EMPLOYEE</th>
                     <th  colspan="3" class="py-0.5 px-4 text-center text-xs font-bold text-green-900  bg-green-500">AVERAGE EMAIL RESPONSE TIME (15/15)</th>
                     <th  colspan="3" class="py-0.5 px-4 text-center text-xs font-bold text-green-900 ">EMAIL RESPONSES COUNT (10)(10)</th>
                     <th  colspan="5" class="py-0.5 px-4 text-center text-xs font-bold text-green-900   bg-green-500">CUSTOMERS SATISFACTION (20)(20)</th>
@@ -23,11 +25,11 @@
                     <th  colspan="3" class="py-0.5 px-4 text-center text-xs font-bold text-green-900 ">CALL & EMAIL CALIBRATION (20)(15)</th>
                     <th  colspan="9" class="py-0.5 px-4 text-center text-xs font-bold text-green-900  bg-yellow-500">CALLS  (15)</th>
                     <th  colspan="3" class="py-0.5 px-4 text-center text-xs font-bold text-green-900  bg-red-500"> TEAM ATTRITION RATE (10)</th>
-                    <th  colspan="2" class="py-0.5 px-4 text-center text-xs font-bold text-green-900 " ></th>
+                    <th  colspan="3" class="py-0.5 px-4 text-center text-xs font-bold text-green-900 " ></th>
 
                 </tr>
                 <tr  class="bg-gradient-to-r from-blue-200 to-blue-300 text-gray-800">
-                    <th  colspan="7" class="py-0.5 px-4 text-center text-xs font-bold text-green-900 "></th>
+                    <th  colspan="8" class="py-0.5 px-4 text-center text-xs font-bold text-green-900 "></th>
                     <th  colspan="3" class="py-0.5 px-4 text-center text-xs font-bold text-green-900  bg-green-500"></th>
                     <th  colspan="3" class="py-0.5 px-4 text-center text-xs font-bold text-green-900 "></th>
                     <th  colspan="5" class="py-0.5 px-4 text-center text-xs font-bold text-green-900   bg-green-500"></th>
@@ -37,13 +39,14 @@
                     <th  colspan="3" class="py-0.5 px-4 text-center text-xs font-bold text-green-900  bg-yellow-500">OUTBOUND CALL (5)</th>
                     <th  colspan="3" class="py-0.5 px-4 text-center text-xs font-bold text-green-900  bg-yellow-500">MISSED CALL (5)</th>
                     <th  colspan="3" class="py-0.5 px-4 text-center text-xs font-bold text-green-900   bg-red-500"></th>
-                    <th  colspan="2" class="py-0.5 px-4 text-center text-xs font-bold text-green-900 "></th>                    
+                    <th  colspan="4" class="py-0.5 px-4 text-center text-xs font-bold text-green-900 "></th>                    
 
                 </tr>
                 <tr class="bg-gradient-to-r from-blue-200 to-blue-300 text-gray-800">
                     <th class="py-0.5 px-4 text-center text-xs font-bold text-green-900 border">ID</th>
                     <th class="py-0.5 px-4 text-center text-xs font-bold text-green-900 border">Name</th>
                     <th class="py-0.5 px-4 text-center text-xs font-bold text-green-900 border">Employee Status</th>
+                     <th class="py-0.5 px-4 text-center text-xs font-bold text-green-900 border">Extension</th>
                     <th class="py-0.5 px-4 text-center text-xs font-bold text-green-900 border">Position</th>
                     <th class="py-0.5 px-4 text-center text-xs font-bold text-green-900 border">Team</th>
                     <th class="py-0.5 px-4 text-center text-xs font-bold text-green-900 border">Month</th>
@@ -79,7 +82,7 @@
                     <th class="py-0.5 px-4 text-center text-xs font-bold text-green-900 border  bg-red-500">Score</th>
                     <th class="py-0.5 px-4 text-center text-xs font-bold text-green-900 border">Total Score</th>
                     <th class="py-0.5 px-4 text-center text-xs font-bold text-green-900 border">Description of Points</th>
-                   
+                     <th class="py-0.5 px-4 text-center text-xs font-bold text-green-900 border">Submit</th>
              
                 </tr>
                 </thead>
@@ -119,8 +122,12 @@
                     </td>
 
                     <td class="py-0.5 px-4 text-left text-xs font-medium text-gray-700 border">
+                     {{ agent.extension }}
+                    </td>
+                    <td class="py-0.5 px-4 text-left text-xs font-medium text-gray-700 border">
                      {{ agent.position_name }}
                     </td>
+
                     <td class="py-0.5 px-4 text-left text-xs font-medium text-gray-700 border">
                      {{ agent.team_name }}
                     </td>                                     
@@ -130,186 +137,249 @@
                     <td class="py-0.5 px-4 text-left text-xs font-medium text-gray-700 border">
                     {{ agent.year }}
                     </td>
-                    <td class="py-0.5 px-4 text-left text-xs font-medium text-gray-700 border">
-                      
-                     <!-- <span v-if="agent.agent_type ==2"> {{ agent.target }} </span> -->
-                      <button  @click="openMetricsTypeModal({ employee_status: agent.employee_status, submitted: agent.submitted, employee_id: agent.id, agent_dbname:agent.db_name, month: agent.month, year: agent.year, position_id: agent.position_id, position_name: agent.position_name, team_id:agent.team_id, avg_response_minutes: agent.avg_response_minutes,image_link: agent.image_link,metrics_type: 'email_response_time' })" >
-                        {{ agent.avg_response_minutes }} 
+                    <CSDTooltipCell :title="agent.db_name" class="text-blue-700">
+                        <button  @click="openMetricsTypeModal({ year_month: agent.year_month,employee_status: agent.employee_status, submitted: agent.submitted, employee_id: agent.id, agent_dbname:agent.db_name, month: agent.month, year: agent.year, position_id: agent.position_id, position_name: agent.position_name, team_id:agent.team_id, avg_response_minutes: agent.avg_response_minutes,image_link: agent.image_link,metrics_type: 'email_response_time' })" >
+                        {{ typeof agent.avg_response_minutes === 'number' ? agent.avg_response_minutes : 'no-data' }}
                       </button>
-                    </td>
-                    <td class="py-0.5 px-4 text-left text-xs font-medium text-gray-700 border">
+                    </CSDTooltipCell>
+                    <td class="py-0.5 px-4 text-left text-lg font-medium text-gray-700 border">
                         {{ agent.aert_equivalent_points }} 
                        
                    </td>
 
-                    <td class="py-0.5 px-4 text-left text-xs font-medium text-gray-700 border">
+                    <td class="py-0.5 px-4 text-left text-lg font-medium text-green-700 border">
                         {{ agent.aert_equivalent_points_percentage}} 
                        
                    </td>
 
-                   <td class="py-0.5 px-4 text-left text-xs font-medium text-gray-700 border">
-                      
-                     <!-- <span v-if="agent.agent_type ==2"> {{ agent.target }} </span> -->
-                      <button  @click="openMetricsTypeModal({ employee_status: agent.employee_status, submitted: agent.submitted, employee_id: agent.id, agent_dbname:agent.db_name, month: agent.month, year: agent.year, position_id: agent.position_id, position_name: agent.position_name, team_id:agent.team_id, response_count: agent.response_count, resolved_tickets: agent.resolved_tickets,image_link: agent.image_link,metrics_type: 'email_response_count' })" >
+                   <CSDTooltipCell :title="agent.db_name" class="text-blue-700">
+                      <button  @click="openMetricsTypeModal({ year_month: agent.year_month,employee_status: agent.employee_status, submitted: agent.submitted, employee_id: agent.id, agent_dbname:agent.db_name, month: agent.month, year: agent.year, position_id: agent.position_id, position_name: agent.position_name, team_id:agent.team_id, response_count: agent.response_count, resolved_tickets: agent.resolved_tickets,image_link: agent.image_link,metrics_type: 'email_response_count' })" >
                         {{ agent.resolved_tickets_percentage }} 
                       </button>
-                    </td>
+                   </CSDTooltipCell> 
 
-                   <td class="py-0.5 px-4 text-left text-xs font-medium text-gray-700 border">
+                   <td class="py-0.5 px-4 text-left text-lg font-medium text-gray-700 border">
                         {{ agent.erc_equivalent_points}} 
                        
-                   </td>
-
-                   
-                   <td class="py-0.5 px-4 text-left text-xs font-medium text-gray-700 border">
+                   </td>                 
+                   <td class="py-0.5 px-4 text-left text-lg font-medium text-green-700 text-bold border">
                         {{ agent.erc_equivalent_points_percentage}} 
                        
                    </td>
 
-             
-                    <td class="py-0.5 px-4 text-center text-xs font-medium text-gray-700 border">
-                    
-                      <button   @click="openMetricsTypeModal({employee_status: agent.employee_status,submitted: agent.submitted,agent_id: agent.id, month: agent.eval_month, year: agent.eval_year, total_absences:  agent.total_absences, agent_type: agent.agent_type, metrics_type: 'absence' })" >
-                      {{ agent.total_absences }}
-                      </button>                    
-                    </td>
-                    <td class="py-0.5 px-4 text-center text-xs font-medium text-gray-700 border">
+                   <CSDTooltipCell :title="agent.db_name" class="text-blue-700">
+                      
+                     <!-- <span v-if="agent.agent_type ==2"> {{ agent.target }} </span> -->
+                      <button  @click="openMetricsTypeModal({ year_month: agent.year_month,employee_status: agent.employee_status, submitted: agent.submitted, employee_id: agent.id, agent_dbname:agent.db_name, month: agent.month, year: agent.year, position_id: agent.position_id, position_name: agent.position_name, team_id:agent.team_id, csr_total_feedback: agent.csr_total_feedback, resolved_tickets: agent.resolved_tickets, customer_not_good: agent.customer_not_good, 
+                        customer_just_ok: agent.customer_just_ok, customer_awesome: agent.customer_awesome, image_link: agent.image_link,metrics_type: 'customer_satisfaction_report' })" >
+                        {{ agent.csr_result_csr }} 
+                      </button>
+                  </CSDTooltipCell> 
+
+                   <td class="py-0.5 px-4 text-left text-lg font-medium text-gray-700 border">
+                        {{ agent.csr_result_csr_equivalent_points}} 
+                       
+                   </td>  
                    
-                      <button   @click="openMetricsTypeModal({employee_status: agent.employee_status,submitted: agent.submitted,agent_id: agent.id, month: agent.eval_month, year: agent.eval_year, total_tardiness:  agent.total_tardiness, agent_type: agent.agent_type,  metrics_type: 'tardiness' })" >
-                      {{ agent.total_tardiness }}
-
-                      </button>                      
-                    </td>
-                    <td class="py-0.5 px-4 text-center text-xs font-medium text-gray-700 border">
-        
-                      <button   @click="openMetricsTypeModal({employee_status: agent.employee_status,submitted: agent.submitted,agent_id: agent.id, month: agent.eval_month, year: agent.eval_year, total_memo:  agent.total_memo, agent_type: agent.agent_type, metrics_type: 'memo' })" >
-                      {{ agent.total_memo }}
-
-                      </button>                       
-                    </td>
-
-                    <!-- Feedback Columns -->
-                    <td
-                    class="py-0.5 px-4 text-center text-xs border"
-                    :class="{ 'text-red-500 font-bold': agent.feedback_admin === 'No Feedback', 'text-green-900 font-medium': agent.feedback_admin !== 'No Feedback' }"
-                    >
-                    
-
-                      <button   @click="openMetricsTypeModal({employee_status: agent.employee_status,submitted: agent.submitted,agent_id: agent.id, agent_dbname:agent.db_name, month: agent.eval_month, year: agent.eval_year, feedback:  agent.feedback_admin, agent_type: agent.agent_type, metrics_type: 'feedback_admin' })" >
-                       {{ agent.feedback_admin }}
-
-                      </button>                    
-                    </td>
-                    <td
-                    class="py-0.5 px-4 text-center text-xs border"
-                    :class="{ 'text-red-500 font-bold': agent.feedback_qa === 'No Feedback', 'text-green-900 font-medium': agent.feedback_qa !== 'No Feedback' }"
-                    >
+                   <td class="py-0.5 px-4 text-left text-lg font-medium text-gray-700 border">
+                        {{ agent.csr_result_fpc}} 
+                       
+                   </td>   
                    
-                      <button   @click="openMetricsTypeModal({employee_status: agent.employee_status,submitted: agent.submitted,agent_id: agent.id,  agent_dbname:agent.db_name,month: agent.eval_month, year: agent.eval_year, feedback:  agent.feedback_qa, agent_type: agent.agent_type, metrics_type: 'feedback_qa' })" >
-                        {{ agent.feedback_qa }}
+                   <td class="py-0.5 px-4 text-left text-lg font-medium text-gray-700 border">
+                        {{ agent.csr_result_fpc_equivalent_points}} 
+                       
+                   </td>                        
+                   
+                   <td class="py-0.5 px-4 text-left text-lg font-medium text-green-700 text-bold border">
+                        {{ agent.csr_result_csr_fpc_equivalent_points_percentage}} 
+                       
+                   </td>                    
 
-                      </button> 
-                    </td>
-                     <td
-                    class="py-0.5 px-4 text-center text-xs border font-medium text-blue-700"
-                    
-                    >
-                    
-                     <button  @click="openMetricsTypeModal({ employee_status: agent.employee_status, submitted: agent.submitted, employee_id: agent.id, agent_dbname:agent.db_name, month: agent.month, year: agent.year, position_id: agent.position_id, position_name: agent.position_name, team_id:agent.team_id, initial_result: agent.initial_result, error_count: agent.error_count,image_link: agent.image_link,metrics_type: 'error_report' })" >
+                  <CSDTooltipCell :title="agent.db_name" class="text-blue-700">
+                     <button  @click="openMetricsTypeModal({ year_month: agent.year_month,employee_status: agent.employee_status, submitted: agent.submitted, employee_id: agent.id, agent_dbname:agent.db_name, month: agent.month, year: agent.year, position_id: agent.position_id, position_name: agent.position_name, team_id:agent.team_id, initial_result: agent.initial_result, error_count: agent.error_count,image_link: agent.image_link,metrics_type: 'error_report' })" >
                         {{ agent.error_final_result }}
                     </button>
-                    </td>
+                   </CSDTooltipCell>
 
-                  <td class="py-0.5 px-4 text-left text-xs font-medium text-gray-700 border">
+                  <td class="py-0.5 px-4 text-left text-lg font-medium text-gray-700 border">
                         {{ agent.er_equivalent_points}} 
                        
                    </td>
 
-                  <td class="py-0.5 px-4 text-left text-xs font-medium text-gray-700 border">
+                  <td class="py-0.5 px-4 text-left text-lg font-medium text-green-700 text-bold border">
                         {{ agent.er_equivalent_points_percentage}} 
                        
                    </td>
+
                    
+                  <CSDTooltipCell :title="agent.db_name" class="text-blue-700">
+                    
+                      <button  @click="openMetricsTypeModal({ year_month: agent.year_month,employee_status: agent.employee_status, submitted: agent.submitted, employee_id: agent.id, agent_dbname:agent.db_name, month: agent.month, year: agent.year, position_id: agent.position_id, position_name: agent.position_name, team_id:agent.team_id, 
+                        calibration_not_good: agent.calibration_not_good,calibration_just_ok: agent.calibration_just_ok, calibration_awesome: agent.calibration_awesome,
+                        image_link: agent.image_link,metrics_type: 'call_email_calibration' })" >
+                          {{ agent.call_email_calibration_result }}
+                      </button>
+                  </CSDTooltipCell> 
+                    
+                    <td class="py-0.5 px-4 text-left text-lg font-medium text-gray-700 border">
+                        {{ agent.call_email_calibration_equivalent_points}} 
+                       
+                   </td>
 
-             
-          
-                    <td class="py-0.5 px-4 text-center text-xs border  text-blue-700"
-                     :class="Number(agent.deduction) > 0 ? 'text-red-600 font-bold' : 'font-medium'"
-                    >
+                  <td class="py-0.5 px-4 text-left text-lg font-medium text-green-700 text-bold border">
+                        {{ agent.call_email_calibration_equivalent_points_percentage}} 
+                       
+                   </td>
 
-                     <button   @click="openMetricsTypeModal({employee_status: agent.employee_status,submitted: agent.submitted,agent_id: agent.id, month: agent.eval_month, year: agent.eval_year, deduction:  agent.deduction, agent_type: agent.agent_type, metrics_type: 'deduction' })" >
-                      {{ agent.deduction }}
+                   <CSDTooltipCell :title="agent.db_name" class="text-blue-700">
+                    
+                      <button  @click="openMetricsTypeModal({ year_month: agent.year_month, employee_status: agent.employee_status, submitted: agent.submitted, employee_id: agent.id, agent_dbname:agent.db_name, month: agent.month, year: agent.year, position_id: agent.position_id, position_name: agent.position_name, team_id:agent.team_id, 
+                        inbound_calls: agent.inbound_calls, total_inbound_calls: agent.total_inbound_calls, 
+                        image_link: agent.image_link,metrics_type: 'inboundcalls' })" >
+                          {{ agent.agent_inbound_result }}
+                      </button>
+                    </CSDTooltipCell>  
 
-                      </button>     
-                    </td>
+                  <td class="py-0.5 px-4 text-left text-lg font-medium text-gray-700 border">
+                      {{ agent.ioc_equivalent_points}} 
+                       
+                   </td>
+
+                  <td class="py-0.5 px-4 text-left text-lg font-medium text-green-700 text-bold border">
+                      {{ agent.ioc_equivalent_points_percentage}}
+                       
+                   </td>
+
+                    <CSDTooltipCell :title="agent.db_name" class="text-blue-700">
+                      <button  @click="openMetricsTypeModal({ year_month: agent.year_month, employee_status: agent.employee_status, submitted: agent.submitted, employee_id: agent.id, agent_dbname:agent.db_name, month: agent.month, year: agent.year, position_id: agent.position_id, position_name: agent.position_name, team_id:agent.team_id, 
+                         outbound_calls: agent.outbound_calls,  total_outbound_calls: agent.total_outbound_calls, 
+                        image_link: agent.image_link,metrics_type: 'outboundcalls' })" >
+                          {{ agent.agent_outbound_result }}
+                      </button>
+                    </CSDTooltipCell>  
+
+                  <td class="py-0.5 px-4 text-left text-lg font-medium text-gray-700 border">
+                      {{ agent.ooc_equivalent_points}} 
+                       
+                   </td>
+
+                  <td class="py-0.5 px-4 text-left text-lg font-medium text-green-700 text-bold border">
+                      {{ agent.ooc_equivalent_points_percentage}} 
+                       
+                   </td>
+
+                   <CSDTooltipCell :title="agent.db_name" class="text-blue-700">
+                      <button  @click="openMetricsTypeModal({ year_month: agent.year_month, employee_status: agent.employee_status, submitted: agent.submitted, employee_id: agent.id, agent_dbname:agent.db_name, month: agent.month, year: agent.year, position_id: agent.position_id, position_name: agent.position_name, team_id:agent.team_id, 
+                        missed_calls: agent.missed_calls,  total_missed_calls: agent.total_missed_calls,
+                        image_link: agent.image_link,metrics_type: 'missedcalls' })" >
+                          {{ agent.agent_missed_result }}
+                      </button>
+                    </CSDTooltipCell>  
+
+                  <td class="py-0.5 px-4 text-left text-lg font-medium text-gray-700 border">
+                      {{ agent.mc_equivalent_points }}
+                       
+                   </td>
+
+                  <td class="py-0.5 px-4 text-left text-lg font-medium text-green-700 text-bold border">
+                      {{ agent.mc_equivalent_points_percentage }}
+                       
+                   </td>
+                   <CSDTooltipCell :title="agent.db_name" class="text-blue-700">
+                      <button  @click="openMetricsTypeModal({ year_month: agent.year_month, employee_status: agent.employee_status, submitted: agent.submitted, employee_id: agent.id, agent_dbname:agent.db_name, month: agent.month, year: agent.year, position_id: agent.position_id, position_name: agent.position_name, team_id:agent.team_id, 
+                        opening_hc : agent.opening_hc, closing_hc: agent.closing_hc,  no_of_resignation: agent.no_of_resignation,
+                        image_link: agent.image_link,metrics_type: 'attrition_rate' })" >
+                          {{ agent.attrition_result }}
+                      </button>
+                    </CSDTooltipCell> 
+
+                  <td class="py-0.5 px-4 text-left text-lg font-medium text-gray-700 border">
+                        {{ agent.attrition_equivalent_points }}
+                       
+                   </td>
+
+                  <td class="py-0.5 px-4 text-left text-lg font-medium text-green-700 text-bold border">
+                        {{ agent.attrition_equivalent_points_percentage }}
+                       
+                   </td>      
+
+                 <CSDTooltipCell :title="agent.db_name" :class="getColorByValue(agent.total_performance_score_percentage)">
+                    {{agent.total_performance_score_percentage}}
+                 </CSDTooltipCell>
+                 <CSDTooltipCell :title="agent.db_name"
+                                  :class="getDescriptionColor(agent.total_performance_score_description)">
+                                  {{ agent.total_performance_score_description}}
+                 </CSDTooltipCell>                  
+  
+
                    
                     <!-- Actions -->
                     <td class="py-0.5 px-4 text-center border" >
-                    <div class="flex justify-center space-x-2" v-if="agent.agent_type == 2">
+                      <div class="flex justify-center space-x-2" v-if="agent.position_level == 9">
 
-                  <!-- Submit All button -->
-                            <button
-                              v-if="!submittedAll"
-                              @click="submitAllSalesEvaluation"
-                              :disabled="!canSubmitAll || !agent.ready_to_submit"
-                              :class="[
-                                'py-0.5 px-3 rounded-lg flex items-center gap-2 text-sm',
-                                canSubmitAll
-                                  ? 'bg-blue-500 text-white hover:bg-blue-600'
-                                  : 'bg-gray-400 text-white cursor-not-allowed'
-                              ]"
-                            >
-                              Submit
-                            </button>
+                    <!-- Submit All button -->
+                              <button
+                                v-if="!submittedAll"
+                                @click="submitAllPerformanceMetrics"
+                                :disabled="!canSubmitAll"
+                                :class="[
+                                  'py-0.5 px-3 rounded-lg flex items-center gap-2 text-sm',
+                                  canSubmitAll
+                                    ? 'bg-blue-500 text-white hover:bg-blue-600'
+                                    : 'bg-gray-400 text-white cursor-not-allowed'
+                                ]"
+                              >
+                                Submit
+                              </button>
 
-                            <!-- Submitted All button (disabled + gray) -->
-                            <button
-                              v-else
-                              disabled
-                              class="bg-gray-400 text-white cursor-not-allowed text-sm rounded-lg px-3"
-                            >
-                              Submitted 
-                            </button>
+                              <!-- Submitted All button (disabled + gray) -->
+                              <button
+                                v-else
+                                disabled
+                                class="bg-gray-400 text-white cursor-not-allowed text-sm rounded-lg px-3"
+                              >
+                                Submitted 
+                              </button>
 
-                            <!-- Review All button (purple) -->
-                            <button
-                              v-if="submittedAll"
-                              @click="reviewAllSalesEvaluation"
-                              class="bg-purple-500 text-white py-0.5 px-3 rounded-lg hover:bg-purple-600 disabled:bg-gray-400 disabled:cursor-not-allowed text-sm"
-                            >
-                              Review 
-                            </button>
+                              <!-- Review All button (purple) -->
+                              <button
+                                v-if="submittedAll"
+                                @click="reviewAllPerformanceMetrics"
+                                class="bg-purple-500 text-white py-0.5 px-3 rounded-lg hover:bg-purple-600 disabled:bg-gray-400 disabled:cursor-not-allowed text-sm"
+                              >
+                                Review 
+                              </button>
 
-                    </div>
+                      </div>
 
-                        <div class="flex justify-center space-x-2" v-else>
+                          <div class="flex justify-center space-x-2" v-else>
 
-                        <!-- Submit / Submitted Button -->
-                        <button
-                          @click="submitSalesEvaluation(agent)"
-                        :disabled="!agent.ready_to_submit || agent.submitted == 1"
-                        :class="[
-                            'py-0.5 px-3 rounded-lg flex items-center gap-2 text-sm',
-                            agent.submitted == 1
-                            ? 'bg-gray-400 text-white cursor-not-allowed' // Already submitted
-                            : agent.ready_to_submit
-                                ? 'bg-green-500 text-white hover:bg-green-600' // Ready to submit
-                                : 'bg-gray-400 text-white cursor-not-allowed'   // Not ready
-                        ]"
-                        >
-                        {{ agent.submitted == 1 ? 'Submitted' : 'Submit' }}
-                        </button>
+                          <!-- Submit / Submitted Button -->
+                          <button
+                            @click="submitPerformanceMetrics(agent)"
+                          :disabled="agent.submitted == 1"
+                          :class="[
+                              'py-0.5 px-3 rounded-lg flex items-center gap-2 text-sm',
+                              agent.submitted == 1
+                              ? 'bg-gray-400 text-white cursor-not-allowed' // Already submitted
+                              : 'bg-green-500 text-white hover:bg-green-600' // Ready to submit
+                                   
+                          ]"
+                          >
+                          {{ agent.submitted == 1 ? 'Submitted' : 'Submit' }}
+                          </button>
 
-                        <!-- Review Button -->
-                        <button
-                        v-if="agent.submitted == 1"
-                        @click="reviewSalesEvaluation(agent)"
-                        class="bg-purple-500 text-white py-0.5 px-3 rounded-lg hover:bg-purple-600 disabled:bg-gray-400 disabled:cursor-not-allowed text-sm"
-                        >
-                        Review
-                        </button>
+                          <!-- Review Button -->
+                          <button
+                          v-if="agent.submitted == 1"
+                          @click="reviewPerformanceMetrics(agent)"
+                          class="bg-purple-500 text-white py-0.5 px-3 rounded-lg hover:bg-purple-600 disabled:bg-gray-400 disabled:cursor-not-allowed text-sm"
+                          >
+                          Review
+                          </button>
 
-                    </div>                    
+                      </div>                    
                     </td>
 
 
@@ -352,65 +422,7 @@
             </button>
           </div>
 
-          <!-- Body -->
-          <div class="bg-gray-50 p-6 max-h-[70vh] overflow-y-auto overflow-x-hidden">
-            <table class="min-w-full table-fixed border-collapse">
-              <thead>
-                <tr class="bg-gray-200 text-gray-700" v-if="modalData.length > 0">
-                  <th class="w-1/4 px-4 py-2 text-left font-semibold">Feedback By</th>
-                  <th class="w-1/6 px-4 py-2 text-left font-semibold">Month</th>
-                  <th class="w-1/6 px-4 py-2 text-left font-semibold">Year</th>
-                  <th class="w-1/6 px-4 py-2 text-left font-semibold">Feedback Score</th>
-                </tr>
-             
-              </thead>
-              <tbody v-if="modalData.length > 0">
-                <tr 
-                  v-for="data in modalData" 
-                  :key="data.who_give_feedback_id" 
-                  class="border-b hover:bg-gray-100 transition"
-                >
-                  <!-- Feedback By -->
-                  <td class="px-4 py-3 flex items-center space-x-3">
-                    <img
-                      v-if="data && data.image_link"
-                      :src="updateImageLink(data.image_link)"
-                      alt="Agent Image"
-                      class="w-10 h-10 rounded-full object-cover border"
-                    />
-                    <span class="font-medium text-gray-800">
-                      {{ data.who_give_feedback_name }}
-                    </span>
-                  </td>
 
-                  <!-- Month -->
-                  <td class="px-4 py-3 font-semibold">{{ data.month }}</td>
-
-                  <!-- Year -->
-                  <td class="px-4 py-3 font-semibold">{{ data.year }}</td>
-
-                  <!-- Score -->
-                <td class="border px-4 py-2 text-center">
-                  <span
-                    v-if="parseFloat(data.feedback_score) > 0"
-                    class="text-gray-800 font-medium"
-                  >
-                    {{ data.feedback_score }}
-                  </span>
-                  <span
-                    v-else
-                    class="text-gray-400 italic font-semibold"
-                  >
-                    No Feedback Yet
-                  </span>
-                </td>
-
-       
-                </tr>
-              </tbody>
- 
-            </table>
-          </div>
 
           <!-- Footer -->
           <div class="px-6 py-4 bg-gray-100 text-right">
@@ -447,14 +459,12 @@
           <!-- Submit All button -->
           <button
             v-if="!submittedAll"
-            @click="submitAllSalesEvaluation"
-            :disabled="!canSubmitAll"
-            :class="[
-              'py-2 px-6 rounded-lg text-lg font-semibold transition-colors',
-              canSubmitAll
-                ? 'bg-blue-500 text-white hover:bg-blue-600'
-                : 'bg-gray-400 text-white cursor-not-allowed'
-            ]"
+            @click="submitAllPerformanceMetrics"
+            
+            class="'py-2 px-6 rounded-lg text-lg font-semibold transition-colors bg-blue-500 text-white hover:bg-blue-600"
+            
+             
+            
           >
             Submit All
           </button>
@@ -471,7 +481,7 @@
           <!-- Review All button (purple) -->
           <button
             v-if="submittedAll"
-            @click="reviewAllSalesEvaluation"
+            @click="reviewAllPerformanceMetrics"
             class="py-2 px-6 rounded-lg text-lg font-semibold bg-purple-600 text-white hover:bg-purple-700 transition-colors"
           >
             Review All
@@ -495,9 +505,12 @@
   import { ref, computed } from 'vue';
   import { onMounted } from 'vue';
 
-  import { months, monthMap } from '@/utils/constants'
+  import { months, monthMap, isFutureMonth, getDescriptionColor, getColorByValue } from '@/utils/constants'
 
   import CsdPerformanceMetrics  from '~/components/csd/CsdPerformanceMetrics';
+
+  import  CSDTooltipCell  from  '~/components/csd/CsdTooltipCell';
+
 
    
   const router = useRouter();
@@ -532,15 +545,16 @@
     const editMode = ref(false); // Toggle between Add and Edit mode
     const editLoginMode = ref(false); // Toggle between Add and Edit mode for login
     const imagePreview = ref(null);
+    const yearMoonth = ref('')
 
 
-  const useCsdStore = csdStore()
+  const csdStoreInstance= useCsdStore()
       
   const openMetricsTypeModal = (selectedAgent) => {
     
   metricsType.value = selectedAgent.metrics_type
 
-  
+    
 
      if(selectedAgent.submitted ==1 ){
         alert(`Adding, Updating, or Deleting ${metricsType.value} that is already submitted is prohibited.`)
@@ -549,6 +563,11 @@
 
       if(selectedAgent.employee_status == 'Resigned' ){
         alert(`Adding, Updating, or Deleting Agent that is already resigned is prohibitted.`)
+        return
+      }
+
+      if(isFutureMonth(selectedAgent.year_month)){
+        alert(`Adding, Updating, or Deleting ${metricsType.value} for future month is prohibitted.`)
         return
       }
      
@@ -565,10 +584,10 @@
               return
             }
 
-            if(selectedAgent.avg_response_minutes != 'no-data'  ){
-              modalMeticsType.value = 'edit'
-           
-            }
+          if (typeof selectedAgent.avg_response_minutes === 'number' && selectedAgent.avg_response_minutes >= 0) {
+             modalMeticsType.value = 'edit';
+          }
+
             showModalMetricsType.value = true
             selectedData.value = selectedAgent
             break
@@ -584,7 +603,7 @@
               return
             }
 
-            if(selectedAgent.response_count > 0 && selectedAgent.resolved_tickets >  0  ){
+            if(typeof(selectedAgent.response_count) === 'number' && typeof(selectedAgent.resolved_tickets) === 'number' ){
               modalMeticsType.value = 'edit'
            
             }
@@ -604,14 +623,132 @@
               return
             }
 
-            if(selectedAgent.error_count > 0  ){
+            if(typeof(selectedAgent.error_count) === 'number') {
               modalMeticsType.value = 'edit'
            
             }
             showModalMetricsType.value = true
             selectedData.value = selectedAgent          
-            break            
+            break    
+            
+            
+          case "customer_satisfaction_report":
 
+            if(currentUser.role != 'admin' &&  ![10, 9].includes(currentUser.position_level)){
+               alert(`Not allowed to perform change on ${metricsType.value}`)
+              return
+            }
+              modalMeticsTypeMessage.value = [ `Add ${metricsType.value}`, `Edit ${metricsType.value} `]
+            if(['CSD & Collection Manager', 'CSD Assitant Manager'].includes(selectedAgent.position_name) ){
+              alert('Cannot Update directly')
+              return
+            }
+
+            if(typeof(selectedAgent.customer_not_good) === 'number' && typeof(selectedAgent.customer_just_ok) === 'number' && typeof(selectedAgent.customer_awesome) === 'number' ){
+              modalMeticsType.value = 'edit'
+           
+            }
+           
+            showModalMetricsType.value = true
+            selectedData.value = selectedAgent          
+            break  
+
+          case "call_email_calibration":
+
+            if(currentUser.role != 'admin' &&  ![10, 9].includes(currentUser.position_level)){
+               alert(`Not allowed to perform change on ${metricsType.value}`)
+              return
+            }
+              modalMeticsTypeMessage.value = [ `Add ${metricsType.value}`, `Edit ${metricsType.value} `]
+            if(['CSD & Collection Manager', 'CSD Assitant Manager'].includes(selectedAgent.position_name) ){
+              alert('Cannot Update directly')
+              return
+            }
+           if(typeof(selectedAgent.calibration_not_good) === 'number' && typeof(selectedAgent.calibration_just_ok) === 'number' && typeof(selectedAgent.calibration_awesome) === 'number' ){
+              modalMeticsType.value = 'edit'
+           
+            } 
+            showModalMetricsType.value = true
+            selectedData.value = selectedAgent          
+            break  
+            
+          case "attrition_rate":
+
+            if(currentUser.role != 'admin' &&  ![10, 9].includes(currentUser.position_level)){
+               alert(`Not allowed to perform change on ${metricsType.value}`)
+              return
+            }
+              modalMeticsTypeMessage.value = [ `Add ${metricsType.value}`, `Edit ${metricsType.value} `]
+            if(['CSD & Collection Manager', 'CSD Assitant Manager'].includes(selectedAgent.position_name) ){
+              alert('Cannot Update directly')
+              return
+            }
+
+            if(selectedAgent.opening_hc > 0 || selectedAgent.closing_hc > 0 || selectedAgent.no_of_resignation > 0  ){
+              modalMeticsType.value = 'edit'
+           
+            }
+            showModalMetricsType.value = true
+            selectedData.value = selectedAgent          
+            break  
+          case "inboundcalls":
+
+            if(currentUser.role != 'admin' &&  ![10, 9].includes(currentUser.position_level)){
+               alert(`Not allowed to perform change on ${metricsType.value}`)
+              return
+            }
+              modalMeticsTypeMessage.value = [ `Add ${metricsType.value}`, `Edit ${metricsType.value} `]
+            if(['CSD & Collection Manager', 'CSD Assitant Manager'].includes(selectedAgent.position_name) ){
+              alert('Cannot Update directly')
+              return
+            }
+
+            if(selectedAgent.inbound_calls > 0 || selectedAgent.total_inbound_calls > 0  ){
+              modalMeticsType.value = 'edit'
+           
+            }
+            showModalMetricsType.value = true
+            selectedData.value = selectedAgent          
+            break     
+            
+          case "outboundcalls":
+
+            if(currentUser.role != 'admin' &&  ![10, 9].includes(currentUser.position_level)){
+               alert(`Not allowed to perform change on ${metricsType.value}`)
+              return
+            }
+              modalMeticsTypeMessage.value = [ `Add ${metricsType.value}`, `Edit ${metricsType.value} `]
+            if(['CSD & Collection Manager', 'CSD Assitant Manager'].includes(selectedAgent.position_name) ){
+              alert('Cannot Update directly')
+              return
+            }
+
+            if(selectedAgent.outbound_calls > 0 || selectedAgent.total_outbound_calls > 0  ){
+              modalMeticsType.value = 'edit'
+           
+            }
+            showModalMetricsType.value = true
+            selectedData.value = selectedAgent          
+            break   
+          case "missedcalls":
+
+            if(currentUser.role != 'admin' &&  ![10, 9].includes(currentUser.position_level)){
+               alert(`Not allowed to perform change on ${metricsType.value}`)
+              return
+            }
+              modalMeticsTypeMessage.value = [ `Add ${metricsType.value}`, `Edit ${metricsType.value} `]
+            if(['CSD & Collection Manager', 'CSD Assitant Manager'].includes(selectedAgent.position_name) ){
+              alert('Cannot Update directly')
+              return
+            }
+
+            if(selectedAgent.missed_calls > 0 || selectedAgent.total_missed_calls > 0  ){
+              modalMeticsType.value = 'edit'
+           
+            }
+            showModalMetricsType.value = true
+            selectedData.value = selectedAgent          
+            break                
             
           default:
           console.log("Unknown Metircs type");
@@ -635,18 +772,61 @@
      switch (metricsType.value){
 
        case  "email_response_time": 
-           await  useCsdStore.addCsdPerformanceMetrics(agent.employee_id, 'email_response_time', route.query, {avg_response_minutes: agent.avg_response_minutes})
-           fetchCsdPerformanceMetrics(null, 'all', route.query)
+            if(agent.avg_response_minutes === '' ){
+              alert('Average response minutes cannot be empty')
+              return
+            }
+           await  csdStoreInstance.addCsdPerformanceMetricsOrEvaluation(agent.employee_id, 'email_response_time', 'metrics',route.query, {avg_response_minutes: agent.avg_response_minutes})
+           fetchCsdOrEvaluationPerformanceMetrics(null, 'all', 'metrics',route.query)
            break
        case "email_response_count":
-         
-           await  useCsdStore.addCsdPerformanceMetrics(agent.employee_id, 'email_response_count', route.query, {response_count: agent.response_count, resolved_tickets: agent.resolved_tickets})
-           fetchCsdPerformanceMetrics(null, 'all', route.query)
+
+           if(agent.response_count === '' || agent.resolved_tickets === '' ){
+             alert('Response count and Resolved tickets cannot be empty')
+             return
+           }
+    
+           await  csdStoreInstance.addCsdPerformanceMetricsOrEvaluation(agent.employee_id, 'email_response_count', 'metrics',route.query, {response_count: agent.response_count, resolved_tickets: agent.resolved_tickets})
+            fetchCsdOrEvaluationPerformanceMetrics(null, 'all', 'metrics',route.query)
            break 
-       case "error_report":
+        case "error_report":
+
+            if(agent.error_count === '' ){
+              alert('Error count cannot be empty')
+              return
+            }
          
-           await  useCsdStore.addCsdPerformanceMetrics(agent.employee_id, 'error_report', route.query, { error_count: agent.error_count})
-           fetchCsdPerformanceMetrics(null, 'all', route.query)
+           await  csdStoreInstance.addCsdPerformanceMetricsOrEvaluation(agent.employee_id, 'error_report', 'metrics', route.query, { error_count: agent.error_count})
+            fetchCsdOrEvaluationPerformanceMetrics(null, 'all', 'metrics',route.query)
+           break   
+           
+       case "customer_satisfaction_report":
+
+            if (
+            agent.customer_not_good === '' || agent.customer_just_ok === '' || agent.customer_awesome === '' 
+          ) {
+            alert('Cannot add if all customer satisfaction fields are empty')
+            return
+          }
+
+
+         
+           await  csdStoreInstance.addCsdPerformanceMetricsOrEvaluation(agent.employee_id, 'customer_satisfaction_report', 'metrics', route.query, { customer_not_good: agent.customer_not_good, customer_just_ok: agent.customer_just_ok, customer_awesome: agent.customer_awesome})
+          
+            fetchCsdOrEvaluationPerformanceMetrics(null, 'all', 'metrics',route.query)
+           break  
+           
+       case "call_email_calibration":
+
+            if (
+            agent.calibration_not_good === '' || agent.calibration_just_ok === '' || agent.calibration_awesome === ''
+          ) {
+            alert('Call Email Calibration fields cannot be empty')
+            return
+          }
+
+           await  csdStoreInstance.addCsdPerformanceMetricsOrEvaluation(agent.employee_id, 'call_email_calibration', 'metrics', route.query, { calibration_not_good: agent.calibration_not_good, calibration_just_ok: agent.calibration_just_ok, calibration_awesome: agent.calibration_awesome})
+            fetchCsdOrEvaluationPerformanceMetrics(null, 'all', 'metrics',route.query)
            break            
       
       default:
@@ -663,18 +843,31 @@
       switch (metricsType.value){
         
         case  "email_response_time": 
-           await  useCsdStore.updateCsdPerformanceMetrics(agent.employee_id, 'email_response_time', route.query, {avg_response_minutes: agent.avg_response_minutes})
-           fetchCsdPerformanceMetrics(null, 'all', route.query)
+        
+           await  csdStoreInstance.updateCsdPerformanceMetricsOrEvaluation(agent.employee_id, 'email_response_time',  'metrics', route.query, {avg_response_minutes: agent.avg_response_minutes})
+            fetchCsdOrEvaluationPerformanceMetrics(null, 'all', 'metrics',route.query)
           break
 
         case "email_response_count":
-           await  useCsdStore.updateCsdPerformanceMetrics(agent.employee_id, 'email_response_count', route.query, {response_count: agent.response_count, resolved_tickets: agent.resolved_tickets})
-           fetchCsdPerformanceMetrics(null, 'all', route.query)
+           await  csdStoreInstance.updateCsdPerformanceMetricsOrEvaluation(agent.employee_id, 'email_response_count', 'metrics', route.query, {response_count: agent.response_count, resolved_tickets: agent.resolved_tickets})
+           fetchCsdOrEvaluationPerformanceMetrics(null, 'all', 'metrics',route.query)
            break   
 
-    case "error_report":
-           await  useCsdStore.updateCsdPerformanceMetrics(agent.employee_id, 'error_report', route.query, { error_count: agent.error_count})
-           fetchCsdPerformanceMetrics(null, 'all', route.query)
+        case "error_report":
+           await  csdStoreInstance.updateCsdPerformanceMetricsOrEvaluation(agent.employee_id, 'error_report', 'metrics', route.query, { error_count: agent.error_count})
+            fetchCsdOrEvaluationPerformanceMetrics(null, 'all', 'metrics',route.query)
+           break     
+           
+       case "customer_satisfaction_report":
+         
+            
+           await  csdStoreInstance.updateCsdPerformanceMetricsOrEvaluation(agent.employee_id, 'customer_satisfaction_report', 'metrics', route.query, { customer_not_good: agent.customer_not_good, customer_just_ok: agent.customer_just_ok, customer_awesome: agent.customer_awesome})
+            fetchCsdOrEvaluationPerformanceMetrics(null, 'all', 'metrics',route.query)
+           break  
+           
+       case "call_email_calibration":
+           await  csdStoreInstance.updateCsdPerformanceMetricsOrEvaluation(agent.employee_id, 'call_email_calibration', 'metrics', route.query, { calibration_not_good: agent.calibration_not_good, calibration_just_ok: agent.calibration_just_ok, calibration_awesome: agent.calibration_awesome})
+            fetchCsdOrEvaluationPerformanceMetrics(null, 'all', 'metrics',route.query)
            break              
             
         default:
@@ -727,10 +920,9 @@
     const today = new Date()
     const date = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
 
-   const fetchCsdPerformanceMetrics = (employee_id, metrics_type, query) => {
-     useCsdStore.fetchCsdPerformanceMetrics( employee_id, metrics_type, query)
+   const fetchCsdOrEvaluationPerformanceMetrics = (employee_id, entity_type, entity, query) => {
+     csdStoreInstance.fetchCsdOrEvaluationPerformanceMetrics( employee_id, entity_type, entity, query)
    }
-
 
   const config = useRuntimeConfig()
   
@@ -738,81 +930,75 @@
         return `${config.public.imageBaseUrl}${imageLink}`
   }
 
-     const submitSalesEvaluation = async (agent) => {
+     const submitPerformanceMetrics = async (agent) => {
     // if (agent.submitted === 0 && agent.ready_to_submit) {
     //   agent.submitted = 1; // Mark as submitted
     // } else if (agent.submitted === 1) {
     //   agent.submitted = 0; // Toggle back (just for demo)
     // }
 
-      if(currentUser.role != 'admin' && currentUser.login_type != 'standarduser'){
-        alert('No allowed to submit Sales Evaluation')
+      if(currentUser.role != 'admin' ){
+        alert('No allowed to submit CSD Performance Metrics')
         return
      }
     
-    await useManageSalesStore.submitSalesEvaluation(agent.id, {
+    await csdStoreInstance.submitPerformanceMetricsOrEvaluation(agent.id, {
         agent_id: agent.id,
-        agent_dbname: agent.db_name,
-        month: agent.eval_month,
-        year: agent.eval_year,
-        date: date,
+        dbname: agent.db_name,
+        year_month: agent.year_month,
         submitted: 1
-    });
+    }, 'metrics', {year_month: agent.year_month});
   }
 
-const submitAllSalesEvaluation = async() => {
+const submitAllPerformanceMetrics = async() => {
     if(currentUser.role != 'admin' && currentUser.login_type != 'standarduser'){
-      alert('No allowed to submit Sales Evaluation')
+      alert('No allowed to submit Performance Metrics')
       return
     }
     agents.value.forEach(agent => {
-      if (agent.ready_to_submit && agent.submitted === 0) {
+      if (agent.submitted === 0) {
         agent.submitted = 1;
       }
     });
 
     const payload = agents.value.map(agent => ({
-          agent_id: agent.id,
-          agent_dbname: agent.db_name,
-          month: agent.eval_month,
-          year: agent.eval_year,
-          date: date,
+          employee_id: agent.id,
+          dbname: agent.db_name,
+          year_month: agent.year_month,
           submitted: 1
       }));
 
-      await useManageSalesStore.submitSalesEvaluation('all', payload
+      await csdStoreInstance.submitPerformanceMetricsOrEvaluation('all', payload, 'metrics', {year_month: payload[0].year_month}
   );
 };
 
 
 
-const reviewAllSalesEvaluation = async() => {
+const reviewAllPerformanceMetrics = async() => {
    if(currentUser.role != 'admin' && currentUser.login_type != 'standarduser'){
         alert('No allowed to review Sales Evaluation')
         return
      }
 
    // Call the store action to review sales evaluation
-   await useManageSalesStore.reviewSalesEvaluation('all', {
-       month: agents.value[0].eval_month,
-       year: agents.value[0].eval_year
-   });
+   await csdStoreInstance.reviewPerformanceMetricsOrEvaluation('all', {
+       year_month: agents.value[0].year_month
+   }, 'metrics', { year_month: agents.value[0].year_month});
 };
 
 
 
-const  reviewSalesEvaluation = async (agent) => {
+const  reviewPerformanceMetrics = async (agent) => {
 
    if(currentUser.role != 'admin' && currentUser.login_type != 'standarduser'){
-        alert('No allowed to review Sales Evaluation')
+        alert('No allowed to review Performance Metrics')
         return
      }
 
    // Call the store action to review sales evaluation
-   await useManageSalesStore.reviewSalesEvaluation(agent.id, {
-       month: agent.eval_month,
-       year: agent.eval_year
-   });
+   await csdStoreInstance.reviewPerformanceMetricsOrEvaluation(agent.id, {
+      year_month : agent.year_month
+   },'metrics', {year_month : agent.year_month});
 }
 
 
@@ -827,12 +1013,14 @@ const openModal = ( data) => {
       const closeModal = () => {
         showModal.value = false;
         
-      };      
+      };   
+      
+      
 
- 
   onMounted(() => {
     // no employee_id and query all metrics
-    fetchCsdPerformanceMetrics(null, 'all', route.query)
+    
+    fetchCsdOrEvaluationPerformanceMetrics(null, 'all', 'metrics', route.query)
   
   });
   
@@ -840,7 +1028,7 @@ const openModal = ( data) => {
 
   
 
- const agents = computed(() => useCsdStore.state.csdPerformanceMertics);
+ const agents = computed(() => csdStoreInstance.state.csdPerformanceMertics);
 
  
 
@@ -857,25 +1045,35 @@ const openModal = ( data) => {
 // Computed: enable button only if all agents are ready
   const canSubmitAll = computed(() => {
     // only true if ALL agents are ready_to_submit
-const agentReadyToSubmit = agents.value
-  .filter(agent => agent.agent_type != 3)
-  .map(agent => agent.ready_to_submit);
-    return agents.value.length > 0 &&  agentReadyToSubmit.every(Boolean)
+    const agentReadyToSubmit = agents.value
+      .filter(agent => agent.position_level !=9)
+      .map(agent => agent.submitted);
+        return agents.value.length > 0 &&  agentReadyToSubmit.every(Boolean)
   });
 
   const submittedAll = computed(() => {
     // true if all agents have been submitted
 
-    const agentIsAllSubmitted = agents.value.filter(agent => agent.agent_type !=3).map(agent => agent.submitted)
+    const agentIsAllSubmitted = agents.value.filter(agent => agent.position_level != 9).map(agent => agent.submitted)
     return agents.value.length > 0 && agentIsAllSubmitted.every(submitted => submitted === 1)
   });
+
+
+  // const isFutureMonth = (inputYearMonth) => {
+  //     const now = new Date();
+  //     const currentYear = now.getFullYear();
+  //     const currentMonth = String(now.getMonth() + 1).padStart(2, '0');
+  //     const currentYearMonth = `${currentYear}-${currentMonth}`;
+
+  //   return inputYearMonth > currentYearMonth;
+  // }
 
    
 
 
  watch(route, (newRoute) => {
    // no employee_id and query all metrics
-   fetchCsdPerformanceMetrics(null, 'all', newRoute.query);
+   fetchCsdOrEvaluationPerformanceMetrics(null, 'all', 'metrics', newRoute.query);
 
 });
 
