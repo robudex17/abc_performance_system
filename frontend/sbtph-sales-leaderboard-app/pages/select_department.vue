@@ -26,7 +26,7 @@
         <div class="flex items-center gap-2 bg-white/10 px-3 py-1.5 rounded-lg backdrop-blur-md">
           <div class="w-8 h-8 rounded-full bg-blue-500 flex items-center justify-center text-sm font-bold">
                   <img 
-                    :src="updateImageLink(currentUser.image_link)" 
+                    :src="currentUser.image_link" 
                     alt="User Profile" 
                     class="w-10 h-10 rounded-full border-2 border-gray-300"
                 />
@@ -74,7 +74,7 @@
         <!-- IMAGE (WHITE AREA) -->
         <div class="relative z-10 h-56 bg-white rounded-t-2xl flex items-center justify-center p-4">
           <img
-            :src="dept.image ? updateImageLink(dept.image) : 'https://source.unsplash.com/400x400/?office'"
+            :src="dept.image ? dept.image : 'https://source.unsplash.com/400x400/?office'"
             class="w-full h-full object-contain"
           />
         </div>
@@ -132,11 +132,6 @@ const currentUser = authStore.state.user
 
 const config = useRuntimeConfig()
 const apiUrl = config.public.apiUrl
-
-const updateImageLink = (imageLink) => {
-        return `${config.public.imageBaseUrl}${imageLink}`
-}
-
 
 
 //SALES i WILL ROUTE IT TO '/' TEMPORARILY, BUT I WILL CHANGE IT TO '/sales' LATER ONCE I CREATE THE SALES PAGE

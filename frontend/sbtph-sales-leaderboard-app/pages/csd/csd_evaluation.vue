@@ -58,7 +58,7 @@
                         <div class="flex items-center space-x-2">
                             <img
                             v-if="agent && agent.image_link"
-                            :src="updateImageLink(agent.image_link)"
+                            :src="agent.image_link"
                             alt="Agent Image"
                             class="w-9 h-9 rounded-full object-cover shadow"
                             />
@@ -644,9 +644,7 @@
    }
   const config = useRuntimeConfig()
   
-  const updateImageLink = (imageLink) => {
-        return `${config.public.imageBaseUrl}${imageLink}`
-  }
+
 
      const submitPerformanceMetrics = async (agent) => {
     // if (agent.submitted === 0 && agent.ready_to_submit) {

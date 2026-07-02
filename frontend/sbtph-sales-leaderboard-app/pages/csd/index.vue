@@ -56,7 +56,7 @@
 
                 <img
                   v-if="team.image_link"
-                  :src="updateImageLink(team.image_link)"
+                  :src="team.image_link"
                   alt="Team Image"
                   class="w-20 h-20 rounded-full object-cover mb-4"
                 />
@@ -126,7 +126,7 @@
                 <!-- Agent Image -->
                 <img
                   v-if="agent.image_link"
-                  :src="updateImageLink(agent.image_link)"
+                  :src="agent.image_link"
                   alt="Agent Image"
                   class="w-24 h-24 rounded-full object-cover border-2 border-gray-600 shadow-md"
                 />
@@ -171,7 +171,7 @@
                 </div>
                 <img
                   v-if="agent.image_link"
-                  :src="updateImageLink(agent.image_link)"
+                  :src="agent.image_link"
                   alt="Agent Image"
                   class="w-20 h-20 rounded-full object-cover mb-4"
                 />
@@ -226,7 +226,7 @@
       
         <img
           v-if="selectedAgent && selectedAgent.image_link"
-          :src="updateImageLink(selectedAgent.image_link)"
+          :src="selectedAgent.image_link"
           alt="Agent Image"
           class="w-40 h-40 rounded-full object-cover mb-4"
         />
@@ -398,7 +398,7 @@
       <!-- Image Section -->
       <img
         v-if="selectedTeam && selectedTeam.image_link"
-        :src="updateImageLink(selectedTeam.image_link)"
+        :src="selectedTeam.image_link"
         alt="Team Image"
         class="w-40 h-40 rounded-full object-cover mb-4 border-4 border-gray-700 shadow-md"
       />
@@ -486,7 +486,7 @@
                 <div class="flex items-center justify-left space-x-2">
                   <img
                     v-if="member && member.image_link"
-                    :src="updateImageLink(member.image_link)"
+                    :src="member.image_link"
                     alt="Agent Image"
                     class="w-10 h-10 rounded-full object-cover border border-gray-600"
                   />
@@ -574,9 +574,7 @@ const token = authStore.state.token
 const config = useRuntimeConfig()
 const apiUrl = config.public.apiUrl
 
-const updateImageLink = (imageLink) => {
-        return `${config.public.imageBaseUrl}${imageLink}`
-}
+
 
 const csdStoreInstance = useCsdStore()
 const selectedAgent = reactive({});

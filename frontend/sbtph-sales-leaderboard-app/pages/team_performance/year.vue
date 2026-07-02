@@ -48,7 +48,7 @@
                 </div>
                 <img
                   v-if="team.team_image"
-                  :src="updateImageLink(team.team_image)"
+                  :src="team.team_image"
                   alt="Team Image"
                   class="w-20 h-20 rounded-full object-cover mb-4"
                 />
@@ -118,7 +118,7 @@
       
         <img
           v-if="selectedTeam && selectedTeam.team_image"
-          :src="updateImageLink(selectedTeam.team_image)"
+          :src="selectedTeam.team_image"
           alt="Agent Image"
           class="w-40 h-40 rounded-full object-cover mb-4"
         />
@@ -168,7 +168,7 @@
                   <div class="flex items-center space-x-2">
                     <img
                       v-if="member && member.image_link"
-                      :src="updateImageLink(member.image_link)"
+                      :src="member.image_link"
                       alt="Agent Image"
                       class="w-10 h-10 rounded-full object-cover"
                     />
@@ -253,12 +253,6 @@ const teams = computed(() => leaderBoardStore.state.leaderboard.filter(agent => 
 
 const config = useRuntimeConfig()
 const apiUrl = config.public.apiUrl
-
-const updateImageLink = (imageLink) => {
-        return `${config.public.imageBaseUrl}${imageLink}`
-}
-
-
 
 const selectedAgent = reactive({});
 const selectedTeam = reactive({});

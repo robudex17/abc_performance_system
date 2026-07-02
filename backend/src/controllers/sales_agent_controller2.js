@@ -4,6 +4,8 @@ const { validationResult} = require('express-validator')
 const fs = require('fs')
 const path = require('path')
 
+const { uploadToMinio } = require('../middleware/fileupload_to_minio')  // updated import
+
 exports.fetchSalesAgents = async (req,res, next ) => {
     
    
@@ -672,12 +674,14 @@ exports.addNewSalesAgent = async( req, res, next) => {
    
     
     let imageLink = ""
+
     if (!req.file) {
-        imageLink = "/images/sbtlogo.png"  // put a default image link or null if no image is uploaded
-    }else {
-         // Construct the URL for the uploaded image
-    //    imageLink = `${req.protocol}://${req.get('host')}/images/${req.file.filename}`;
-          imageLink = `/images/${req.file.filename}`;
+        // default image — also served from MinIO
+        imageLink = `http://${process.env.S3_ENDPOINT}:${process.env.S3_PORT}/${process.env.S3_BUCKET}/sbtlogo.png`
+    } else {
+        // upload to MinIO and get back the filename
+        const filename = await uploadToMinio(req.file)
+        imageLink = `http://${process.env.S3_ENDPOINT}:${process.env.S3_PORT}/${process.env.S3_BUCKET}/${filename}`
     }
 
     // Check if there is atleast 1 senior manager in the system if there is none then the first agent to be created must be a senior manager 
@@ -761,7 +765,12 @@ exports.updateSalesAgent = async (req, res, next) => {
     } = req.body;
 
 
-    let imageLink = req.file ? `/images/${req.file.filename}` : image_link;
+    if(req.file){
+        const filename = await uploadToMinio(req.file)
+        imageLink = `http://${process.env.S3_ENDPOINT}:${process.env.S3_PORT}/${process.env.S3_BUCKET}/${filename}`
+    }else{
+        imageLink = image_link
+    }
 
     //there is file change info into true
 

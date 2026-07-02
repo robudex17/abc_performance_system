@@ -912,7 +912,7 @@
         }
 
         // ✅ Otherwise, assume it's a server path
-        return `${config.public.imageBaseUrl}${imageLink}`
+        return imageLink
     }
 
 

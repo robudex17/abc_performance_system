@@ -3,6 +3,8 @@ const { validationResult} = require('express-validator')
 const fs = require('fs')
 const path = require('path')
 
+const { uploadToMinio } = require('../middleware/fileupload_to_minio')  // updated import
+
 exports.fetchSalesAgents = async (req,res, next ) => {
 
     //query his/her manager or senior manager
@@ -275,16 +277,16 @@ exports.addNewSalesAgent = async( req, res, next) => {
     const agentDbname = req.body.db_name 
     const agentMarketId = req.body.market_id
      
-    
-
     let imageLink = ""
     if (!req.file) {
-        imageLink = null
-    }else {
-         // Construct the URL for the uploaded image
-    //    imageLink = `${req.protocol}://${req.get('host')}/images/${req.file.filename}`;
-          imageLink = `/images/${req.file.filename}`;
+        // default image — also served from MinIO
+        imageLink = `http://${process.env.S3_ENDPOINT}:${process.env.S3_PORT}/${process.env.S3_BUCKET}/sbtlogo.png`
+    } else {
+        // upload to MinIO and get back the filename
+        const filename = await uploadToMinio(req.file)
+        imageLink = `http://${process.env.S3_ENDPOINT}:${process.env.S3_PORT}/${process.env.S3_BUCKET}/${filename}`
     }
+
 
     try {
         const query = "INSERT INTO sales_agents ( id, manager_id,agent_type,firstname,lastname,db_name,image_link,market_id) VALUES (?,?,?,?,?,?,?,?)"
@@ -323,8 +325,11 @@ exports.updateSalesAgent = async( req, res, next) => {
     let imageLink = req.body.image_link
 
    
+
     if (req.file) {
-        imageLink = `${req.protocol}://${req.get('host')}/images/${req.file.filename}`;
+      // upload to MinIO and get back the filename
+        const filename = await uploadToMinio(req.file)
+        imageLink = `http://${process.env.S3_ENDPOINT}:${process.env.S3_PORT}/${process.env.S3_BUCKET}/${filename}`
     }
 
     try {

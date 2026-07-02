@@ -54,7 +54,7 @@
                         <div class="flex items-center space-x-2">
                             <img
                             v-if="agent && agent.image_link"
-                            :src="updateImageLink(agent.image_link)"
+                            :src="agent.image_link"
                             alt="Agent Image"
                             class="w-9 h-9 rounded-full object-cover shadow"
                             />
@@ -314,7 +314,7 @@
                   <td class="px-4 py-3 flex items-center space-x-3">
                     <img
                       v-if="data && data.image_link"
-                      :src="updateImageLink(data.image_link)"
+                      :src="data.image_link"
                       alt="Agent Image"
                       class="w-10 h-10 rounded-full object-cover border"
                     />
@@ -809,11 +809,9 @@
 
   const config = useRuntimeConfig()
   
-  const updateImageLink = (imageLink) => {
-        return `${config.public.imageBaseUrl}${imageLink}`
-  }
 
-     const submitSalesEvaluation = async (agent) => {
+
+  const submitSalesEvaluation = async (agent) => {
     // if (agent.submitted === 0 && agent.ready_to_submit) {
     //   agent.submitted = 1; // Mark as submitted
     // } else if (agent.submitted === 1) {

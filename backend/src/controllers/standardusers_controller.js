@@ -3,6 +3,9 @@ const { validationResult } = require('express-validator')
 const fs = require('fs')
 const path = require('path')
 
+// Change this import at the top
+const {  uploadToMinio } = require('../middleware/fileupload_to_minio')  // updated import
+
 exports.fetchStandardUsers = async (req,res, next ) => {
     try{
         // const connection =  await pool.getConnection()
@@ -53,15 +56,21 @@ exports.addNewStandardUser = async( req, res, next) => {
     const agentLastname = req.body.lastname 
     const agentDbname = req.body.db_name 
     
-     
-    
-
     let imageLink = ""
+    // if (!req.file) {
+    //       imageLink = "/images/sbtlogo.png" 
+    // }else {
+    //      // Construct the URL for the uploaded image
+    //   imageLink = `/images/${req.file.filename}`;
+    // }
+
     if (!req.file) {
-          imageLink = "/images/sbtlogo.png" 
-    }else {
-         // Construct the URL for the uploaded image
-      imageLink = `/images/${req.file.filename}`;
+        // default image — also served from MinIO
+        imageLink = `http://${process.env.S3_ENDPOINT}:${process.env.S3_PORT}/${process.env.S3_BUCKET}/sbtlogo.png`
+    } else {
+        // upload to MinIO and get back the filename
+        const filename = await uploadToMinio(req.file)
+        imageLink = `http://${process.env.S3_ENDPOINT}:${process.env.S3_PORT}/${process.env.S3_BUCKET}/${filename}`
     }
 
     try {
@@ -111,7 +120,10 @@ exports.updateStandardUser= async( req, res, next) => {
    
     if (req.file) {
         // imageLink = `${req.protocol}://${req.get('host')}/images/${req.file.filename}`;
-        imageLink = `/images/${req.file.filename}`;
+        // imageLink = `/images/${req.file.filename}`;
+        // upload to MinIO and get back the filename
+        const filename = await uploadToMinio(req.file)
+        imageLink = `http://${process.env.S3_ENDPOINT}:${process.env.S3_PORT}/${process.env.S3_BUCKET}/${filename}`
     }
 
     try {

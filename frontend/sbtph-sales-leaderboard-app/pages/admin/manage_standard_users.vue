@@ -335,9 +335,8 @@ const config = useRuntimeConfig()
         }
 
         // ✅ Otherwise, assume it's a server path
-        return `${config.public.imageBaseUrl}${imageLink}`
-    }
-
+        return  imageLink 
+  }
 //get the current user
 const authStore = useAuthStore()
 authStore.fetchTokenFromLocalStore()
