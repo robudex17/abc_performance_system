@@ -1,1 +1,0 @@
-export { default } from "file:///C:/Users/robudex/sbtph_leaderboard/frontend/sales-leaderboard/node_modules/@nuxt/vite-builder/dist/runtime/client.manifest.mjs"
