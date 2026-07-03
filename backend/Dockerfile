@@ -1,17 +1,17 @@
+# project_name/backend/Dockerfile
 FROM node:22-alpine
 
 WORKDIR /app
 
-
+# Copy package files first (better layer caching)
 COPY package*.json ./
 
-RUN npm install
+# Install only production dependencies
+RUN npm ci --only=production
 
-RUN npm install -g pm2
-
+# Copy the rest of the backend source
 COPY . .
 
+EXPOSE 8080
 
-EXPOSE  8080
-
-ENTRYPOINT ["sh", "-c", "sleep 10 && exec pm2-runtime start src/server.js --name backend-leaderboard"]
+CMD ["node", "src/server.js"]

@@ -1,4 +1,3 @@
-const { reset } = require('nodemon');
 const pool  =  require('../config/db')
 const { validationResult } = require('express-validator')
 

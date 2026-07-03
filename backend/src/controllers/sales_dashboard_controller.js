@@ -3,7 +3,7 @@ const  pool = require('../config/db')
 const { validationResult } = require('express-validator')
 
  const { getAgentsMetrics } = require('./sales_leaderboard_controllers')
-const { agent } = require('supertest')
+//const { agent } = require('supertest')
 
 const sqlQueries = require('../sql/sql')
 

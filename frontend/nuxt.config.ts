@@ -18,6 +18,10 @@ export default defineNuxtConfig({
     baseURL: '/sbtph_sales_leaderboard/', // Make sure this matches your Nginx location
   },
 
+    nitro: {
+    port: parseInt(process.env.NITRO_PORT || '3000')
+  },
+
   runtimeConfig: {
     public: {
       apiUrl: process.env.NUXT_PUBLIC_API_URL,
