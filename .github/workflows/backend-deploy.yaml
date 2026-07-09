@@ -1,0 +1,58 @@
+name: Backend CI/CD  # Name of the workflow
+
+# This workflow is triggered on push events to the main branch, specifically when changes are made in the 'backend' directory.
+# It builds and pushes a Docker image for the backend service, then updates the image tag in a separate configuration repository.
+
+# Trigger only this workflow on push events to the main branch, and only when changes are made in the 'backend' directory.
+on:   
+  push:
+    branches: [main]
+    paths:
+      - 'backend/**'
+
+jobs:
+  build-and-push:  # name of the job
+    runs-on: ubuntu-latest # the vm image to use for the job
+
+    steps:
+      - name: Checkout app repo    #clone the repo to the runner VM
+        uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx  #Installs and configures Docker Buildx on the runner
+        uses: docker/setup-buildx-action@v3
+
+      - name: Login to DockerHub  #Authenticates to DockerHub so the runner can push images.
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      - name: Get short commit SHA
+        id: sha
+        run: echo "SHORT_SHA=$(echo $GITHUB_SHA | cut -c1-7)" >> $GITHUB_OUTPUT
+
+      - name: Build and push backend image
+        uses: docker/build-push-action@v5
+        with:
+          context: ./backend
+          push: true
+          tags: |
+            robudex17/backend-performance-abc:${{ steps.sha.outputs.SHORT_SHA }}
+            robudex17/backend-performance-abc:latest
+
+      - name: Checkout config repo
+        uses: actions/checkout@v4
+        with:
+          repository: robudex17/abc_performance_config # clone the this repo to config-repo directory
+          token: ${{ secrets.CONFIG_REPO_TOKEN }}
+          path: config-repo
+
+      - name: Update backend image tag in config repo
+        run: |
+          cd config-repo
+          sed -i "s|robudex17/backend-performance-abc:.*|robudex17/backend-performance-abc:${{ steps.sha.outputs.SHORT_SHA }}|g" backend/deployment.yaml
+          git config user.email "github-actions@github.com"
+          git config user.name "GitHub Actions"
+          git add backend/deployment.yaml
+          git commit -m "update backend image tag to ${{ steps.sha.outputs.SHORT_SHA }}"
+          git push
