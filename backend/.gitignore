@@ -1,0 +1,8 @@
+node_modules
+.env
+.git
+*.log
+*.txt
+*.html
+tests/
+password_gen.js

@@ -1,0 +1,238 @@
+<template>
+  <div class="flex">
+    <aside :class="sidebarClass" class="bg-gray-800 text-white transition-all fixed h-screen">
+      <div class="flex justify-between items-center p-4 text-center text-2xl font-bold border-b border-gray-700">
+        <div v-if="!isCollapsed">Sales Performance Dashboard</div>
+        <button @click="toggleSidebar" class="text-white">
+          <font-awesome-icon :icon="['fas', 'bars']" />
+        </button>
+      </div>
+
+      <!-- Recursive Menu -->
+      <nav>
+        <ul>
+          <SidebarMenuItem
+            v-for="item in menuItems"
+            :key="item.name"
+            :item="item"
+            :activeMenu="activeMenu"
+            :isCollapsed="isCollapsed"
+            :submenuStates="submenuStates"
+            @activateMenu="activateMenu"
+          />
+        </ul>
+      </nav>
+
+      <button class="logout-btn p-4 hover:bg-gray-700 cursor-pointer mt-auto" @click="logout">
+        <font-awesome-icon :icon="['fas', 'sign-out-alt']" class="pr-2" />
+        <span v-if="!isCollapsed">Logout</span>
+      </button>
+    </aside>
+
+    <main :class="mainClass" class="p-6 bg-gray-100 flex flex-col">
+      <slot />
+    </main>
+  </div>
+</template>
+
+<script setup>
+import SidebarMenuItem from './SidebarMenuItem.vue'
+import { ref, computed, onMounted } from 'vue'
+import { useRouter, useRoute } from 'vue-router'
+
+// Simulate current user (replace with your actual user object or store)
+const currentUser = ref({ role: 'user' }) // or 'admin', 'agent', etc.
+
+const submenuStates = ref({})
+const activeMenu = ref(null)
+
+// your original menuItems here (with roles)
+const menuItems = ref([
+  {
+    name: "Dashboard",
+    icon: ['fas', 'tachometer-alt'],
+    route: "/dashboard",
+    roles: ["admin", "user"]
+  },
+ { 
+              name: 'Performance Evaluation', 
+              route: null, 
+              icon: ['fas', 'cog'],
+              subMenu: [
+                { name: 'Agent_Monthly', route: '/agent_performance/month', icon: ['fas', 'user'] },
+                { name: 'Agent_Yearly', route: '/agent_performance/year', icon: ['fas', 'user'] },
+                // { name: 'Analytics', route: '/agent_performance/analytics', icon: ['fas', 'user'] },
+              ]
+  }, 
+  {
+    name: "Reports",
+    icon: ['fas', 'file-alt'],
+    roles: ["admin"],
+    subMenu: [
+      {
+        name: "Target",
+        icon: ['fas', 'bullseye'],
+        roles: ["admin"],
+        subMenu: [
+          { name: "Monthly", route: '/agent_performance/month', icon: ['fas', 'calendar-alt'], roles: ["admin", "user"] },
+          { name: "Yearly", route: '/agent_performance/year', icon: ['fas', 'calendar'], roles: ["admin"] }
+        ]
+      },
+      {
+        name: "Analytics",
+        icon: ['fas', 'bullseye'],
+        role: ['admin'],
+          subMenu: [
+             {
+                name: 'first',
+                icon:  ['fas', 'bullseye'],
+                role: ['admin'],
+                   subMenu: [
+                    {
+                        name: 'second',
+                        icon: ['fas', 'bullseye'],
+                        role: ['admin'],
+                           subMenu: [
+                              { name: "Monthly", route: '/agent_performance/month', icon: ['fas', 'calendar-alt'], roles: ["admin", "user"] },
+                              { name: "Yearly", route: '/agent_performance/year', icon: ['fas', 'calendar'], roles: ["admin"] }
+                           ]
+                    }
+                   ]
+             }
+          ]
+      }
+    ]
+  }
+])
+
+// Recursively filter menu items based on role
+function filterMenuByRole(items, role) {
+  return items
+    .filter(item => !item.roles || item.roles.includes(role))
+    .map(item => ({
+      ...item,
+      subMenu: item.subMenu ? filterMenuByRole(item.subMenu, role) : []
+    }))
+}
+
+const filteredMenuItems = computed(() => {
+  return filterMenuByRole(menuItems.value, currentUser.value.role)
+})
+
+// active and submenu logic
+const activateMenu = (item) => {
+  activeMenu.value = item.name
+}
+
+const toggleSidebar = () => {
+  isCollapsed.value = !isCollapsed.value
+}
+
+const isCollapsed = ref(false)
+
+
+const setActiveMenuFromRoute = () => {
+  const currentRoute = route.path
+
+  // 🌟 Step 1: Handle your custom special routes first (as you already do)
+  if (/^\/admin\/agent2/.test(currentRoute)) {
+    submenuStates.value["Admin Panel"] = true
+    activeMenu.value = "Manage Sales Agents"
+    return
+  }
+
+  if (/^\/admin\/agent2\/\d+\/details$/.test(currentRoute)) {
+    submenuStates.value["Admin Panel"] = true
+    activeMenu.value = "Manage Sales Agents"
+    return
+  }
+
+  if (currentRoute === "/agent_performance/month") {
+    submenuStates.value["Agent Performance"] = true
+    activeMenu.value = "Agent_Monthly"
+    return
+  }
+
+  if (currentRoute === "/agent_performance/year") {
+    submenuStates.value["Agent Performance"] = true
+    activeMenu.value = "Agent_Yearly"
+    return
+  }
+
+  if (currentRoute === "/team_performance/month") {
+    submenuStates.value["Team Performance"] = true
+    activeMenu.value = "Team_Monthly"
+    return
+  }
+
+  if (currentRoute === "/team_performance/year") {
+    submenuStates.value["Team Performance"] = true
+    activeMenu.value = "Team_Yearly"
+    return
+  }
+
+  if (currentRoute === "/overall_performance/month") {
+    submenuStates.value["Overall Performance"] = true
+    activeMenu.value = "Overall_Monthly"
+    return
+  }
+
+  if (currentRoute === "/overall_performance/year") {
+    submenuStates.value["Overall Performance"] = true
+    activeMenu.value = "Overall_Yearly"
+    return
+  }
+
+  if (
+    (currentRoute == "/feedback/feedback_by_sales/um_by_lm") ||
+    (currentRoute == "/feedback/feedback_by_sales/lm_by_agent") ||
+    (currentRoute == "/feedback/feedback_by_sales" && route.query.feedback_type == 'um_by_lm') ||
+    (currentRoute == "/feedback/feedback_by_sales" && route.query.feedback_type == 'lm_by_agent')
+  ) {
+    submenuStates.value["Feedback"] = true
+    activeMenu.value = "MANAGER"
+    return
+  }
+
+  if (
+    (currentRoute == "/feedback/feedback_by_sales/agent_by_lm") ||
+    (currentRoute == "/feedback/feedback_by_sales" && route.query.feedback_type == 'agent_by_lm')
+  ) {
+    submenuStates.value["Feedback"] = true
+    activeMenu.value = "AGENTS"
+    return
+  }
+
+  if (
+    (currentRoute == "/feedback/feedback_by_sales/lm_by_um") ||
+    (currentRoute == "/feedback/feedback_by_sales" && route.query.feedback_type == 'lm_by_um')
+  ) {
+    submenuStates.value["Feedback"] = true
+    activeMenu.value = "LOCAL MANAGER"
+    return
+  }
+
+  // 🌟 Step 2: Recursively find the route in any depth
+  const findAndActivateMenu = (items, parents = []) => {
+    for (const item of items) {
+      if (item.route === currentRoute) {
+        // open all parents
+        for (const parent of parents) {
+          submenuStates.value[parent.name] = true
+        }
+        activeMenu.value = item.name
+        return true
+      }
+
+      if (item.subMenu && item.subMenu.length > 0) {
+        const found = findAndActivateMenu(item.subMenu, [...parents, item])
+        if (found) return true
+      }
+    }
+    return false
+  }
+
+  findAndActivateMenu(menuItems.value)
+}
+
+</script>
