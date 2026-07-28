@@ -3,7 +3,7 @@
       <div class="w-full max-w-md p-8 bg-white rounded-lg shadow-lg">
         <!-- Logo -->
         <div class="flex justify-center mb-6">
-          <img src="~/assets/img/sbtlogo.png" alt="Logo" class="w-32 h-auto" />
+          <img src="~/assets/img/abc_company_logo.png" alt="Logo" class="w-32 h-auto" />
         </div>
         
   
