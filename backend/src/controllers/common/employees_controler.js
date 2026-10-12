@@ -46,6 +46,7 @@ exports.fetchEmployees = async (req,res, next ) => {
                         p.position_name AS position_name,
 
                         p.id AS position_id,
+                        p.level AS position_level,
                        
                         ea.manager_id,
                         

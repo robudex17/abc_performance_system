@@ -1341,12 +1341,6 @@
         currentEmployee.value.effective_to =  currentEmployee.value.end_date
       }
      
-        
-      // await manageSalesAgentStore.updateSalesAgent(currentEmployee.value, route.query);
-      //   // fetchSalesAgents()
-      //   fetchMarkets();
-      //   fetchTeams();
-      //   fetchMangers()
 
        emit('passUpdateEmployee',currentEmployee.value);
         closeModal();
@@ -1370,17 +1364,14 @@
         return
       }
 
-      if ((currentEmployeeLogin.value.agent_type == 0 || currentEmployeeLogin.value.agent_type == "0") && currentEmployeeLogin.value.role == 'manager'){
-        alert('Cannot Set manager if agent type is 0')
+      if ( ![10, 9, 8].includes(Number(currentEmployeeLogin.value.position_level)) && currentEmployeeLogin.value.role == 'manager'){
+        alert('Cannot Set manager if agent position level is not 10, 9 or 8')
         return
       }
 
       try{
         await authStore.register(currentEmployeeLogin.value , 'salesagent')
-        fetchSalesAgents();
-        fetchMarkets();
-        fetchTeams();
-        fetchMangers()
+      
         closeLoginModal()
       }catch (error ){
         console.log('Error in adding agent login', error)
@@ -1394,16 +1385,13 @@
         return
       }
 
-      if ((currentEmployeeLogin.value.agent_type == 0 || currentEmployeeLogin.value.agent_type == "0") && currentEmployeeLogin.value.role == 'manager'){
-        alert('Cannot Set manager if agent type is 0')
+      if (![10, 9, 8].includes(Number(currentEmployeeLogin.value.position_level)) && currentEmployeeLogin.value.role == 'manager'){
+        alert('Cannot Set manager if agent position level is not 10, 9 or 8')
         return
       }
       try{
         await authStore.updateLogin(currentEmployeeLogin.value , 'salesagent')
-        fetchSalesAgents();
-        fetchMarkets();
-        fetchTeams();
-        fetchMangers()
+     
         closeLoginModal()
       }catch (error ){
         console.log('Error in  updating agent login', error)

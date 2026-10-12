@@ -117,27 +117,6 @@ exports.loginUser = async(req,res, next) => {
 
        const loginId = loginUser[0].login_id
 
-       // join the login and sales_agents where login.login_id = sales_agents.id
-    //    const [user] = await pool.execute(
-    //     `
-    //     SELECT 
-    //             sales_agents_login.login_id AS login_id,
-    //             sales_agents_login.username AS username,
-    //             sales_agents_login.password_hash,
-    //             sales_agents_login.role AS role,
-    //             sales_agents.manager_id,
-    //             sales_agents.agent_type,
-    //             sales_agents.firstname,
-    //             sales_agents.lastname,
-    //             sales_agents.db_name,
-    //             sales_agents.market_id,
-    //             sales_agents.team_id,
-    //             sales_agents.image_link
-    //         FROM sales_agents_login
-    //         INNER JOIN sales_agents ON sales_agents_login.login_id = sales_agents.id
-    //         WHERE sales_agents_login.login_id = ?
-    //    `, [loginId]
-    //     )
 
 
     const [user]  = await pool.execute(
@@ -225,18 +204,25 @@ exports.loginUser = async(req,res, next) => {
        if(user[0].employee_status == 'Resigned'){
         return  res.status(401).json({message: `${user[0].firstname} ${user[0].lastname} is already Resigned. Resigned Staff is not allowed to login..`})
        }
+
+       if(loginas != "sales"){
+         return res.status(401).json({message: `Your are not allowed to login  other than ${loginas}`})
+       }
+
         
-       if(user[0].role == 'user' && loginas != 'salesagent'){
-           return res.status(401).json({message: `Your are not allowed to login as ${loginas}`})
-       }
+    //    if(user[0].role == 'user' && loginas != 'salesagent'){
+    //        return res.status(401).json({message: `Your are not allowed to login as ${loginas}`})
+    //    }
 
-       if(user[0].role == 'manager' && user[0].agent_type == 1 && loginas != 'lm'){
-         return res.status(401).json({message: `Your are not allowed to login as ${loginas}`})
-       }
+    //    if(user[0].role == 'manager' && user[0].agent_type == 1 && loginas != 'lm'){
+    //      return res.status(401).json({message: `Your are not allowed to login as ${loginas}`})
+    //    }
 
-       if(user[0].role == 'manager' && user[0].agent_type == 2 && loginas != 'unitmanager'){
-         return res.status(401).json({message: `Your are not allowed to login as ${loginas}`})
-       }
+    //    if(user[0].role == 'manager' && user[0].agent_type == 2 && loginas != 'unitmanager'){
+    //      return res.status(401).json({message: `Your are not allowed to login as ${loginas}`})
+    //    }
+
+
 
     
        console.log('the user is ', user[0])

@@ -677,11 +677,13 @@ exports.addNewSalesAgent = async( req, res, next) => {
 
     if (!req.file) {
         // default image — also served from MinIO
-        imageLink = `http://${process.env.S3_ENDPOINT}:${process.env.S3_PORT}/${process.env.S3_BUCKET}/sbtlogo.png`
+        // imageLink = `http://${process.env.S3_ENDPOINT}:${process.env.S3_PORT}/${process.env.S3_BUCKET}/sbtlogo.png`
+        imageLink = 'sbtlogo.png'  // just store the filename, not the full URL
     } else {
         // upload to MinIO and get back the filename
         const filename = await uploadToMinio(req.file)
-        imageLink = `http://${process.env.S3_ENDPOINT}:${process.env.S3_PORT}/${process.env.S3_BUCKET}/${filename}`
+        // imageLink = `http://${process.env.S3_ENDPOINT}:${process.env.S3_PORT}/${process.env.S3_BUCKET}/${filename}`
+        imageLink = filename;
     }
 
     // Check if there is atleast 1 senior manager in the system if there is none then the first agent to be created must be a senior manager 
@@ -764,12 +766,12 @@ exports.updateSalesAgent = async (req, res, next) => {
         employee_status, changed_assignment, active_agent,  effective_to,  effective_from, changed_info, changed_date_hire,
     } = req.body;
 
-
+    let imageLink = image_link; // Default to existing image link
     if(req.file){
         const filename = await uploadToMinio(req.file)
-        imageLink = `http://${process.env.S3_ENDPOINT}:${process.env.S3_PORT}/${process.env.S3_BUCKET}/${filename}`
-    }else{
-        imageLink = image_link
+       // imageLink = `http://${process.env.S3_ENDPOINT}:${process.env.S3_PORT}/${process.env.S3_BUCKET}/${filename}`
+        imageLink = filename
+      
     }
 
     //there is file change info into true

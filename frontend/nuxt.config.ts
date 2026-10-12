@@ -15,11 +15,14 @@ export default defineNuxtConfig({
 
    // Add this part for setting the base URL
    app: {
-    baseURL: '/sbtph_sales_leaderboard/', // Make sure this matches your Nginx location
+    baseURL: '/sbtph_performance_system/', // Make sure this matches your Nginx location
   },
 
-    nitro: {
-    port: parseInt(process.env.NITRO_PORT || '3000')
+   
+
+  nitro: {
+    // Image proxy lives in server/routes/api/images/[...key].ts
+    port: parseInt(process.env.NITRO_PORT || '3000'),
   },
 
   runtimeConfig: {

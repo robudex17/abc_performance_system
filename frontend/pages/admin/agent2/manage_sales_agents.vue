@@ -911,8 +911,13 @@
           return imageLink
         }
 
-        // ✅ Otherwise, assume it's a server path
-        return imageLink
+        // ✅ Old rows that still hold a full URL - use as is
+        if (/^https?:\/\//.test(imageLink)) {
+          return imageLink
+        }
+
+        // ✅ Filename only - build the proxied image URL
+        return `${config.public.imageBaseUrl}${imageLink}`
     }
 
 

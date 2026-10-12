@@ -179,7 +179,7 @@ exports.fetch_queries = {
             ON ea.department_id = d.id
 
         -- =====================================================
-        -- ✅ EVALUATION STATUS
+        -- ✅ PERFORMANCE STATUS
         -- =====================================================
         LEFT JOIN csd_performance_status csd
             ON csd.employee_id = e.id
@@ -313,7 +313,7 @@ exports.fetch_eval_queries = {
             -- =====================================================
             -- ✅ EVALUATION TYPE
             -- =====================================================
-         
+            COALESCE(nsp.performance, 0) AS performance,
             COALESCE(ab2.count, 0) AS absences,
             COALESCE(td2.count, 0) AS tardiness,
             COALESCE(mm2.count, 0) AS memo,   
@@ -401,7 +401,14 @@ exports.fetch_eval_queries = {
             ON ea.team_id = t.id
 
         LEFT JOIN departments d
-            ON ea.department_id = d.id        
+            ON ea.department_id = d.id    
+
+        -- =====================================================
+        -- ✅ PERFORMANCE
+        -- =====================================================
+        LEFT JOIN  none_sales_performance nsp
+            ON nsp.employee_id = e.id
+            AND nsp.year_month = ?
 
         -- =====================================================
         -- ✅ ABSENCES
@@ -437,6 +444,7 @@ exports.fetch_eval_queries = {
 }
 
 exports.add_eval_queries = {
+    performance: "INSERT INTO none_sales_performance(`performance`,`year_month`,`employee_id`) VALUES (?,?,?)",
     absences: "INSERT INTO absences2(`count`,`year_month`,`employee_id`, `description`) VALUES (?,?,?,?)",
     tardiness: "INSERT INTO tardiness2(`count`,`year_month`,`employee_id`, `description`) VALUES (?,?,?,?)",
     memo: "INSERT INTO memo2(`count`,`year_month`,`employee_id`, `description`) VALUES (?,?,?,?)",
@@ -445,6 +453,7 @@ exports.add_eval_queries = {
 
 
 exports.update_eval_queries = {
+    performance: "UPDATE none_sales_performance SET performance = ? WHERE employee_id = ? AND \`year_month\` = ?",
     absences: "UPDATE absences2 SET count = ?, description = ? WHERE employee_id = ? AND \`year_month\` = ?",
     tardiness: "UPDATE tardiness2 SET count = ?, description = ? WHERE employee_id = ? AND \`year_month\` = ?",
     memo: "UPDATE memo2 SET count = ?, description = ?  WHERE employee_id = ? AND \`year_month\` = ?",
@@ -452,6 +461,7 @@ exports.update_eval_queries = {
 }
 
 exports.delete_eval_queries = {
+    performance: "DELETE FROM none_sales_performance WHERE employee_id = ? AND \`year_month\` = ?",
     absences: "DELETE FROM absences2 WHERE employee_id = ? AND \`year_month\` = ?",
     tardiness: "DELETE FROM tardiness2 WHERE employee_id = ? AND \`year_month\` = ?",
     memo: "DELETE FROM memo2 WHERE employee_id = ? AND \`year_month\` = ?",

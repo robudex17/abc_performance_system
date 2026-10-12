@@ -55,19 +55,10 @@
              Right now, I will just add all the positon to staticly for the dropdown, but later I will make this dynamic by fetching the role and position from the backend.
           -->
            <!-- For now all standarduser is consider admin -->
-            <option value="standarduser">Admin</option>
+            <option value="admin">Admin</option>
             <!-- <option value="standarduser">Power User</option> -->
-            <option value="unitmanager">Unit Manager</option>
-            <option value="lm">Local Manager</option>
-            <option value="salesagent">Sales Agent</option>
-            <option value="employee">CSD & Collections Manager</option>
-            <option value="employee">CSD Assistant Manager</option>
-            <option value="employee">Collection Assistant Manager</option>
-            <option value="employee">CSD & Collections Quality Analyst/ Trainer</option>
-            <option value="employee">CSD Team Leader</option>
-            <option value="employee">Collection Team Leader</option>
-            <option value="employee">CSD Agent</option>
-            <option value="employee">Collection Agent</option>
+            <option value="sales">Sales</option>
+            <option value="none_sales">None Sales</option>
              
           </select>
         </div>
@@ -82,8 +73,8 @@
       <!-- Form End -->
 
       <div class="text-center mt-4">
-        <p class="text-sm text-gray-600 font-bold">
-          SBT PHILIPPINES SALES APP
+        <p class="text-sm text-red-600 font-bold">
+          SBT PHILIPPINES PERFORMANCE MANAGEMENT SYSTEM
         </p>
       </div>
     </div>
@@ -106,7 +97,7 @@ definePageMeta({
 // Define reactive form data
 const username = ref('')
 const password = ref('')
-const loginType = ref('standarduser') // Default role selection
+const loginType = ref('admin') // Default role selection
 const loginSuccess = ref(false)
 
 
@@ -119,50 +110,6 @@ const login = async () => {
   // Send role along with login
   await authStore.login(username.value, password.value, loginType.value)
 
-  if(authStore.state.user?.role == 'user' && loginType.value != 'salesagent' ){
-    alert(`You are not allowed to login as  ${loginType.value}`)
-    return
-  }
-
-  
-  if(authStore.state.user?.role == 'manager' && authStore.state.user?.agent_type == 1 && loginType.value != 'lm'){
-    alert(`You are not allowed to login as  ${loginType.value}`)
-    return
-  }
-
-  if(authStore.state.user?.role == 'manager' && authStore.state.user?.agent_type == 2 && loginType.value != 'unitmanager'){
-    alert(`You are not allowed to login as  ${loginType.value}`)
-    return
-  }
-
-  
-
-  
-  // if (authStore.state.user?.role == 'user' && authStore.state.token){
-  //   alert('Login is Successful for user')
-  //   router.push('/')
-  //   return
-  // }
-
-  //  if (authStore.state.token) {
-  //   alert("Login is Successful")
-    
-  //   router.push('/')
-  //   return
-  // }
-
-  // if(authStore.state.token) {
-  //   alert("Login is Successful")
-  //   if(authStore.state.user?.role == 'admin' || (authStore.state.user?.role == 'manager' && authStore.state.user?.level == 5 )){
-  //      router.push('/select_department')
-  //   } else if (['csd', 'collection', 'purchasing', 'hradmin', 'it', 'uploading'].includes(authStore.state.user?.department_code)) {
-  //     router.push(`/${authStore.state.user?.department_code}`)
-  //   }
-  //   // for now sales will go to legacy route ..
-  //   else {
-  //     router.push('/')
-  //   }
-  // }
 
 
   if (authStore.state.token) {
@@ -194,7 +141,7 @@ const login = async () => {
 
     // ✅ STEP 3: fallback (sales legacy)
     return router.push('/')
-}
+  }
 
 
   if (authStore.state.error) {

@@ -24,6 +24,7 @@
                     <th class="py-0.5 px-4 text-center text-xs font-bold text-green-900 border">Employee Status</th>
                      <th class="py-0.5 px-4 text-center text-xs font-bold text-green-900 border">Extension</th>
                     <th class="py-0.5 px-4 text-center text-xs font-bold text-green-900 border">Position</th>
+                    <th class="py-0.5 px-4 text-center text-xs font-bold text-green-900 border">Immediate Head</th>
                     <th class="py-0.5 px-4 text-center text-xs font-bold text-green-900 border">Team</th>
                     <th class="py-0.5 px-4 text-center text-xs font-bold text-green-900 border">Month</th>
                     <th class="py-0.5 px-4 text-center text-xs font-bold text-green-900 border">Year</th>
@@ -32,10 +33,10 @@
                     <th class="py-0.5 px-4 text-center text-xs font-bold text-green-900 border ">Tardiness</th>
                     <th class="py-0.5 px-4 text-center text-xs font-bold text-green-900 border">Memo</th>
                     <th class="py-0.5 px-4 text-center text-xs font-bold text-green-900 border">Feedback (Admin)</th>
-                    <th class="py-0.5 px-4 text-center text-xs font-bold text-green-900 border">Feedback(AGENTS)</th>
-                    <th class="py-0.5 px-4 text-center text-xs font-bold text-green-900 border ">Feedback(TL)</th>
-                    <th class="py-0.5 px-4 text-center text-xs font-bold text-green-900 border  ">Feedback(AM)</th>
-                    <th class="py-0.5 px-4 text-center text-xs font-bold text-green-900 border  ">Feedback(M)</th>
+                    <th class="py-0.5 px-4 text-center text-xs font-bold text-green-900 border">Feedback(QA)</th>
+                    <th class="py-0.5 px-4 text-center text-xs font-bold text-green-900 border ">Feedback(Immediate Head)</th>
+                    <th class="py-0.5 px-4 text-center text-xs font-bold text-green-900 border  ">Feedback(Members)</th>
+                    
                    
                      <th class="py-0.5 px-4 text-center text-xs font-bold text-green-900 border">Submit</th>
              
@@ -82,6 +83,9 @@
                     <td class="py-0.5 px-4 text-left text-xs font-medium text-gray-700 border">
                      {{ agent.position_name }}
                     </td>
+                    <td class="py-0.5 px-4 text-left text-xs font-medium text-gray-700 border">
+                     {{ agent.manager_dbname }}
+                    </td>                    
 
                     <td class="py-0.5 px-4 text-left text-xs font-medium text-gray-700 border">
                      {{ agent.team_name }}
@@ -93,10 +97,16 @@
                     {{ agent.year }}
                     </td>
     
-                    <td class="py-0.5 px-4 text-left text-lg font-medium text-gray-700 border" :class="agent.performance_score == 0 ?  'text-red-700': ''" >
+                    <!-- <td class="py-0.5 px-4 text-left text-lg font-medium text-gray-700 border" :class="agent.performance_score == 0 ?  'text-red-700': ''" >
                         {{ agent.performance_score === 0 ? 'NOT YET SUBMITTED' : agent.performance_score }} 
                        
-                   </td>
+                   </td> -->
+
+                  <CSDTooltipCell :title="agent.db_name" class="text-blue-700">
+                     <button  @click="openMetricsTypeModal({ year_month: agent.year_month,employee_status: agent.employee_status, eval_submitted: agent.eval_submitted, employee_id: agent.id, db_name: agent.db_name, month: agent.month, year: agent.year, position_id: agent.position_id, position_name: agent.position_name, team_id:agent.team_id,performance:agent.performance,image_link: agent.image_link,eval_type: 'performance' })" >
+                        {{ agent.performance }}
+                    </button>
+                   </CSDTooltipCell>                   
                   
 
                   <CSDTooltipCell :title="agent.db_name" class="text-blue-700">
@@ -140,7 +150,7 @@
                       <button  @click="openMetricsTypeModal({ year_month: agent.year_month, employee_status: agent.employee_status, submitted: agent.submitted, employee_id: agent.id, db_name:agent.db_name, month: agent.month, year: agent.year, position_id: agent.position_id, position_name: agent.position_name, team_id:agent.team_id, 
                         missed_calls: agent.missed_calls,  total_missed_calls: agent.total_missed_calls,
                         image_link: agent.image_link, eval_type: 'feedback_agents' })" >
-                          {{ agent.feedback_agents }}
+                          {{ agent.feedback_by_qa }}
                       </button>
                     </CSDTooltipCell>  
 
@@ -149,7 +159,7 @@
                       <button  @click="openMetricsTypeModal({ year_month: agent.year_month, employee_status: agent.employee_status, submitted: agent.submitted, employee_id: agent.id, db_name:agent.db_name, month: agent.month, year: agent.year, position_id: agent.position_id, position_name: agent.position_name, team_id:agent.team_id, 
                         opening_hc : agent.opening_hc, closing_hc: agent.closing_hc,  no_of_resignation: agent.no_of_resignation,
                         image_link: agent.image_link, eval_type: 'feedback_tl' })" >
-                          {{ agent.feedback_tl }}
+                          {{ agent.feedback_by_immediate_head }}
                       </button>
                     </CSDTooltipCell> 
 
@@ -159,21 +169,11 @@
                       <button  @click="openMetricsTypeModal({ year_month: agent.year_month, employee_status: agent.employee_status, submitted: agent.submitted, employee_id: agent.id, db_name:agent.db_name, month: agent.month, year: agent.year, position_id: agent.position_id, position_name: agent.position_name, team_id:agent.team_id, 
                         opening_hc : agent.opening_hc, closing_hc: agent.closing_hc,  no_of_resignation: agent.no_of_resignation,
                         image_link: agent.image_link, eval_type: 'feedback_am' })" >
-                          {{ agent.feedback_am }}
+                          {{ agent.feedback_by_members }}
                       </button>
                     </CSDTooltipCell> 
 
-                  <CSDTooltipCell :title="agent.db_name" class="text-blue-700">
-                      <button  @click="openMetricsTypeModal({ year_month: agent.year_month, employee_status: agent.employee_status, submitted: agent.submitted, employee_id: agent.id, db_name:agent.db_name, month: agent.month, year: agent.year, position_id: agent.position_id, position_name: agent.position_name, team_id:agent.team_id, 
-                        opening_hc : agent.opening_hc, closing_hc: agent.closing_hc,  no_of_resignation: agent.no_of_resignation,
-                        image_link: agent.image_link, eval_type: 'feedback_manager' })" >
-                          {{ agent.feedback_manager }}
-                      </button>
-                 </CSDTooltipCell>                     
-             
-  
-
-                   
+                                     
                     <!-- Actions -->
                     <td class="py-0.5 px-4 text-center border" >
                       <div class="flex justify-center space-x-2" v-if="agent.position_level == 9">
@@ -439,6 +439,20 @@
       }
      
       switch(eval_type.value){
+          case "performance":
+            if(currentUser.role != 'admin' &&  ![10, 9].includes(currentUser.position_level)){
+               alert(`Not allowed to perform change on ${eval_type.value}`)
+              return
+            }
+              modalEvalTypeMessage.value = [ `Add ${eval_type.value}`, `Edit ${eval_type.value} `]
+           if (selectedAgent.performance > 0) {
+             modalEvalType.value = 'edit';
+            }
+
+            showModalEvalType.value = true
+            selectedData.value = selectedAgent
+          
+            break
           case "absences":
         
             if(currentUser.role != 'admin' ){
@@ -522,7 +536,11 @@
      const addDataAgent = async(agent) => {
 
       switch (eval_type.value){
-
+        case "performance":
+          
+            await  csdStoreInstance.addCsdPerformanceMetricsOrEvaluation(agent.employee_id, 'performance',  'evaluation',route.query, agent)
+            fetchCsdOrEvaluationPerformanceMetrics(null, 'all', 'evaluation', route.query)
+            break
         case  "absences": 
               if(agent.absences == ''  || agent.absences == 0){
                 alert('Average response minutes cannot be empty Or 0')
@@ -587,6 +605,10 @@
 
     const editDataAgent = async(agent) => {
       switch (eval_type.value){
+        case "performance":
+          await  csdStoreInstance.updateCsdPerformanceMetricsOrEvaluation(agent.employee_id, eval_type.value, 'evaluation', route.query, agent)
+          fetchCsdOrEvaluationPerformanceMetrics(null, 'all', 'evaluation', route.query)
+          break
         case  "absences": 
         case "tardiness":
         case "memo":
@@ -716,7 +738,6 @@ const  reviewPerformanceMetrics = async (agent) => {
       year_month : agent.year_month
    },'metrics', {year_month : agent.year_month});
 }
-
 
 
 const openModal = ( data) => {

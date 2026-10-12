@@ -42,10 +42,12 @@ const API = {
     feedback: {
         sales: `${HTTPADDR}/feedback_by_sales`,
         qa: `${HTTPADDR}/feedback_by_qa`,
+        none_sales: `${HTTPADDR}/feedback_by_none_sales`
     },
 
     agentFeedback: `${HTTPADDR}/feedback_by_admin`,
     enableDisableDeleteSalesFeedback: `${HTTPADDR}/enable_disable_delete_feedback_by_admin`,
+    enableDisableUpdateAndDeleteNoneSalesFeedback: `${HTTPADDR}/enable_disable_delete_nonesales_feedback_by_admin`,
 
     sales_login: `${HTTPADDR}/sales_login`,
     sales_logout: `${HTTPADDR}/sales_logout`,

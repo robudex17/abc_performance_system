@@ -26,6 +26,8 @@ exports.fetchCsdEvaluation = async (req, res, next) => {
     const export_to_excel = req.export_to_excel
     const eval_type = req.params.eval_type
     const employee_id = req.params.employee_id
+
+    
     
    
     // later I will use this as dynamic maybe I will put in params or on the query
@@ -65,8 +67,6 @@ exports.fetchCsdEvaluation = async (req, res, next) => {
 }
 
 
-
-
 exports.addCsdEvaluation = async (req, res, next) => {
     const errors = validationResult(req)
 
@@ -78,11 +78,14 @@ exports.addCsdEvaluation = async (req, res, next) => {
    let year_month 
 
    const eval_type = req.params.eval_type 
+
+  
    const {
-         new_count , admin_dbname, admin_id, admin_role, feedback_by_admin, db_name,
+         performance, new_count , admin_dbname, admin_id, admin_role, feedback_by_admin, db_name,
         } = req.body
-
-
+  
+  
+    
 
   if(!req.query.year_month){
         const currentDate = new Date()
@@ -102,6 +105,28 @@ exports.addCsdEvaluation = async (req, res, next) => {
 
  
     switch (eval_type){
+        case "performance":
+        const perfStr = String(performance ?? '').trim();
+
+            // Accepts 85, 85.5, 99.99, .5 — rejects '', 'abc', '12abc', '1e5', etc.
+            if (perfStr === '' || !/^(\d+(\.\d+)?|\.\d+)$/.test(perfStr)) {
+                console.log('Invalid performance:', performance);
+                return res.status(400).json({
+                    message: 'Invalid performance value. Expected a number.'
+                });
+            }
+
+         const perfValue = parseFloat(perfStr);
+
+            if (perfValue > 100) {
+                return res.status(400).json({
+                    message: 'Performance value cannot be greater than 100.'
+                });
+            }
+            array_of_values = [performance, year_month, employee_id]
+            success_message = `${performance} ${eval_type} for employee_id: ${employee_id} are created or recorded`
+            erorr_message = `Error inserting new ${eval_type} records`
+            break
         case "absences":
         case "tardiness":
         case "memo":
@@ -119,7 +144,7 @@ exports.addCsdEvaluation = async (req, res, next) => {
             break
 
         case "feedback_by_admin": 
-
+             console.log(typeof(feedback_by_admin))
             if( feedback_by_admin == '' || typeof(feedback_by_admin) != 'number' || feedback_by_admin > 5 ){
                 console.log('Invalid  feedback:', feedback_by_admin );
                 return res.status(400).json({
@@ -157,7 +182,7 @@ exports.addCsdEvaluation = async (req, res, next) => {
  }
 
 
-exports.updateCsdEvaluation  = async (req,res, io) => {
+exports.updateCsdEvaluation  = async (req,res, next) => {
 
     const errors = validationResult(req)
 
@@ -168,10 +193,10 @@ exports.updateCsdEvaluation  = async (req,res, io) => {
 
     const employee_id = req.params.employee_id
     const {
-            new_count,  admin_dbname, admin_id, admin_role, feedback_by_admin, db_name,
+            performance, new_count,  admin_dbname, admin_id, admin_role, feedback_by_admin, db_name,
           } = req.body
 
-
+   
     const eval_type = req.params.eval_type
 
     let year_month  
@@ -194,6 +219,31 @@ exports.updateCsdEvaluation  = async (req,res, io) => {
 
 
     switch (eval_type){
+        case "performance":
+            
+        const perfStr = String(performance ?? '').trim();
+
+            // Accepts 85, 85.5, 99.99, .5 — rejects '', 'abc', '12abc', '1e5', etc.
+            if (perfStr === '' || !/^(\d+(\.\d+)?|\.\d+)$/.test(perfStr)) {
+                console.log('Invalid performance:', performance);
+                return res.status(400).json({
+                    message: 'Invalid performance value. Expected a number.'
+                });
+            }
+
+         const perfValue = parseFloat(perfStr);
+
+            if (perfValue > 100) {
+                return res.status(400).json({
+                    message: 'Performance value cannot be greater than 100.'
+                });
+            }
+            array_of_values = [performance,  employee_id, year_month]
+            success_message = `Agent ${eval_type} is updated`
+            erorr_message = `Error Updating ${eval_type} records`
+            not_found_message = `Agent ${eval_type} Time Not Found`
+            break 
+
         case "absences":
         case "tardiness":
         case "memo":
@@ -212,14 +262,26 @@ exports.updateCsdEvaluation  = async (req,res, io) => {
             break 
             
         case "feedback_by_admin" :
-             if( feedback_by_admin == ''  || feedback_by_admin > 5 ){
-                console.log('Invalid  feedback:', feedback_by_admin );
+
+            const fbaStr = String(feedback_by_admin ?? '').trim();
+
+            // Accepts 85, 85.5, 99.99, .5 — rejects '', 'abc', '12abc', '1e5', etc.
+            if (fbaStr === '' || !/^(\d+(\.\d+)?|\.\d+)$/.test(fbaStr)) {
+                console.log('Invalid feedback:', feedback_by_admin);
+                return res.status(400).json({
+                    message: 'Invalid feedback value. Expected a number.'
+                });
+            }    
+            
+            const fbaValue = parseFloat(fbaStr);
+
+            if (fbaValue > 5) {
                 return res.status(400).json({
                     message: `count can not be empty value of 0 or greater than 5 for  ${eval_type}`
-                })
+                });
             }
+           
 
-      
             array_of_values = [db_name, admin_id, admin_dbname, admin_role, feedback_by_admin, employee_id, year_month]
             success_message = `Agent ${eval_type} is updated`
             erorr_message = `Error Updating ${eval_type} records`
@@ -278,6 +340,7 @@ exports.deleteCsdEvaluation  = async (req, res, next) => {
     }
 
    switch (eval_type){
+        case "performance":
         case "absences":
         case "tardiness":
         case "memo":
@@ -319,7 +382,7 @@ exports.generateCsdEvaluation  = async (year_month, scope, department_code,  met
      
     let {month, year} = parseYearMonth(year_month)
  
-    let  performance_data ;
+    // let  performance_data ;
 
 
     switch (eval_type){
@@ -327,6 +390,7 @@ exports.generateCsdEvaluation  = async (year_month, scope, department_code,  met
          array_of_values = [ year_month, year_month, // assignment snapshot
                           year_month, year_month, // employment snapshot
                           year_month, // csd evaluation
+                          year_month, // performance
                           year_month, // absences
                           year_month, // tardiness
                           year_month, // memo
@@ -342,12 +406,12 @@ exports.generateCsdEvaluation  = async (year_month, scope, department_code,  met
          });
          break
     }
-    
+     //scope can be all, agent, team_leader, team
     switch (scope){
 
         case "all":
             filter = ""
-            performance_data  =  await csdMetricsController.generateCsdPerformanceMetrics(year_month, 'all', department_code, metrics_type, employee_id,current_user)
+            // performance_data  =  await csdMetricsController.generateCsdPerformanceMetrics(year_month, 'all', department_code, metrics_type, employee_id,current_user)
             break 
 
         case "agent":
@@ -372,16 +436,16 @@ exports.generateCsdEvaluation  = async (year_month, scope, department_code,  met
       );
    
      
-     performance_data = performance_data.map(agent => {
-       return{id: agent.id , total_performance_score_percentage: agent.total_performance_score_percentage, submitted_performance: agent.submitted}
-     })
-     let employee_to_evaluate  =  csdEvaluationResults.map(agent => {
-        const matching_agent = performance_data.find(a => a.id === agent.id)
+    //  performance_data = performance_data.map(agent => {
+    //    return{id: agent.id , total_performance_score_percentage: agent.total_performance_score_percentage, submitted_performance: agent.submitted}
+    //  })
+    //  let employee_to_evaluate  =  csdEvaluationResults.map(agent => {
+    //     const matching_agent = performance_data.find(a => a.id === agent.id)
 
-        return {...agent, ... matching_agent}
-     })
+    //     return {...agent, ... matching_agent}
+    //  })
 
-      employee_to_evaluate  =  employee_to_evaluate.sort((a, b) => {
+     let employee_to_evaluate  =  csdEvaluationResults.sort((a, b) => {
 
             // remove the level 10 agent
 
@@ -395,14 +459,18 @@ exports.generateCsdEvaluation  = async (year_month, scope, department_code,  met
             return a.team_id - b.team_id;
         });
 
-  
+     for ( const agent of  employee_to_evaluate ){
+        agent['year_month'] = year_month
+        agent['year'] = year
+        agent['month'] = month
+     }
 
 
 
       //GET THE EQUIVALENT POINTS  TABLES
-    const  [performanceScore] =  await pool.execute(
-            'SELECT min_value, max_value, score FROM   performance_score'
-        )
+    // const  [performanceScore] =  await pool.execute(
+    //         'SELECT min_value, max_value, score FROM   performance_score'
+    //     )
 
     // const  [absenceScore] =  await pool.execute(
     //         'SELECT  absence_count, score FROM  absences_score'
@@ -421,51 +489,51 @@ exports.generateCsdEvaluation  = async (year_month, scope, department_code,  met
 
  
             
-    for ( const agent of  employee_to_evaluate ){
+    // for ( const agent of  employee_to_evaluate ){
 
-         if(agent.submitted_performance == 0){
-            agent.performance_score = 0 
-         }else {
-            agent.performance_score =  performanceScore.find(el => agent['total_performance_score_percentage'] >= el.min_value &&  agent['total_performance_score_percentage'] <= el.max_value)?.score || 0
-         }
+    //      if(agent.submitted_performance == 0){
+    //         agent.performance_score = 0 
+    //      }else {
+    //         agent.performance_score =  performanceScore.find(el => agent['total_performance_score_percentage'] >= el.min_value &&  agent['total_performance_score_percentage'] <= el.max_value)?.score || 0
+    //      }
 
-        // let agent_absence_score;
+    //     // let agent_absence_score;
 
-        //  if(agent['absences'] === 0){
-        //        agent_absence_score = 5
-        // }else{
-        //     aagent_absence_score = absenceScore.find(el => el.absence_count == agent.absences )?.score || 0
-        // }
+    //     //  if(agent['absences'] === 0){
+    //     //        agent_absence_score = 5
+    //     // }else{
+    //     //     aagent_absence_score = absenceScore.find(el => el.absence_count == agent.absences )?.score || 0
+    //     // }
          
-        //  agent['absence_score'] = agentAbsenceScore
+    //     //  agent['absence_score'] = agentAbsenceScore
           
       
               
-        //   let agent_tardiness_score
-        //   if (agent['tardiness'] === 0){
-        //       agent_tardiness_score = 5
-        //   }else {
-        //     agent_tardiness_score = tardinessScore.find(el => el.tardiness_count == agent.tardiness)?.score || 0
+    //     //   let agent_tardiness_score
+    //     //   if (agent['tardiness'] === 0){
+    //     //       agent_tardiness_score = 5
+    //     //   }else {
+    //     //     agent_tardiness_score = tardinessScore.find(el => el.tardiness_count == agent.tardiness)?.score || 0
           
-        //   }
+    //     //   }
   
-        //   agent['tardiness_score'] = agentTardinessScore
+    //     //   agent['tardiness_score'] = agentTardinessScore
           
               
-        //  let agent_memo_score
-        //  if (agent['memo'] === 0){
-        //    agent_memo_score = 5
-        //  }else {
-        //   agent_memo_score = memoScore.find(el => el.memo_count == agent.memo)?.score || 0
+    //     //  let agent_memo_score
+    //     //  if (agent['memo'] === 0){
+    //     //    agent_memo_score = 5
+    //     //  }else {
+    //     //   agent_memo_score = memoScore.find(el => el.memo_count == agent.memo)?.score || 0
       
-        // }
+    //     // }
 
-        // agent['memo_score'] = agentMemoScore    
-        agent['year_month'] = year_month
-        agent['year'] = year
-        agent['month'] = month
+    //     // agent['memo_score'] = agentMemoScore    
+    //     agent['year_month'] = year_month
+    //     agent['year'] = year
+    //     agent['month'] = month
       
-     }
+    //  }
 
 
     return employee_to_evaluate

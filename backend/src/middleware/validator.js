@@ -351,7 +351,7 @@ validator.loginUser  = [
     check('loginas')
     .notEmpty().withMessage('Login as is required')
     // for now all standarduser is consider admin
-    .isIn(['unitmanager', 'lm', 'salesagent', 'standarduser', 'admin', 'poweruser']).withMessage('Login as must be unitmanager, lm, salesagent, standarduser, or admin only')
+    .isIn(['admin', 'sales', 'none_sales']).withMessage('Login as must be sales, none_sales or admin only')
 ]
 
 validator.validateFeedbackDate = [

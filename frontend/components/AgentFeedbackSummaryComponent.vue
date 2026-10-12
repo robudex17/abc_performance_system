@@ -223,6 +223,7 @@
                 <tr 
                   v-for="data in modalData" 
                   :key="data.who_give_feedback_id" 
+                  
                   class="border-b hover:bg-gray-100 transition"
                 >
                   <!-- Feedback By -->

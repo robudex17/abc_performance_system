@@ -44,7 +44,7 @@
   
         <div class="text-center mt-4">
           <p class="text-sm text-gray-600  font-bold">
-            SBT PHILIPPINES SALES APP
+            SBT PHILIPPINES PERFORMANCE MANAGEMENT SYSTEM
           </p>
         </div>
       </div>

@@ -30,7 +30,16 @@
                       <input type="text" class="w-full border rounded-lg p-2" v-model="form.year" disabled required />
                     </div>
      
-
+                    <div v-if="evalType == 'performance'">
+                     
+                        <div class="mb-4" >
+                          
+                              <label class="block text-sm font-medium mb-2">Performance</label>
+                              <input v-model="form.performance" :disabled="currentUser.role != 'admin'" type="decimal" class="w-full border rounded-lg p-2"  />
+                              <p v-if="errorOtherMetrics" class="text-red-500 text-sm mt-2">{{ errorOtherMetrics }}</p>
+                        </div>
+                      
+                    </div>
 
                     <div v-if="evalType == 'absences'">
                      
@@ -169,6 +178,7 @@
         db_name: '',
         month: '',
         year: '',
+        performance: '',
         absences: '',
         tardiness: '',
         memo: '', 
@@ -188,7 +198,8 @@
         employee_id: '',
         db_name: '',
         month: '',
-        year: '',       
+        year: '', 
+        performance: '',      
         absences: '',
         tardiness: '',
         memo: '',
@@ -243,6 +254,15 @@
             "memo": form.value.memo
           }
         switch(props.evalType) {
+
+          case "performance":
+            if(props.modalType === 'add'){
+              emit('passAddDataAgent',  form.value)
+            }else if(props.modalType == 'edit'){
+               emit('passEditDataAgent', form.value )
+            }
+            closeModal();
+            break
           
           case "absences":
           case "tardiness":
@@ -340,24 +360,63 @@
         }
       );
 
+  watch(
+    () => form.value.performance,
+    (newValue) => {
+      const value = String(newValue ?? '').trim();
+
+      // Must be a number (whole or decimal), e.g. 85, 85.5, 99.99
+      if (value === '' || !/^\d+(\.\d+)?$/.test(value)) {
+        errorOtherMetrics.value = 'Please enter a valid number.';
+      } else if (parseFloat(value) > 100) {
+        errorOtherMetrics.value = 'Value cannot be greater than 100.';
+      } else {
+        errorOtherMetrics.value = '';
+      }
+    }
+  );    
+
 
       // Watcher for the fedback field
+    // watch(
+    //     () => form.value.feedback_by_admin,
+    //     (newValue) => {
+    //       // If empty or not a whole number, set error
+    //       if (!newValue || !/^\d+(\.\d+)?$/.test(form.value.feedback_by_admin)) {
+    //        errorOtherMetrics.value = `Please enter a valid numeric ${props.modalType}.`;
+    //       } else if(parseFloat(newValue) > 5){
+    //          errorOtherMetrics.value = 'The Highest Feedback you can give is 5.0.';
+    //       } else if(parseFloat(newValue) == 0 || parseFloat(newValue) < 0){
+    //          errorOtherMetrics.value = 'Feedback value of zero(0) or negative value is not allowed';
+    //       }
+    //       else {
+    //         errorOtherMetrics.value = '';
+    //       }
+    //     }
+    //   );  
+
     watch(
-        () => form.value.feedback_by_admin,
-        (newValue) => {
-          // If empty or not a whole number, set error
-          if (!newValue || !/^\d+(\.\d+)?$/.test(form.value.feedback_by_admin)) {
-           errorOtherMetrics.value = `Please enter a valid numeric ${props.modalType}.`;
-          } else if(parseFloat(newValue) > 5){
-             errorOtherMetrics.value = 'The Highest Feedback you can give is 5.0.';
-          } else if(parseFloat(newValue) == 0 || parseFloat(newValue) < 0){
-             errorOtherMetrics.value = 'Feedback value of zero(0) or negative value is not allowed';
-          }
-          else {
-            errorOtherMetrics.value = '';
-          }
-        }
-      );  
+    () => form.value.feedback_by_admin,
+    (newValue) => {
+      const value = String(newValue ?? '').trim();
+
+      // Accepts 4, 4.5, 4.75, .5, 4.
+      if (value === '' || !/^(\d+\.?\d*|\.\d+)$/.test(value)) {
+        errorOtherMetrics.value = `Please enter a valid numeric ${props.modalType}.`;
+        return;
+      }
+
+      const num = parseFloat(value);
+
+      if (num > 5) {
+        errorOtherMetrics.value = 'The Highest Feedback you can give is 5.0.';
+      } else if (num <= 0) {
+        errorOtherMetrics.value = 'Feedback value of zero(0) or negative value is not allowed';
+      } else {
+        errorOtherMetrics.value = '';
+      }
+    }
+   );
       
       // Watcher for the fedback field
     watch(
@@ -409,6 +468,7 @@
             image_link: newVal.image_link || "",
             month: newVal.month || "",
             year: newVal.year || "",
+            performance: newVal.performance || 0,
             absences: newVal.absences || 0,
             tardiness: newVal.tardiness || 0, 
             memo: newVal.memo || 0,

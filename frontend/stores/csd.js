@@ -94,8 +94,8 @@ export const useCsdStore = defineStore('csdStore', () => {
         state.loading = true;
         state.error = null;
         let  url = `${API.csd_entities[entity]}/${entity_type}`
-    
-        
+   
+  
         if(employee_id){
             url = `${url}/${employee_id}`
         }
@@ -160,8 +160,7 @@ export const useCsdStore = defineStore('csdStore', () => {
         }
 
 
-      
-
+       
         url = new URL(`${url}`)
         if (queryString) {
          Object.keys(queryString).forEach((key) =>

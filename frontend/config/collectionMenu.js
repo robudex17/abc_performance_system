@@ -1,6 +1,6 @@
 export const collectionMenu = [
 
-            { name: "Dashboard", route: '/collection/dashboard', icon: ['fas', 'tachometer-alt']},
+            // { name: "Dashboard", route: '/collection/dashboard', icon: ['fas', 'tachometer-alt']},
             { name: 'Leaderboard', route: '/collection', icon: ['fas', 'list'] },
 
 
@@ -43,17 +43,25 @@ export const collectionMenu = [
               name: 'Feedback', 
               route: null, icon: ['fas', 'poll'],
               subMenu:[
-                { name: 'BY QA', route: '/collection/feedback/feedback_by_qa', icon: ['fas', 'users']  },
-                // { name: 'BY Admin', route: '/collection/feedback/feedback_by_admin', icon: ['fas', 'users']  },
-               
-              ] 
-            
-            },            
+                // admin only
+                { name: 'FEEDBACK ADMIN', route: '/collection/feedback/feedback_by_admin', icon: ['fas', 'users'], allowedRoles: ['admin'] },
+                { name: 'FEEDBACK QA', route: '/collection/feedback/feedback_by_qa', icon: ['fas', 'users'], allowedRoles: ['admin'] },
 
-            { 
+                // none-admin, by position level (admin never sees these two)
+                // head rates the members: level 10, 9, 8
+                { name: 'FEEDBACK MEMBERS', route: '/collection/feedback/feedback_by_members', icon: ['fas', 'users'], allowedLevels: [10, 9, 8], excludedRoles: ['admin'] },
+                // members rate the head: level 9, 8, 3, 1
+                { name: 'FEEDBACK HEAD', route: '/collection/feedback/feedback_by_head', icon: ['fas', 'user-tie'], allowedLevels: [9, 8, 3, 1], excludedRoles: ['admin'] },
+
+              ]
+
+            },
+
+            {
               name: 'Admin Panel',
               route: null,
               icon: ['fas', 'cog'],
+              allowedRoles: ['admin'],
               subMenu: [
               
            

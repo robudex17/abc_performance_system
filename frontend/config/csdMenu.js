@@ -56,7 +56,7 @@
 
 export const csdMenu = [
 
-            { name: "Dashboard", route: '/csd/dashboard', icon: ['fas', 'tachometer-alt']},
+            // { name: "Dashboard", route: '/csd/dashboard', icon: ['fas', 'tachometer-alt']},
             { name: 'Leaderboard', route: '/csd', icon: ['fas', 'list'] },
 
 

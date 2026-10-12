@@ -134,12 +134,25 @@ export const useAuthStore = defineStore('auth', () => {
         let loginType ;
 
 
-        if (loginas == 'unitmanager' || loginas == 'lm' || loginas == 'salesagent'){
-            loginType = "sales_login"
+        // if (loginas == 'unitmanager' || loginas == 'lm' || loginas == 'salesagent'){
+        //     loginType = "sales_login"
+        // // for now all standarduser is consider admin
+        // }else if (loginas == 'standarduser'){
+        //     loginType = 'standardusers_login'
+        // }else if (loginas == 'employee'){
+        //     loginType = 'employees_login'
+        // }
+
         // for now all standarduser is consider admin
-        }else if (loginas == 'standarduser'){
+        if (loginas == 'admin'){
             loginType = 'standardusers_login'
-        }else if (loginas == 'employee'){
+        }
+        
+        if (loginas == 'sales'){
+            loginType = 'sales_login'
+        }
+        // for all other non sales user login, we will use the employees login
+        if (loginas == 'non_sales'){
             loginType = 'employees_login'
         }
        

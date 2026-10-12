@@ -43,6 +43,9 @@ const csdPerformanceMetricsRoutes = require('./routes/csd/csd_performance_metric
 const csdLeadboardRoutes = require('./routes/csd/csd_leaderboard_routes')
 const csdEvaluationRoute = require('./routes/csd/csd_evaluation_routes')
 
+const imagesRoutes = require('./routes/common/images_routes')
+const noneSalesPerformanceRoutes = require('./routes/common/none_sales_performance_routes')
+
 
 const app = express()
 
@@ -87,6 +90,9 @@ app.use("/api", departmentsRoutes)  // common routes for departments, including 
 app.use('/api', csdPerformanceMetricsRoutes)
 app.use('/api',  csdLeadboardRoutes)
 app.use('/api', csdEvaluationRoute)
+
+app.use('/api', imagesRoutes)
+app.use('/api', noneSalesPerformanceRoutes)
 
 
 
