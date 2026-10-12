@@ -13,6 +13,31 @@ let erorr_message = ""
 let not_found_message
 
 
+// Who gives the feedback_by_admin: taken from the login token first (nobody can save a feedback in the name
+// of another admin), then from what the page sent. admin_id, admin_dbname and admin_role can be NULL in the table,
+// so an unknown value is saved as NULL (undefined can not be bound to a query).
+const getAdminIdentity = async (req, fromBody) => {
+    const adminId = req.user?.login_id ?? fromBody.admin_id ?? null
+    let adminDbname = req.user?.db_name ?? fromBody.admin_dbname ?? null
+
+    // old tokens have no db_name: read it from the employees (or standard users) table
+    if (!adminDbname && adminId) {
+        const [employee] = await pool.execute('SELECT db_name FROM employees WHERE id = ?', [adminId])
+        if (employee.length > 0) {
+            adminDbname = employee[0].db_name
+        } else {
+            const [standardUser] = await pool.execute('SELECT db_name FROM standard_users WHERE id = ?', [adminId])
+            adminDbname = standardUser.length > 0 ? standardUser[0].db_name : null
+        }
+    }
+
+    return {
+        admin_id: adminId,
+        admin_dbname: adminDbname,
+        admin_role: req.user?.role ?? fromBody.admin_role ?? null,
+    }
+}
+
 
 exports.fetchCsdEvaluation = async (req, res, next) => {
 
@@ -77,9 +102,12 @@ exports.addCsdEvaluation = async (req, res, next) => {
    const employee_id = req.params.employee_id
    let year_month 
 
-   const eval_type = req.params.eval_type 
+   const eval_type = req.params.eval_type
 
-  
+   // local on purpose: a module level variable would be shared by all the requests
+   let array_of_values, success_message, erorr_message
+
+
    const {
          performance, new_count , admin_dbname, admin_id, admin_role, feedback_by_admin, db_name,
         } = req.body
@@ -143,23 +171,40 @@ exports.addCsdEvaluation = async (req, res, next) => {
             erorr_message = `Error inserting new ${eval_type} records`
             break
 
-        case "feedback_by_admin": 
-             console.log(typeof(feedback_by_admin))
-            if( feedback_by_admin == '' || typeof(feedback_by_admin) != 'number' || feedback_by_admin > 5 ){
+        case "feedback_by_admin": {
+            // the page sends the text of the input, so "4.5" (string) is valid, like in the update
+            const feedbackStr = String(feedback_by_admin ?? '').trim()
+
+            if (feedbackStr === '' || !/^(\d+(\.\d+)?|\.\d+)$/.test(feedbackStr) || Number(feedbackStr) <= 0 || Number(feedbackStr) > 5) {
                 console.log('Invalid  feedback:', feedback_by_admin );
                 return res.status(400).json({
-                    message: `count can not be empty value of 0 or greater than 5 for  ${eval_type}`
+                    message: `${eval_type} must be a number greater than 0 and not greater than 5`
                 })
             }
-            
-            array_of_values = [employee_id, db_name, admin_id, admin_dbname, admin_role, year_month, feedback_by_admin]
-            success_message = `${new_count} ${eval_type} for employee_id: ${employee_id} are created or recorded`
-            erorr_message = `Error inserting new ${eval_type} records`
 
-            
+            const feedbackValue = Number(feedbackStr)
+            const adminIdentity = await getAdminIdentity(req, { admin_id, admin_dbname, admin_role })
+
+            // the name of the employee is read from the database when the page did not send it
+            let employeeDbName = db_name
+            if (!employeeDbName) {
+                const [employee] = await pool.execute('SELECT db_name FROM employees WHERE id = ?', [employee_id])
+                if (employee.length === 0) {
+                    return res.status(404).json({ message: `Employee ${employee_id} not found` })
+                }
+                employeeDbName = employee[0].db_name
+            }
+
+            // feedback_by_admin( employee_id, db_name, admin_id, admin_dbname, admin_role, year_month, feedback )
+            array_of_values = [employee_id, employeeDbName, adminIdentity.admin_id, adminIdentity.admin_dbname, adminIdentity.admin_role, year_month, feedbackValue]
+            success_message = `${feedbackValue} ${eval_type} for employee_id: ${employee_id} are created or recorded`
+            erorr_message = `Error inserting new ${eval_type} records`
+            break
+        }
+
         default:
             console.log('Unkown Metrics Type')
-            break
+            return res.status(400).json({ message: `Unknown evaluation type: ${eval_type}` })
     }
      
 
@@ -172,11 +217,16 @@ exports.addCsdEvaluation = async (req, res, next) => {
         })
         console.log(result)
         return
-        
+
     }catch(error){
+        // one record per employee per month (the primary key of feedback_by_admin is employee_id + year_month)
+        if (error.code === 'ER_DUP_ENTRY') {
+            return res.status(400).json({ message: `${eval_type} for ${year_month} already exists, please edit it instead` })
+        }
+
         console.error(`${erorr_message}`, error)
         res.status(500).json({error: `Database Error, ${erorr_message}`})
-    }  
+    }
 
 
  }
@@ -192,6 +242,10 @@ exports.updateCsdEvaluation  = async (req,res, next) => {
 
 
     const employee_id = req.params.employee_id
+
+    // local on purpose: a module level variable would be shared by all the requests
+    let array_of_values, success_message, erorr_message, not_found_message
+
     const {
             performance, new_count,  admin_dbname, admin_id, admin_role, feedback_by_admin, db_name,
           } = req.body
@@ -261,7 +315,7 @@ exports.updateCsdEvaluation  = async (req,res, next) => {
             not_found_message = `Agent ${eval_type} Time Not Found`
             break 
             
-        case "feedback_by_admin" :
+        case "feedback_by_admin" : {
 
             const fbaStr = String(feedback_by_admin ?? '').trim();
 
@@ -271,26 +325,36 @@ exports.updateCsdEvaluation  = async (req,res, next) => {
                 return res.status(400).json({
                     message: 'Invalid feedback value. Expected a number.'
                 });
-            }    
-            
+            }
+
             const fbaValue = parseFloat(fbaStr);
 
-            if (fbaValue > 5) {
+            if (fbaValue <= 0 || fbaValue > 5) {
                 return res.status(400).json({
-                    message: `count can not be empty value of 0 or greater than 5 for  ${eval_type}`
+                    message: `${eval_type} must be a number greater than 0 and not greater than 5`
                 });
             }
-           
 
-            array_of_values = [db_name, admin_id, admin_dbname, admin_role, feedback_by_admin, employee_id, year_month]
+            const adminIdentity = await getAdminIdentity(req, { admin_id, admin_dbname, admin_role })
+
+            // db_name is the name of the employee: keep the saved one when the page did not send it
+            let employeeDbName = db_name
+            if (!employeeDbName) {
+                const [employee] = await pool.execute('SELECT db_name FROM employees WHERE id = ?', [employee_id])
+                employeeDbName = employee.length > 0 ? employee[0].db_name : null
+            }
+
+            // UPDATE feedback_by_admin SET db_name, admin_id, admin_dbname, admin_role, feedback WHERE employee_id AND year_month
+            array_of_values = [employeeDbName, adminIdentity.admin_id, adminIdentity.admin_dbname, adminIdentity.admin_role, fbaValue, employee_id, year_month]
             success_message = `Agent ${eval_type} is updated`
             erorr_message = `Error Updating ${eval_type} records`
             not_found_message = `Agent ${eval_type} Time Not Found`
-            break  
-            
+            break
+        }
+
         default:
             console.log('Unknown Evaluation Type')
-            break;
+            return res.status(400).json({ message: `Unknown evaluation type: ${eval_type}` })
     }
 
     try {
@@ -318,10 +382,13 @@ exports.updateCsdEvaluation  = async (req,res, next) => {
 exports.deleteCsdEvaluation  = async (req, res, next) => {
     
     const employee_id = req.params.employee_id
-   
+
 
     const eval_type = req.params.eval_type
-    let year_month  
+    let year_month
+
+    // local on purpose: a module level variable would be shared by all the requests
+    let array_of_values, success_message, erorr_message, not_found_message
 
     if(!req.query.year_month){
             const currentDate = new Date()
@@ -344,16 +411,17 @@ exports.deleteCsdEvaluation  = async (req, res, next) => {
         case "absences":
         case "tardiness":
         case "memo":
-    
+        case "feedback_by_admin":
+
             array_of_values = [employee_id, year_month]
             success_message = `Agent ${eval_type} is deleted`
             erorr_message = `Error deleting ${eval_type} records`
             not_found_message = `Agent ${eval_type}  Not Found`
-            break   
-            
+            break
+
         default:
             console.log('Unknown Evalulation Type')
-            break;
+            return res.status(400).json({ message: `Unknown evaluation type: ${eval_type}` })
     }
 
     try {

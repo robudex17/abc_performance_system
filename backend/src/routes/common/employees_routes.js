@@ -14,6 +14,9 @@ const { authenticateToken, authorizeRoles} = require('../../middleware/auth')
 // router.get('/employees/:department_code/:employee_id',authenticateToken, authorizeRoles('admin', 'manager', 'user', 'poweruser'),salesAgensController.fetchSalesAgent)
 router.get('/employees/:department_code', authenticateToken,authorizeRoles('admin', 'manager', 'user','poweruser'),employeesController.fetchEmployees)
 
+// employment and assignment history of one employee (details page, admin only)
+router.get('/employees/:department_code/:employee_id', authenticateToken, authorizeRoles('admin'), employeesController.fetchEmployeeBio)
+
 
 router.post('/employees/:department_code', authenticateToken, authorizeRoles('admin'), uploadImage.single('image'), validateNewAndUpdateEmployee,employeesController.addNewEmployee  )
 

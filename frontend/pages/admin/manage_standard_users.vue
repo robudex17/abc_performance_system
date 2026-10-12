@@ -527,7 +527,7 @@ const deleteStandardUser = async(id) => {
     return
    }
    try{
-    await authStore.register(currentStandardUserLogin.value , 'standardusers')
+    await authStore.register(currentStandardUserLogin.value , 'admin')
     fetchStandardUsers()
     closeLoginModal()
    }catch (error ){
@@ -542,7 +542,7 @@ const updateStandardUserLogin = async() => {
     return
    }
    try{
-    await authStore.updateLogin(currentStandardUserLogin.value , 'standardusers')
+    await authStore.updateLogin(currentStandardUserLogin.value , 'admin')
     fetchStandardUsers()
     closeLoginModal()
    }catch (error ){

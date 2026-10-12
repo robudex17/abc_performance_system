@@ -465,7 +465,7 @@ exports.delete_eval_queries = {
     absences: "DELETE FROM absences2 WHERE employee_id = ? AND \`year_month\` = ?",
     tardiness: "DELETE FROM tardiness2 WHERE employee_id = ? AND \`year_month\` = ?",
     memo: "DELETE FROM memo2 WHERE employee_id = ? AND \`year_month\` = ?",
-    feedback_by_admin: "DELETE feedback_by_admin WHERE employee_id = ? AND \`year_month\` = ? "
+    feedback_by_admin: "DELETE FROM feedback_by_admin WHERE employee_id = ? AND \`year_month\` = ? "
 }
 
 

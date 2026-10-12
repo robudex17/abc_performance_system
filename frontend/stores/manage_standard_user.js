@@ -23,7 +23,7 @@ export const useManageStandardUsersStore = defineStore('standardUserss', () => {
     const fetchStandarUsers = async () => {
         state.loading = true;
         state.error = null;
-        let url = API.standardUsers
+        let url = API.admin_users
         try {
             // Fetch sales agent info
             const response = await fetch(url, {
@@ -62,7 +62,7 @@ export const useManageStandardUsersStore = defineStore('standardUserss', () => {
     const fetchStandardUser = async (userId) => {
         state.loading = true;
         state.error = null;
-        let url = API.standardUsers
+        let url = API.admin_users
         try {
             // Fetch sales agent info
             const response = await fetch(`${url}/${userId}`, {
@@ -180,7 +180,7 @@ export const useManageStandardUsersStore = defineStore('standardUserss', () => {
             }     
             
 
-            const response = await fetch(`${API.standardUsers}/${user_id}`, {
+            const response = await fetch(`${API.admin_users}/${user_id}`, {
                 method: 'PUT', // Use PATCH if you're partially updating
                 body: formData,
                 headers: {
@@ -224,7 +224,7 @@ export const useManageStandardUsersStore = defineStore('standardUserss', () => {
         state.loading = true;
         state.error = null;
         try {
-            const response = await fetch(`${API.standardUsers}/${user_id}`, {
+            const response = await fetch(`${API.admin_users}/${user_id}`, {
                 method: 'DELETE',
                 headers: {
                   'Content-Type': 'application/json',

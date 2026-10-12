@@ -47,6 +47,7 @@ exports.registerUser = async(req,res,next) => {
 
 
 exports.updateLogin = async(req,res,next) => {
+  
     const errors = validationResult(req)
 
     if (!errors.isEmpty()) {
@@ -58,7 +59,6 @@ exports.updateLogin = async(req,res,next) => {
         
    
         if (password != "" ) {
-            console.log('I still here??')
             
             const hashedPassowrd = await bcyrpt.hash(password, 10)
             const [ result ] = await pool.execute(`UPDATE employees_login SET username=?, status=?, role=? , password_hash=? WHERE login_id=? `, 
@@ -123,6 +123,8 @@ exports.loginUser = async(req,res, next) => {
         `
             SELECT 
                 e.id AS employee_id,
+                e.id AS login_id,
+                e.db_name,
                 e.firstname,
                 e.lastname,
                 e.email,
@@ -130,7 +132,7 @@ exports.loginUser = async(req,res, next) => {
                 e.extension, 
 
                 el.username,
-                r.role_name,
+              
 
                 ea.id AS assignment_id,
                 ea.manager_id,
@@ -138,7 +140,11 @@ exports.loginUser = async(req,res, next) => {
                 -- Position
                 p.id AS position_id,
                 p.position_name,
-                p.level,
+                p.level as position_level,
+
+                -- System Role
+                el.role, 
+                el.status,
 
                 -- Department
                 d.id AS department_id,
@@ -180,11 +186,10 @@ exports.loginUser = async(req,res, next) => {
 
             -- LOGIN TABLE
             LEFT JOIN employees_login el 
-                ON e.id = el.employee_id
+                ON e.id = el.login_id
 
-            -- SYSTEM ROLE
-            LEFT JOIN roles r 
-                ON el.role_id = r.id
+       
+           
 
             -- EMPLOYMENT HISTORY
             JOIN employee_employments ee 

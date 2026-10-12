@@ -1,10 +1,10 @@
-const pool =  require('../config/db')
+const pool =  require('../../config/db')
 
 const { validationResult } = require('express-validator')
 const bcyrpt = require('bcrypt')
 
 
-const { generateAccessToken,  decodedToken } = require('../utils/generate_token')
+const { generateAccessToken,  decodedToken } = require('../../utils/generate_token')
 
 exports.registerUser = async(req,res,next) => {
     const errors = validationResult(req)

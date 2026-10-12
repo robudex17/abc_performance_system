@@ -20,11 +20,12 @@ const salesTeamRoutes = require('./routes/sales_teams_routes')
 const salesManagerRoutes = require('./routes/sales_managers_route')
 // const importExportDataRoutes = require('./routes/import_export_data_routes')
 const salesLoginRoutes = require('./routes/sales_login_routes')
-const standardUsersLoginRoutes = require('./routes/standardusers_login_routes')
-const standardUsersRoutes = require('./routes/standardusers_routes')
+const adminUsersLoginRoutes = require('./routes/hr_admin/admin_users_login_routes')
+const adminUsersRoutes = require('./routes/hr_admin/admin_users_routes')
 const salesEvaluationDataRoutes = require('./routes/sales_evaluation_data_routes')
 const salesDeductionRoutes = require('./routes/sales_deduction_routes')
 const customSearchRoutes = require('./routes/custom_search_routes')
+const employeesLoginRoutes = require('./routes/common/employees_login_routes')
 
 
 //add common routes
@@ -45,6 +46,8 @@ const csdEvaluationRoute = require('./routes/csd/csd_evaluation_routes')
 
 const imagesRoutes = require('./routes/common/images_routes')
 const noneSalesPerformanceRoutes = require('./routes/common/none_sales_performance_routes')
+const noneSalesFeedbackRoutes = require('./routes/common/none_sales_feedback_routes')
+const noneSalesAttendanceRoutes = require('./routes/common/none_sales_attendance_routes')
 
 
 const app = express()
@@ -57,8 +60,8 @@ app.use('/images', express.static(path.join(__dirname, 'images')))
 app.use('/sounds', express.static(path.join(__dirname, 'sounds')))
 
 app.use("/api", salesLoginRoutes)
-app.use("/api", standardUsersLoginRoutes)
-app.use("/api", standardUsersRoutes)
+app.use("/api", adminUsersLoginRoutes)
+app.use("/api", adminUsersRoutes)
 app.use("/api", salesAgentsRoutes)
 app.use("/api", salesMemoRoutes)
 app.use("/api", salesAbsencesRoutes)
@@ -93,7 +96,9 @@ app.use('/api', csdEvaluationRoute)
 
 app.use('/api', imagesRoutes)
 app.use('/api', noneSalesPerformanceRoutes)
-
+app.use('/api', noneSalesFeedbackRoutes)
+app.use('/api', noneSalesAttendanceRoutes)
+app.use('/api', employeesLoginRoutes) 
 
 
 // app.use("/api", importExportDataRoutes(io))  // in test, we can pass fake io if needed

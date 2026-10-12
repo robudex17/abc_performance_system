@@ -23,6 +23,12 @@ exports.fetchDepartments = async (req, res, next) => {
         const [result] = await pool.execute(
        `SELECT *  FROM departments WHERE status=?`,[departmentStatus]  
    )
+
+      if(req.user.position_level &&  req.user.position_level == 10  && req.user.department_code == 'csd'){
+         const allowed = ['csd', 'collection']
+        const filterDepartment = result.filter(d => allowed.includes(d.code))
+        return res.json(filterDepartment)
+     }
        return res.json(result)
    }
    
@@ -30,7 +36,13 @@ exports.fetchDepartments = async (req, res, next) => {
         'SELECT *  FROM `departments`'  
     )
     // connection.release()
-    
+
+   if(req.user.position_level &&  req.user.position_level == 10  && req.user.department_code == 'csd'){
+    const allowed = ['csd', 'collection']
+    const filterDepartment = result.filter(d => allowed.includes(d.code))
+    return res.json(filterDepartment)
+   }
+
    return res.json(result)
 }
 

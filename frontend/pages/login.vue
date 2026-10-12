@@ -120,8 +120,9 @@ const login = async () => {
     // ✅ STEP 1: Who can select department
     if (
       user.role === 'admin' ||
-      (user.role === 'manager' && user.level >= 5)
+      (user.role === 'manager' && user.position_level >= 10)
     ) {
+      
       return router.push('/select_department')
     }
 
@@ -140,6 +141,7 @@ const login = async () => {
     }
 
     // ✅ STEP 3: fallback (sales legacy)
+  
     return router.push('/')
   }
 

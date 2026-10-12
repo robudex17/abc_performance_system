@@ -19,7 +19,7 @@ const API = {
     fetchManagers: `${HTTPADDR}/managers`,
     salesAgentsEvaluation: `${HTTPADDR}/sales_evaluation_data`,
 
-    standardUsers:  `${HTTPADDR}/standardusers`,
+    admin_users:  `${HTTPADDR}/admin_users`,
     
     fethSalesLearderboard : `${HTTPADDR}/sales_leaderboard`,
     fetchAgentPerformance: `${HTTPADDR}/agent_performance`,
@@ -42,7 +42,7 @@ const API = {
     feedback: {
         sales: `${HTTPADDR}/feedback_by_sales`,
         qa: `${HTTPADDR}/feedback_by_qa`,
-        none_sales: `${HTTPADDR}/feedback_by_none_sales`
+        none_sales: `${HTTPADDR}/feedback_by_nonesales`
     },
 
     agentFeedback: `${HTTPADDR}/feedback_by_admin`,
@@ -55,10 +55,15 @@ const API = {
     sales_update_login :  `${HTTPADDR}/sales_update_login`,    
     refreshToken: `${HTTPADDR}/refresh_token`,
 
-    standardusers_login: `${HTTPADDR}/standardusers_login`,
-    standardusers_logout: `${HTTPADDR}/standardusers_logout`,
-    standardusers_update_login :  `${HTTPADDR}/standardusers_update_login`,    
-    standardusers_register: `${HTTPADDR}/standardusers_register`,
+    employee_login: `${HTTPADDR}/employee_login`,
+    employee_logout: `${HTTPADDR}/employee_logout`,
+    employee_register: `${HTTPADDR}/employee_register`,
+    employee_update_login :  `${HTTPADDR}/employee_update_login`,  
+
+    admin_users_login: `${HTTPADDR}/admin_users_login`,
+    admin_users_logout: `${HTTPADDR}/admin_users_logout`,
+    admin_users_update_login :  `${HTTPADDR}/admin_users_update_login`,    
+    admin_users_register: `${HTTPADDR}/admin_users_register`,
 
     fetch_market_target_shipok: `${HTTPADDR}/agent_market_target_shipok`,
     fetch_market_new_deposit: `${HTTPADDR}/agent_market_new_deposit`,
@@ -86,6 +91,8 @@ const API = {
    fetchManagers2: `${HTTPADDR}/prod/managers`,
 
    employees: `${HTTPADDR}/employees`,
+   employeeAttendance: `${HTTPADDR}/none_sales_attendance`,          // /:type(absences|tardiness|memo)/:employee_id
+   noneSalesFeedbackSummary: `${HTTPADDR}/feedback_by_nonesales_summary`, // /:employee_id?year=YYYY
 
    positions_roles: {
       'positions': `${HTTPADDR}/positions`,
@@ -97,13 +104,13 @@ const API = {
  
   agent_email_response_time:  `${HTTPADDR}/agent_email_response_time`,
   csd_performance_metrics: `${HTTPADDR}/csd_performance_metrics`,
- csd_performance_metrics_submit: `${HTTPADDR}/csd_performance_metrics/submit`,
- csd_performance_metrics_review: `${HTTPADDR}/csd_performance_metrics/review`,
+  csd_performance_metrics_submit: `${HTTPADDR}/csd_performance_metrics/submit`,
+  csd_performance_metrics_review: `${HTTPADDR}/csd_performance_metrics/review`,
 
- csd_leaderboard : `${HTTPADDR}/csd_leaderboard`,
+  csd_leaderboard : `${HTTPADDR}/csd_leaderboard`,
  csd_evaluation: `${HTTPADDR}/csd_evaluation`,
 
- csd_entities: {
+  csd_entities: {
     'metrics': `${HTTPADDR}/csd_performance_metrics`,
     'evaluation': `${HTTPADDR}/csd_evaluation`
  }

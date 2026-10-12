@@ -430,7 +430,7 @@
         <h2 class="text-xl font-bold text-gray-700 mb-4">
           {{ editLoginMode ? 'Edit Agent Login' : 'Add New Agent Login' }}
         </h2>
-        <form @submit.prevent="editLoginMode ? updateAgentLogin() : addAgentLogin()">
+        <form @submit.prevent="editLoginMode ? updateEmployeeLogin() : addEmployeeLogin()">
           <div class="grid grid-cols-1 gap-4 overflow-y-auto max-h-80">
             <!-- Form fields go here -->
             <label for="id" class="font-semibold text-gray-600">Login ID</label>
@@ -516,16 +516,18 @@
           <select
             id="role"
             v-model="currentEmployeeLogin.role"
-            placeholder="Agent Login Role"
+            placeholder="System Login Role"
             class="p-2 border rounded"
             required
             
           >
           
-            <!-- <option value="admin">Admin</option> -->
-            <option value="manager">Manager</option>
-            <option value="user">User</option>
+          <option >manager</option>
+          <option>user</option>
           </select>
+
+
+       
           <div class="flex justify-end space-x-4 mt-4">
             <button
               type="button"
@@ -635,6 +637,7 @@
             <td class="py-1 px-2 border text-center text-xs font-bold text-gray-700">
               {{ employee.team_name }}
             </td>
+      
 
             <td class="py-1 px-1 border text-center">
               <img
@@ -652,7 +655,7 @@
                 <i class="fas fa-edit"></i>
                   Edit
                 </button>
-                <button
+                <button :disabled="currentUser.role !=='admin'"
                   @click="handleViewDetails(employee)"
                   class="px-1 py-1 bg-blue-500 text-white text-center text-sm font-bold rounded hover:bg-blue-600 disabled:bg-gray-400 disabled:cursor-not-allowed"
                 >
@@ -660,7 +663,7 @@
                 </button>
                 <button :disabled="currentUser.role !=='admin'" v-if="employee_status == 'Hired'"
                   class="px-2 py-1 bg-gray-500 text-white text-center text-sm font-bold rounded hover:bg-gray-600  disabled:bg-gray-400 disabled:cursor-not-allowed"
-                  @click="openEditAgentLoginModal({login_id: employee.id, role: employee.role, status: employee.login_status, username: employee.username, position_id: employee.position_id})"
+                  @click="openEditAgentLoginModal({login_id: employee.id, role: employee.role, status: employee.login_status, username: employee.username, position_id: employee.position_id, position_level: employee.position_level, role: employee.role})"
                 >
                   Login
                 </button>
@@ -728,6 +731,7 @@
         type: String,
         required: true
       }, 
+ 
       employee_status : {
         type: String,
         required: true
@@ -806,7 +810,7 @@
       image_link: '',
       extension: '',
       position_id: '',
-      level: '',
+      position_level: '',
       manager_id: '',
       manager_dbname: '',
       manager_role: '',
@@ -822,7 +826,8 @@
       active_agent: '',
       changed_assignment: false,
       department_code: '',
-      department_id: ''
+      department_id: '',
+      role: '',
     });
 
 
@@ -832,6 +837,7 @@
       password: '',
       password_again: '',
       status: 'inactive',
+      role: 'user',
     
     });
 
@@ -863,7 +869,8 @@
         market_name: employee.market_name || '',
         position_id: employee.position_id,
         position_name: employee.position_name,
-        level: employee.level,
+        position_level: employee.position_level,
+        role: employee.role,
         effective_from: employee.effective_from,
         effective_to: employee.effective_to,
         active_agent: employee.active_agent,
@@ -920,6 +927,8 @@
 
    })
 
+
+
     const totalPages = computed(() =>
       Math.ceil(props.employees.length / itemsPerPage)
     )
@@ -962,21 +971,18 @@
 
  const handleViewDetails = (employee) => {
 
-        let month = null
-        let year = null
-      
-        if(employee.employee_status == 'Resigned'){
-            const date = new Date(employee.end_date)
-            month = date.toLocaleString('default', {month: 'long'})
-            year = date.getFullYear()
+        // a resigned employee is shown on the month of the resignation, the others on the current month
+        const query = { department_code: props.department_code }
 
-        } 
-        
-            navigateTo({
-              path: `/csd/${employee.id}/details`,
-              query: { agent_id: employee.id , month, year, employee_status: employee.employee_status, start_date: employee.start_date, end_date: employee.end_date, agent_type: employee.agent_type, role: employee.agent_role },
-            });
-    
+        if(employee.employee_status == 'Resigned' && employee.end_date){
+            query.year_month = employee.end_date.slice(0, 7)   // end_date is YYYY-MM-DD
+        }
+
+        navigateTo({
+          path: `/admin/employee/${employee.id}/details`,
+          query,
+        });
+
       };
 
  const updateImageLink = (imageLink) => {
@@ -1099,16 +1105,20 @@
       loadEmployee(employee)
     };
 
-    const openEditAgentLoginModal = (agentLogin) => {
+    const openEditAgentLoginModal = (employeeLogin) => {
       
-      if ( agentLogin.username == null && agentLogin.role == null && agentLogin.status == null){
+      if ( employeeLogin.username == null && employeeLogin.role == null && employeeLogin.status == null){
         const confirmation = window.confirm("This agent does not have login credentials. Would you like to set up a login?");
             if (!confirmation) {
                 return; // Exit if the user cancels the deletion
             }
         isModalOpenForLogin.value = true;
-        currentEmployeeLogin.value.login_id = agentLogin.login_id
-        currentEmployeeLogin.value.agent_type = agentLogin.agent_type
+        currentEmployeeLogin.value.login_id = employeeLogin.login_id
+        currentEmployeeLogin.value.position_level = employeeLogin.position_level
+        currentEmployeeLogin.value.position_id = employeeLogin.position_id
+        currentEmployeeLogin.value.role  = employeeLogin.role
+        currentEmployeeLogin.value.status = employeeLogin.status
+        currentEmployeeLogin.value.system_role_name = employeeLogin.system_role_name
         editLoginMode.value = false;
         enablePasswordRecovery.value = true 
       
@@ -1116,7 +1126,7 @@
       }else{
         isModalOpenForLogin.value = true;
         editLoginMode.value = true;
-        Object.assign(currentEmployeeLogin.value, agentLogin);
+        Object.assign(currentEmployeeLogin.value, employeeLogin);
         console.log('update value for updating login', currentEmployeeLogin.value)
       }
       
@@ -1144,7 +1154,7 @@
         manager_role: '',
         extension: '',
         position_id: '',
-        level: '',
+        position_level: '',
         db_name: '',
         market_id: '',
         market_name: '',
@@ -1164,6 +1174,7 @@
         department_id: ''
       };
       imagePreview.value = null;
+      enablePasswordRecovery.value = false
     };
 
     const resetCurrentEmployeeLogin = () => {
@@ -1247,9 +1258,6 @@
         
       
     };
-
-
-
 
     const updateEmployee= async() => {
       if(currentEmployee.value.employee_status !=  'Resigned'){
@@ -1346,7 +1354,7 @@
         closeModal();
     };
 
-    const deleteAgent = async(id) => {
+    const deleteEmployee = async(id) => {
       try {
         await  manageSalesAgentStore.deleteSalesAgent(id);
       }catch(error){
@@ -1357,7 +1365,7 @@
     
     };
 
-    const  addAgentLogin = async() => {
+    const  addEmployeeLogin = async() => {
 
       if (!isFormLoginValid){
         alert('Please correct the errors before submitting...')
@@ -1365,12 +1373,13 @@
       }
 
       if ( ![10, 9, 8].includes(Number(currentEmployeeLogin.value.position_level)) && currentEmployeeLogin.value.role == 'manager'){
-        alert('Cannot Set manager if agent position level is not 10, 9 or 8')
+          alert('Cannot Set manager if agent position level is not 10, 9 or 8', currentEmployeeLogin.value.position_level)
         return
       }
 
       try{
-        await authStore.register(currentEmployeeLogin.value , 'salesagent')
+        // await authStore.register(currentEmployeeLogin.value , props.employee_type)
+       emit('passAddEmployeeLogin',currentEmployeeLogin.value);
       
         closeLoginModal()
       }catch (error ){
@@ -1379,19 +1388,22 @@
       }
     }
 
-    const updateAgentLogin = async() => {
+    const updateEmployeeLogin = async() => {
       if (!isFormLoginValid){
         alert('Please correct the errors before submitting...')
         return
       }
 
       if (![10, 9, 8].includes(Number(currentEmployeeLogin.value.position_level)) && currentEmployeeLogin.value.role == 'manager'){
-        alert('Cannot Set manager if agent position level is not 10, 9 or 8')
+        alert('Cannot Set manager if agent position level is not 10, 9 or 8', currentEmployeeLogin.value.position_level)
         return
       }
       try{
-        await authStore.updateLogin(currentEmployeeLogin.value , 'salesagent')
-     
+        // await authStore.updateLogin(currentEmployeeLogin.value , props.employee_type)
+        currentEmployeeLogin.value.password_recovery = enablePasswordRecovery.value
+        emit('passUpdateEmployeeLogin',currentEmployeeLogin.value);
+
+
         closeLoginModal()
       }catch (error ){
         console.log('Error in  updating agent login', error)

@@ -4,10 +4,129 @@ const { validationResult} = require('express-validator')
 const fs = require('fs')
 const path = require('path')
 
+// Shared select for the feedback lookups below: latest assignment + latest employment of every employee.
+// Append a WHERE clause (with ? placeholders) when using it.
+const LATEST_EMPLOYEE_QUERY = `
+    WITH latest_assignments AS (
+        SELECT *,
+            ROW_NUMBER() OVER (
+                PARTITION BY employee_id
+                ORDER BY id DESC
+            ) AS rn
+        FROM employee_assignments
+    ),
+    latest_employments AS (
+        SELECT *,
+            ROW_NUMBER() OVER (
+                PARTITION BY employee_id
+                ORDER BY id DESC
+            ) AS rn
+        FROM employee_employments
+    )
+
+    SELECT
+        e.id,
+        e.firstname,
+        e.lastname,
+        e.db_name,
+        e.email,
+        e.image_link,
+        e.extension,
+
+        p.position_name AS position_name,
+        p.id AS position_id,
+        p.level AS position_level,
+
+        ea.manager_id,
+        mgr.db_name AS manager_dbname,
+        mp.position_name AS manager_position,
+
+        t.id AS team_id,
+        t.name AS team_name,
+
+        d.code AS department_code,
+        d.id AS department_id,
+
+        el.username,
+        el.status AS login_status,
+        el.role,
+
+        DATE_FORMAT(ea.effective_from, '%Y-%m-%d') AS effective_from,
+        DATE_FORMAT(ea.effective_to, '%Y-%m-%d') AS effective_to,
+        DATE_FORMAT(ee.start_date, '%Y-%m-%d') AS start_date,
+        DATE_FORMAT(ee.end_date, '%Y-%m-%d') AS end_date,
+        ee.status AS employee_status
+
+    FROM employees e
+
+    JOIN latest_assignments ea
+        ON e.id = ea.employee_id AND ea.rn = 1
+
+    JOIN latest_employments ee
+        ON e.id = ee.employee_id AND ee.rn = 1
+
+    LEFT JOIN positions p ON ea.position_id = p.id
+
+    LEFT JOIN employees mgr ON ea.manager_id = mgr.id
+
+    LEFT JOIN latest_assignments mea
+        ON mgr.id = mea.employee_id AND mea.rn = 1
+
+    LEFT JOIN positions mp ON mea.position_id = mp.id
+
+    LEFT JOIN teams2 t ON ea.team_id = t.id
+    LEFT JOIN departments d ON ea.department_id = d.id
+
+    LEFT JOIN employees_login el ON e.id = el.login_id
+`
+
 exports.fetchEmployees = async (req,res, next ) => {
     
 
-    if(req.user.role=='admin' || req.user.role== 'poweruser' || (req.user.role == 'manager' )) {
+    // member queries his/her immediate head (feedback_type=by_member):
+    // returns only the employee whose id is the manager_id of the logged in user
+    if(req.query.feedback_type == 'by_member') {
+        try{
+            if(!req.user.manager_id) {
+                return res.json([])
+            }
+
+            const [result] = await pool.execute(
+                `${LATEST_EMPLOYEE_QUERY}
+                    WHERE e.id = ? AND ee.status = 'Hired'`,
+                [req.user.manager_id]
+            )
+
+            return res.json(result)
+
+        }catch(error){
+            console.error('Error In Fetching Immediate Head', error)
+            return res.status(500).json({error: 'Database Error, Error In Fetching Immediate Head'})
+        }
+    }
+    // head queries his/her members (feedback_type=by_head):
+    // returns the employees whose manager_id is the logged in user (the head is not included)
+    else if(req.query.feedback_type == 'by_head') {
+        try{
+            if(!req.user.login_id) {
+                return res.json([])
+            }
+
+            const [result] = await pool.execute(
+                `${LATEST_EMPLOYEE_QUERY}
+                    WHERE ea.manager_id = ? AND e.id != ? AND ee.status = 'Hired'
+                    ORDER BY ee.start_date`,
+                [req.user.login_id, req.user.login_id]
+            )
+
+            return res.json(result)
+
+        }catch(error){
+            console.error('Error In Fetching Members', error)
+            return res.status(500).json({error: 'Database Error, Error In Fetching Members'})
+        }
+    }
+    else if(req.user.role=='admin' || req.user.role== 'poweruser' || (req.user.role == 'manager' )) {
         try{
             const employeeStatus = req.query.employee_status || 'Hired'
             const departmentCode = req.params.department_code
@@ -64,6 +183,7 @@ exports.fetchEmployees = async (req,res, next ) => {
 
                         el.username,
                         el.status AS login_status,
+                        el.role,
 
                         DATE_FORMAT(ea.effective_from, '%Y-%m-%d') AS effective_from,
                         DATE_FORMAT(ea.effective_to, '%Y-%m-%d') AS effective_to,
@@ -469,3 +589,88 @@ exports.deleteEmployee = async (req, res, next) => {
     }
 }
 
+
+
+// GET /employees/:department_code/:employee_id  (admin only, see routes)
+// Employment + assignment history of one employee, newest first (used by the details page).
+exports.fetchEmployeeBio = async (req, res, next) => {
+    const employeeId = Number(req.params.employee_id)
+
+    if (!Number.isInteger(employeeId) || employeeId < 1) {
+        return res.status(400).json({ error: 'employee_id must be a positive integer' })
+    }
+
+    try {
+        const [result] = await pool.execute(
+            `
+            SELECT
+                e.id,
+                e.firstname,
+                e.lastname,
+                e.db_name,
+                e.email,
+                e.image_link,
+                e.extension,
+
+                p.position_name,
+                p.level AS position_level,
+
+                ea.id AS assignment_id,
+                ea.manager_id,
+                mgr.db_name AS manager_dbname,
+
+                t.name AS team_name,
+                d.code AS department_code,
+                d.name AS department_name,
+
+                DATE_FORMAT(ea.effective_from, '%Y-%m-%d') AS effective_from,
+                DATE_FORMAT(ea.effective_to, '%Y-%m-%d') AS effective_to,
+                DATE_FORMAT(ee.start_date, '%Y-%m-%d') AS start_date,
+                DATE_FORMAT(ee.end_date, '%Y-%m-%d') AS end_date,
+
+                CASE
+                    WHEN ee.status = 'Hired'
+                        AND EXISTS (
+                            SELECT 1
+                            FROM employee_employments ee2
+                            WHERE ee2.employee_id = e.id
+                            AND ee2.status = 'Resigned'
+                            AND ee2.id < ee.id
+                        )
+                    THEN 'Rehired'
+                    ELSE ee.status
+                END AS employee_status
+
+            FROM employees e
+
+            JOIN employee_employments ee
+                ON e.id = ee.employee_id
+
+            JOIN employee_assignments ea
+                ON e.id = ea.employee_id
+                AND (
+                    (ee.end_date IS NULL AND ea.effective_from >= ee.start_date)
+                    OR
+                    (ee.end_date IS NOT NULL
+                    AND ea.effective_from BETWEEN ee.start_date AND ee.end_date)
+                )
+
+            LEFT JOIN positions p ON ea.position_id = p.id
+            LEFT JOIN employees mgr ON ea.manager_id = mgr.id
+            LEFT JOIN teams2 t ON ea.team_id = t.id
+            LEFT JOIN departments d ON ea.department_id = d.id
+
+            WHERE e.id = ?
+
+            ORDER BY ea.effective_from DESC, ea.id DESC
+            `,
+            [employeeId]
+        )
+
+        res.json(result)
+
+    } catch (error) {
+        console.error('Error In Fetching Employee Bio', error)
+        res.status(500).json({ error: 'Database Error, Error In Fetching Employee Bio' })
+    }
+}

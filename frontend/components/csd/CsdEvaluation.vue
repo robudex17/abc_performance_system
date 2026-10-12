@@ -472,7 +472,7 @@
             absences: newVal.absences || 0,
             tardiness: newVal.tardiness || 0, 
             memo: newVal.memo || 0,
-            feedback_by_admin: newVal.feedback_by_admin | "",
+            feedback_by_admin: newVal.feedback_by_admin || "",   // '||' (not the bitwise '|', it cut 4.5 to 4)
             admin_id : currentUser.login_id,
             admin_dbname: currentUser.db_name,
             admin_role:  currentUser.role,

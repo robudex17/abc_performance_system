@@ -12,23 +12,32 @@ export const useAuthStore = defineStore('auth', () => {
         loading: false
     })
 
-    const register = async (userdata, type) => {
+    const register = async (userdata, register_type) => {
 
          //call auth store fetch the token on the localstorage 
         //save it to state.token
        
-       
+        
         fetchTokenFromLocalStore()
 
         const  token = state.token 
         state.loading = true
         state.error = null 
         let registerType 
-        if (type == 'salesagent'){
-            registerType = 'sales_register'
-        }else if (type == 'standardusers'){
-            registerType = "standardusers_register"
+
+        if (register_type == 'admin'){
+            registerType = 'admin_register'
         }
+
+        if (register_type == 'sales'){
+            registerType = 'sales_register'
+        }
+
+        if (register_type == 'none_sales'){
+            registerType = 'employee_register'
+        }
+
+    
 
         try {
             const response = await fetch(`${API[registerType]}`, {
@@ -70,23 +79,33 @@ export const useAuthStore = defineStore('auth', () => {
         }
     }
 
-    const updateLogin = async (userdata, type) => {
+    const updateLogin = async (userdata, login_type) => {
 
         //call auth store fetch the token on the localstorage 
        //save it to state.token
       
-      
+   
        fetchTokenFromLocalStore()
 
        const  token = state.token 
        state.loading = true
        state.error = null 
        let updateLoginType
-       if (type == 'salesagent'){
-         updateLoginType= 'sales_update_login'
-       }else if (type == 'standardusers'){
-         updateLoginType = "standardusers_update_login"
+ 
+
+       if (login_type == 'sales'){
+        updateLoginType= 'sales_update_login'
        }
+
+       if (login_type == 'none_sales'){
+        updateLoginType = "employee_update_login"
+       }
+
+       if (login_type == 'admin'){
+        updateLoginType = "admin_update_login"
+       }
+
+
 
        try {
            const response = await fetch(`${API[updateLoginType]}`, {
@@ -133,27 +152,20 @@ export const useAuthStore = defineStore('auth', () => {
         state.error = null
         let loginType ;
 
-
-        // if (loginas == 'unitmanager' || loginas == 'lm' || loginas == 'salesagent'){
-        //     loginType = "sales_login"
-        // // for now all standarduser is consider admin
-        // }else if (loginas == 'standarduser'){
-        //     loginType = 'standardusers_login'
-        // }else if (loginas == 'employee'){
-        //     loginType = 'employees_login'
-        // }
-
+     
+ 
         // for now all standarduser is consider admin
         if (loginas == 'admin'){
-            loginType = 'standardusers_login'
+            loginType = 'admin_users_login'
+            
         }
         
         if (loginas == 'sales'){
             loginType = 'sales_login'
         }
         // for all other non sales user login, we will use the employees login
-        if (loginas == 'non_sales'){
-            loginType = 'employees_login'
+        if (loginas == 'none_sales'){
+            loginType = 'employee_login'
         }
        
         try {

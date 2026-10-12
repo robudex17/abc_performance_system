@@ -1,5 +1,6 @@
 <template>
     <div class="p4 mt-20" >
+    <div>{{ employees[0] }}</div>
        
         <ManageEmployeeComponent 
             :employees="employees" 
@@ -12,6 +13,8 @@
             department_code="csd"
             @passAddEmployee="addEmployee"
             @passUpdateEmployee="updateEmployee"
+            @passAddEmployeeLogin="addEmployeeLogin"
+            @passUpdateEmployeeLogin="updateEmployeeLogin"
         />
     </div>
 </template>
@@ -29,6 +32,7 @@
     const router = useRouter()
     const route = useRoute()
     const employee_status = ref('Hired') // default status
+    const employee_type = ref('none_sales') // default type
 
     //computured propery here 
     const employees = computed(() => employeesStore.state.employees)
@@ -55,6 +59,7 @@
     const teamsAgentStore =   useTeamStore2()
     const employeesStore = useManageEmployeesStore()
     const positionsRolesStore = usePositionsRolesStore()
+    const authStore = useAuthStore()
 
 
  
@@ -120,6 +125,46 @@
         
       
     };
+
+    const addEmployeeLogin = async(loginData) => {
+        try {
+            // console.log('data from the child component for adding login', loginData)
+            // return
+         
+            await authStore.register(loginData, employee_type.value);
+                fethEmployees()
+                fetchTeams()
+                fetchMangers()
+                fetchPositionsRoles('positions')
+                fetchPositionsRoles('roles')
+
+        }catch(error){
+            console.error('Error in adding new employee login', error)
+        }
+        
+      
+    };
+
+    const updateEmployeeLogin = async(loginData) => {
+        try {
+         
+          
+            await authStore.updateLogin(loginData, employee_type.value);
+                fethEmployees()
+                fetchTeams()
+                fetchMangers()
+                fetchPositionsRoles('positions')
+                fetchPositionsRoles('roles')
+
+        }catch(error){
+            console.error('Error in updating employee login', error)
+        }
+        
+      
+    };
+
+
+
 
 
 

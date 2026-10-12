@@ -1,0 +1,22 @@
+const express = require('express')
+
+const router = express.Router()
+
+const { authenticateToken, authorizeRoles} = require('../../middleware/auth')
+
+const loginController = require('../../controllers/hr_admin/admin_users_login_controller')
+
+const { registerUser, loginUser,logoutUser, updateLogin } = require('../../middleware/validator')
+
+router.post('/admin_users_register', authenticateToken, authorizeRoles('admin'), registerUser,loginController.registerUser)
+
+router.put('/admin_users_update_login', authenticateToken, authorizeRoles('admin'), updateLogin, loginController.updateLogin)
+
+router.post('/admin_users_login', loginUser, loginController.loginUser)
+// router.post('/refresh_token', loginController.refreshToken )
+
+// router.post('/verify_token', loginController.verifyToken)
+
+router.post('/admin_users_logout',   loginController.logoutUser)
+ 
+module.exports = router

@@ -154,7 +154,11 @@
              query: {
                year_month : yearMonth.value,
                scope:  scope.value,
-             } 
+               // the none-sales feedback list page needs its feedback_type after the date is changed
+               ...(currentRoute.query.feedback_type ? { feedback_type: currentRoute.query.feedback_type } : {}),
+               // the employee details page needs it to keep its layout after the date is changed
+               ...(currentRoute.query.department_code ? { department_code: currentRoute.query.department_code } : {}),
+             }
 
           })
       

@@ -3,7 +3,8 @@ import { reactive } from 'vue'
 
 import API from '~/utils/api'
 
-export const feedbackStore = defineStore('feedback_none_sales', () => {
+// named differently from the sales `feedbackStore` (stores/feedback.js) so the two do not clash
+export const useFeedbackNoneSalesStore = defineStore('feedback_none_sales', () => {
       //call auth store fetch the token on the localstorage 
     //save it to state.token
     const authStore = useAuthStore()
@@ -18,8 +19,8 @@ export const feedbackStore = defineStore('feedback_none_sales', () => {
         // managers: [],
         admin: [],
        
-        by_members: [],
-        by_heads: [],
+        by_member: [],   // the member rates his/her immediate head
+        by_head: [],     // the immediate head rates his/her member
         qa: [],
         
         loading:false,
@@ -34,11 +35,10 @@ export const feedbackStore = defineStore('feedback_none_sales', () => {
          
         switch(feedbackType){
            
-           case "by_members":
-           case "by_heads":
+           case "by_member":
+           case "by_head":
                 errorMessage = `Failed to fetch  ${feedbackType} feedback`
                 url = API.feedback.none_sales
-                console.log('It came here...')
                 break
          
 
@@ -127,14 +127,11 @@ export const feedbackStore = defineStore('feedback_none_sales', () => {
   
         switch(feedbackType){
 
-            case "by_members":
-            case "by_heads":
-                errorMessage = `Failed to fetch  ${feedbackType} feedback`
+            case "by_member":
+            case "by_head":
+                errorMessage = `Failed to save  ${feedbackType} feedback`
                 url = API.feedback.none_sales
-                errorMessage = `Failed to fetch  ${feedbackType} feedback`
-                url = API.feedback.none_sales
-              
-                break 
+                break
 
             case "qa":
                     errorMessage = `Failed to fetch  ${feedbackType} feedback`
@@ -174,7 +171,7 @@ export const feedbackStore = defineStore('feedback_none_sales', () => {
             if (!response.ok) {
                 
                 const errors = await response.json()
-                throw new Error(errors || "An unknown error occurred");
+                throw new Error(errors.error || errors.message || "An unknown error occurred");
             }
        
           if (httpMethod == 'POST'){
@@ -231,7 +228,7 @@ export const feedbackStore = defineStore('feedback_none_sales', () => {
             if (!response.ok) {
                 
                 const errors = await response.json()
-                throw new Error(errors || "An unknown error occurred");
+                throw new Error(errors.error || errors.message || "An unknown error occurred");
             }
   
            

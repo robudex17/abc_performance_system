@@ -69,7 +69,7 @@ const currentUser = authStore.state.user
 const router = useRouter();
 const route = useRoute(); // Access the current route
 
-const activeMenu = ref('Dashboard'); // Holds the name of the currently active menu
+const activeMenu = ref(''); // Holds the name of the currently active menu (set from the route)
 const isCollapsed = ref(false);
 const submenuStates = ref({});
 
@@ -116,6 +116,13 @@ const menuItems = buildMenu(collectionMenu , currentUser)
       const setActiveMenuFromRoute = () => {
         console.log('the Route is ', route)
         const currentRoute = route.path;
+
+        // details of an employee (opened from the employees management page)
+        if (/^\/admin\/employee\/\d+\/details$/.test(currentRoute)) {
+              submenuStates.value["Admin Panel"] = true;
+              activeMenu.value = "Collection Employees Management";
+              return;
+        }
 
            if (/^\/admin\/agent2/.test(currentRoute)) {
               
@@ -201,15 +208,21 @@ const menuItems = buildMenu(collectionMenu , currentUser)
               submenuStates.value[item.name] = true; // Open the submenu
               return;
             }
-       
+
 
           }
         }
+
+        // the page is not in the menu: do not keep the highlight of the previous page
+        activeMenu.value = '';
       };
 
-      onMounted(() => {
-        setActiveMenuFromRoute();
-      });
+      // Highlight the menu of the page in the address bar, and keep it that way:
+      // - useRoute() of Nuxt is only updated when the new page has finished loading, so when this layout
+      //   is mounted (e.g. coming from /select_department) the route can still be the previous page.
+      //   Watching the route fixes the highlight as soon as the real route arrives.
+      // - immediate: it also runs on a page refresh.
+      watch(() => route.fullPath, setActiveMenuFromRoute, { immediate: true });
 
 
 </script>

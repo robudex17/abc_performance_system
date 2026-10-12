@@ -1340,7 +1340,7 @@ const handleAgentTypeChange = () => {
       }
 
       try{
-        await authStore.register(currentAgentLogin.value , 'salesagent')
+        await authStore.register(currentAgentLogin.value , 'sales')
         fetchSalesAgents();
         fetchMarkets();
         fetchTeams();
@@ -1363,7 +1363,7 @@ const handleAgentTypeChange = () => {
         return
       }
       try{
-        await authStore.updateLogin(currentAgentLogin.value , 'salesagent')
+        await authStore.updateLogin(currentAgentLogin.value , 'sales')
         fetchSalesAgents();
         fetchMarkets();
         fetchTeams();

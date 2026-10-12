@@ -99,17 +99,25 @@ export const csdMenu = [
               name: 'Feedback', 
               route: null, icon: ['fas', 'poll'],
               subMenu:[
-                { name: 'BY QA', route: '/csd/feedback/feedback_by_qa', icon: ['fas', 'users']  },
-                // { name: 'BY Admin', route: '/csd/feedback/feedback_by_admin', icon: ['fas', 'users']  },
-               
-              ] 
-            
-            },            
+                // admin only
+                { name: 'FEEDBACK ADMIN', route: '/feedback/feedback_by_admin', icon: ['fas', 'users'], allowedRoles: ['admin'] },
+                { name: 'FEEDBACK QA', route: '/feedback/feedback_by_qa', icon: ['fas', 'users'], allowedRoles: ['admin'] },
 
-            { 
+                // none-admin, by position level (admin never sees these two)
+                // head rates the members: level 10, 9, 8
+                { name: 'FEEDBACK MEMBERS', route: '/feedback/feedback_by_nonesales?feedback_type=by_head', icon: ['fas', 'users'], allowedLevels: [10, 9, 8], excludedRoles: ['admin'] },
+                // members rate the head: level 9, 8, 3, 1
+                { name: 'FEEDBACK HEAD', route: '/feedback/feedback_by_nonesales?feedback_type=by_member', icon: ['fas', 'user-tie'], allowedLevels: [9, 8, 3, 1], excludedRoles: ['admin'] },
+
+              ]
+
+            },
+
+            {
               name: 'Admin Panel',
               route: null,
               icon: ['fas', 'cog'],
+              allowedRoles: ['admin'],
               subMenu: [
               
            

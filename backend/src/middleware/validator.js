@@ -328,7 +328,7 @@ validator.updateLogin = [
 
     check('role')
     .notEmpty().withMessage('Role is required')
-    .isIn(['admin','poweruser']).withMessage('Role must be in admin, or poweruser only'),
+    .isIn(['admin','poweruser','manager','user']).withMessage('Role must be in admin, or poweruser only'),
 
     check('username')
     .notEmpty().withMessage('Username is required')

@@ -5,4 +5,8 @@ feedback_by_admin - this table is the feedback give by admin for none sales like
                     the two tables are not the same fields
 
 sales - use month and year fields ,  other deparment  use year-month .
-I will convert this to year-month in the future                   
+I will convert this to year-month in the future  
+
+all occurance of standardusers  will be replace by admin_users
+
+replace role with system_role_name

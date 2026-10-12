@@ -1,12 +1,12 @@
-const pool = require('../config/db')
+const pool = require('../../config/db')
 const { validationResult } = require('express-validator')
 const fs = require('fs')
 const path = require('path')
 
 // Change this import at the top
-const {  uploadToMinio } = require('../middleware/fileupload_to_minio')  // updated import
+const {  uploadToMinio } = require('../../middleware/fileupload_to_minio')  // updated import
 
-exports.fetchStandardUsers = async (req,res, next ) => {
+exports.fetchAdminUsers = async (req,res, next ) => {
     try{
         // const connection =  await pool.getConnection()
 
@@ -38,7 +38,7 @@ exports.fetchStandardUsers = async (req,res, next ) => {
 }
 
 
-exports.addNewStandardUser = async( req, res, next) => {
+exports.addNewAdminUser = async( req, res, next) => {
     // const connection  = await pool.getConnection()
     
     
@@ -96,7 +96,7 @@ exports.addNewStandardUser = async( req, res, next) => {
     }  
 }
 
-exports.updateStandardUser= async( req, res, next) => {
+exports.updateAdminUser= async( req, res, next) => {
     // const connection  = await pool.getConnection()
     
     
@@ -141,7 +141,7 @@ exports.updateStandardUser= async( req, res, next) => {
     }  
 }
 
-exports.deleteStandardUser = async (req, res, next) => {
+exports.deleteAdminUser = async (req, res, next) => {
     
     console.log(req.params)
     const { user_id } = req.params 
