@@ -4,6 +4,7 @@ const pool = require('../../config/db')
 const { validationResult, body } = require('express-validator')
 
 const { parseYearMonth } = require('../helper_scripts/global_variables_and_functions')
+const { attachReceivedFeedback } = require('./csd_received_feedback')
 
 const { fetch_eval_queries, delete_eval_queries, update_eval_queries, add_eval_queries }  = require(`./csd_metrics_queries`)
 
@@ -532,6 +533,9 @@ exports.generateCsdEvaluation  = async (year_month, scope, department_code,  met
         agent['year'] = year
         agent['month'] = month
      }
+
+     // the feedback of the QA, the immediate head and the members (view only on the CSD Evaluation page)
+     await attachReceivedFeedback(employee_to_evaluate, year_month)
 
 
 

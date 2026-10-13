@@ -146,32 +146,48 @@
                     </CSDTooltipCell>  
 
             
-                   <CSDTooltipCell :title="agent.db_name" class="text-blue-700">
-                      <button  @click="openMetricsTypeModal({ year_month: agent.year_month, employee_status: agent.employee_status, submitted: agent.submitted, employee_id: agent.id, db_name:agent.db_name, month: agent.month, year: agent.year, position_id: agent.position_id, position_name: agent.position_name, team_id:agent.team_id, 
-                        missed_calls: agent.missed_calls,  total_missed_calls: agent.total_missed_calls,
-                        image_link: agent.image_link, eval_type: 'feedback_agents' })" >
-                          {{ agent.feedback_by_qa }}
+                    <!-- Feedback (QA), Feedback (Immediate Head), Feedback (Members): VIEW ONLY.
+                         They are given by the Quality Analyst, the immediate head and the members, the admin can not change them.
+                         Like the sales evaluation: the number is a button that opens the list of the people who should give the
+                         feedback; the ones who did not give yet are marked "No Feedback Yet". -->
+                    <td class="py-0.5 px-4 text-center text-lg border font-medium">
+                      <span v-if="!receivesQaFeedback(agent)" class="text-gray-400">-</span>
+                      <!-- the average, or 0 when nobody gave it yet. Clickable: the list shows who gave it and who did not yet -->
+                      <button
+                        v-else
+                        class="underline"
+                        :class="agent.feedback_by_qa ? 'text-blue-700' : 'text-red-500 font-bold'"
+                        @click="openModal(agent.feedback_by_qa_list, `Feedback (QA) of ${agent.db_name}`, 'No Quality Analyst found')"
+                      >
+                        {{ agent.feedback_by_qa ?? 0 }}
                       </button>
-                    </CSDTooltipCell>  
+                    </td>
 
-                       
-                   <CSDTooltipCell :title="agent.db_name" class="text-blue-700">
-                      <button  @click="openMetricsTypeModal({ year_month: agent.year_month, employee_status: agent.employee_status, submitted: agent.submitted, employee_id: agent.id, db_name:agent.db_name, month: agent.month, year: agent.year, position_id: agent.position_id, position_name: agent.position_name, team_id:agent.team_id, 
-                        opening_hc : agent.opening_hc, closing_hc: agent.closing_hc,  no_of_resignation: agent.no_of_resignation,
-                        image_link: agent.image_link, eval_type: 'feedback_tl' })" >
-                          {{ agent.feedback_by_immediate_head }}
+                    <td class="py-0.5 px-4 text-center text-lg border font-medium">
+                      <span v-if="!receivesImmediateHeadFeedback(agent)" class="text-gray-400">-</span>
+                      <!-- the average, or 0 when nobody gave it yet. Clickable: the list shows who gave it and who did not yet -->
+                      <button
+                        v-else
+                        class="underline"
+                        :class="agent.feedback_by_immediate_head ? 'text-blue-700' : 'text-red-500 font-bold'"
+                        @click="openModal(agent.feedback_by_immediate_head_list, `Feedback (Immediate Head) of ${agent.db_name}`, 'No immediate head found')"
+                      >
+                        {{ agent.feedback_by_immediate_head ?? 0 }}
                       </button>
-                    </CSDTooltipCell> 
+                    </td>
 
-
-             
-                   <CSDTooltipCell :title="agent.db_name" class="text-blue-700">
-                      <button  @click="openMetricsTypeModal({ year_month: agent.year_month, employee_status: agent.employee_status, submitted: agent.submitted, employee_id: agent.id, db_name:agent.db_name, month: agent.month, year: agent.year, position_id: agent.position_id, position_name: agent.position_name, team_id:agent.team_id, 
-                        opening_hc : agent.opening_hc, closing_hc: agent.closing_hc,  no_of_resignation: agent.no_of_resignation,
-                        image_link: agent.image_link, eval_type: 'feedback_am' })" >
-                          {{ agent.feedback_by_members }}
+                    <td class="py-0.5 px-4 text-center text-lg border font-medium">
+                      <span v-if="!receivesMembersFeedback(agent)" class="text-gray-400">-</span>
+                      <!-- the average, or 0 when nobody gave it yet. Clickable: the list shows who gave it and who did not yet -->
+                      <button
+                        v-else
+                        class="underline"
+                        :class="agent.feedback_by_members ? 'text-blue-700' : 'text-red-500 font-bold'"
+                        @click="openModal(agent.feedback_by_members_list, `Feedback (Members) of ${agent.db_name}`, 'No members found')"
+                      >
+                        {{ agent.feedback_by_members ?? 0 }}
                       </button>
-                    </CSDTooltipCell> 
+                    </td>
 
                                      
                     <!-- Actions -->
@@ -272,7 +288,7 @@
           <!-- Header -->
           <div class="bg-blue-600 text-white px-6 py-4 flex justify-between items-center">
             <h2 class="text-lg font-bold">
-              {{ modalType === 'qa' ? 'QA Feedback Details' : 'Update/Delete Feedback' }}
+              {{ feedbackModalTitle }}
             </h2>
             <button 
               @click="closeModal" 
@@ -283,6 +299,51 @@
           </div>
 
 
+
+          <!-- Body: who gave the feedback and who did not give yet (view only) -->
+          <div class="bg-gray-50 p-6 max-h-[70vh] overflow-y-auto overflow-x-hidden">
+            <p v-if="modalData.length > 0" class="mb-3 text-sm text-gray-700">
+              <span class="font-bold">{{ givenCount }}</span> of <span class="font-bold">{{ modalData.length }}</span> gave feedback<span v-if="givenCount < modalData.length">, <span class="font-bold text-red-500">{{ modalData.length - givenCount }}</span> did not give yet</span>.
+            </p>
+            <table class="min-w-full table-fixed border-collapse">
+              <thead>
+                <tr class="bg-gray-200 text-gray-700" v-if="modalData.length > 0">
+                  <th class="w-1/4 px-4 py-2 text-left font-semibold">Feedback By</th>
+                  <th class="w-1/6 px-4 py-2 text-left font-semibold">Month</th>
+                  <th class="w-1/6 px-4 py-2 text-left font-semibold">Year</th>
+                  <th class="w-1/6 px-4 py-2 text-center font-semibold">Feedback Score</th>
+                </tr>
+              </thead>
+              <tbody v-if="modalData.length > 0">
+                <tr v-for="data in modalData" :key="data.who_give_feedback_id" class="border-b hover:bg-gray-100 transition">
+                  <td class="px-4 py-3">
+                    <div class="flex items-center space-x-3">
+                      <img
+                        v-if="data.image_link"
+                        :src="updateImageLink(data.image_link)"
+                        alt="Employee Image"
+                        class="w-10 h-10 rounded-full object-cover border"
+                      />
+                      <span class="font-medium text-gray-800">{{ data.who_give_feedback_name }}</span>
+                    </div>
+                  </td>
+                  <td class="px-4 py-3 font-semibold">{{ data.month }}</td>
+                  <td class="px-4 py-3 font-semibold">{{ data.year }}</td>
+                  <td class="border px-4 py-2 text-center">
+                    <span v-if="parseFloat(data.feedback_score) > 0" class="text-gray-800 font-medium">
+                      {{ Number(data.feedback_score).toFixed(4) }}
+                    </span>
+                    <span v-else class="text-red-500 italic font-semibold">No Feedback Yet</span>
+                  </td>
+                </tr>
+              </tbody>
+              <tbody v-else>
+                <tr>
+                  <td class="px-4 py-3 text-red-500 font-bold">{{ modalEmptyMessage }}</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
 
           <!-- Footer -->
           <div class="px-6 py-4 bg-gray-100 text-right">
@@ -394,7 +455,11 @@
     const eval_type = ref("")
 
 
-    const modalData = ref("")
+    const modalData = ref([])
+    const feedbackModalTitle = ref('Feedback')
+    const modalEmptyMessage = ref('No Feedback Yet')
+    // how many of the people in the list gave their feedback (score greater than 0)
+    const givenCount = computed(() => (modalData.value || []).filter(item => parseFloat(item.feedback_score) > 0).length)
 
 
     const itemsPerPage = 10;
@@ -665,6 +730,19 @@
     
    }
   const config = useRuntimeConfig()
+
+  // who receives each feedback (same rules as the details page of the employee):
+  //  QA: the staff of position level 8 and below, immediate head: everybody but the top level 10, members: level 8 and up
+  const receivesQaFeedback = (agent) => Number(agent.position_level) <= 8
+  const receivesImmediateHeadFeedback = (agent) => Number(agent.position_level) < 10
+  const receivesMembersFeedback = (agent) => Number(agent.position_level) >= 8
+
+  // the images are served by the backend by filename; older rows still have a '/images/' path in front of it
+  const updateImageLink = (imageLink) => {
+    if (!imageLink) return ''
+    if (imageLink.startsWith('data:image') || /^https?:\/\//.test(imageLink)) return imageLink
+    return `${config.public.imageBaseUrl}${imageLink.split('/').pop()}`
+  }
   
 
 
@@ -740,11 +818,13 @@ const  reviewPerformanceMetrics = async (agent) => {
 }
 
 
-const openModal = ( data) => {
-    
+const openModal = ( data, title = 'Feedback', emptyMessage = 'No Feedback Yet') => {
+
+        feedbackModalTitle.value = title
+        modalEmptyMessage.value = emptyMessage
         showModal.value = true;
-   
-        modalData.value = data;
+
+        modalData.value = data || [];
       };
       
       const closeModal = () => {

@@ -1,3 +1,5 @@
 .env
 node_modules
 images
+# the image proxy of the frontend (a Nitro server route) must be in git, only the uploaded image folders are ignored
+!frontend/server/routes/api/images/
