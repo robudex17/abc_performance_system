@@ -9,6 +9,7 @@
       </h2>
       <p class="text-gray-600 text-center">{{ feedbackSubtitle }}</p>
       <p class="text-red-600 text-center mb-6 font-bold text-2xl">For {{ monthLabel.toUpperCase() }}</p>
+      <h2 v-if="viewOnly" class="text-center text-red-600 font-bold text-2xl mb-4">(VIEW ONLY)</h2>
 
       <form @submit.prevent="submitFeedback">
         <div v-for="(question, index) in questions" :key="question.id" class="mb-4 p-4 border rounded-lg bg-gray-50">
@@ -18,14 +19,18 @@
             <label
               v-for="choice in question.choices"
               :key="choice.score"
-              class="w-full flex flex-col items-center cursor-pointer border rounded-lg py-2 px-4 hover:bg-gray-200 transition"
-              :class="responses[question.id] === choice.score ? 'bg-blue-300 border-blue-700' : 'border-gray-300'"
+              class="w-full flex flex-col items-center border rounded-lg py-2 px-4 transition"
+              :class="[
+                viewOnly ? 'cursor-default' : 'cursor-pointer hover:bg-gray-200',
+                responses[question.id] === choice.score ? 'bg-blue-300 border-blue-700' : 'border-gray-300'
+              ]"
             >
               <input
                 type="radio"
                 :name="`question-${question.id}`"
                 :value="choice.score"
                 v-model="responses[question.id]"
+                :disabled="viewOnly"
                 class="hidden"
               />
               <span class="text-lg font-medium" :class="responses[question.id] === choice.score ? 'text-red-500' : 'text-gray-700'">{{ choice.label }}</span>
@@ -45,6 +50,7 @@
         </div>
 
         <button
+          v-if="!viewOnly"
           type="submit"
           class="mt-6 w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 rounded-lg shadow-md transition"
         >
@@ -72,6 +78,8 @@ const props = defineProps({
   yearMonth: { type: String, required: true },
   whoReceiveName: { type: String, default: '' },
   whoGiveName: { type: String, default: '' },
+  // admin / poweruser open the feedback of somebody else only to look at it
+  viewOnly: { type: Boolean, default: false },
 })
 
 const emit = defineEmits(['passFeedbackData'])
@@ -115,6 +123,11 @@ const feedbackScore = computed(() =>
 )
 
 const submitFeedback = () => {
+  if (props.viewOnly) {
+    alert('View Only Mode. Cannot perform update')
+    return
+  }
+
   const allQuestionsAnswered = props.questions.every(question => responses.value[question.id] != null)
 
   if (!allQuestionsAnswered) {

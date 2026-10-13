@@ -19,9 +19,15 @@ const currentYearMonth = () => {
 // YYYY-MM strings compare correctly as text, so a later month is simply "greater"
 const isFutureYearMonth = (year_month) => year_month > currentYearMonth()
 
-// A user can only give feedback as himself/herself (admin can act for anyone).
+// The answers of a feedback are confidential.
+//  - Only the giver can give or change a feedback. Nobody else can do it on his/her behalf: admin and poweruser included.
+//  - The giver can read it. Admin and poweruser can also read it, to VIEW it only.
 const isNotTheGiver = (req, who_give_feedback_id) =>
-    req.user.role !== 'admin' && Number(who_give_feedback_id) !== Number(req.user.login_id)
+    Number(who_give_feedback_id) !== Number(req.user.login_id)
+
+const VIEWER_ROLES = ['admin', 'poweruser']
+const canReadFeedback = (req, who_give_feedback_id) =>
+    !isNotTheGiver(req, who_give_feedback_id) || VIEWER_ROLES.includes(req.user.role)
 
 // A user can only rate his/her own immediate head (by_member) or his/her own members (by_head).
 const isRelatedToTheGiver = async (feedback_type, who_give_feedback_id, who_receive_feedback_id) => {
@@ -66,7 +72,7 @@ exports.addNoneSalesFeedback = async (req, res, next) => {
     const error_message = `Database Error, Cannot create ${type.label} Feedback`
 
     try {
-        if (req.user.role !== 'admin' && !(await isRelatedToTheGiver(feedback_type, who_give_feedback_id, who_receive_feedback_id))) {
+        if (!(await isRelatedToTheGiver(feedback_type, who_give_feedback_id, who_receive_feedback_id))) {
             return res.status(403).json({ error: 'You can only give feedback to your own immediate head or members' })
         }
 
@@ -195,7 +201,7 @@ exports.getNoneSalesFeedback = async (req, res, next) => {
     if (!YEAR_MONTH_FORMAT.test(year_month)) {
         return res.status(400).json({ error: 'year_month must be in YYYY-MM format' })
     }
-    if (isNotTheGiver(req, who_give_feedback_id)) {
+    if (!canReadFeedback(req, who_give_feedback_id)) {
         return res.status(403).json({ error: 'You are not allowed to view the feedback of other users' })
     }
 

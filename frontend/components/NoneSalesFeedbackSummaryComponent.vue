@@ -140,6 +140,28 @@
                     >
                       Delete
                     </button>
+
+                    <!-- View Feedback: opens the answers in a new tab, read only for the admin -->
+                    <NuxtLink
+                      :to="{
+                        path: `/feedback/feedback_by_nonesales/${row.feedback_type}`,
+                        query: {
+                          who_receive_feedback_id: row.who_receive_feedback_id,
+                          who_receive_feedback_db_name: row.who_receive_feedback_name,
+                          who_give_feedback_id: row.who_give_feedback_id,
+                          who_give_feedback_db_name: row.who_give_feedback_name,
+                          feedback_type: row.feedback_type,
+                          year_month: row.year_month,
+                          department_code: employee.department_code,
+                          admin_view_only: true,
+                        },
+                      }"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      class="rounded-2xl px-2 py-2 bg-blue-500 text-white font-bold hover:bg-blue-600"
+                    >
+                      View Feedback
+                    </NuxtLink>
                   </div>
                 </td>
               </tr>

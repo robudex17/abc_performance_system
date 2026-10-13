@@ -4,9 +4,13 @@
       <p class="text-2xl font-bold text-red-600">You cannot give feedback for a future month ({{ yearMonth }}).</p>
       <p class="text-gray-600 mt-2">Select the current month or an earlier month in the date picker.</p>
     </div>
+    <!-- admin / poweruser can open a feedback only to view it: nothing to show when it was deleted -->
+    <p v-else-if="isViewer && feedbackLoaded && feedback.length === 0" class="mt-24 text-center text-2xl font-bold text-red-600">
+      No feedback was submitted for {{ yearMonth }}.
+    </p>
     <!-- the questions come from useNoneSalesFeedbackQuestions -->
     <none-sales-feedback-form-component
-      v-else-if="questions.length > 0"
+      v-else-if="questions.length > 0 && (!isViewer || feedbackLoaded)"
       :questions="questions"
       :feedbackTitle="feedbackTitle"
       :feedbackSubtitle="feedbackSubtitle"
@@ -15,6 +19,7 @@
       :yearMonth="yearMonth"
       :whoReceiveName="who_receive_feedback_db_name"
       :whoGiveName="who_give_feedback_db_name"
+      :viewOnly="isViewer"
       @passFeedbackData="addUpdateDeleteFeedback"
     />
     <p v-else class="mt-24 text-center text-gray-500">No feedback questions found for this department.</p>
@@ -30,7 +35,7 @@ definePageMeta({
   middleware: ['auth', 'department-layout', 'feedback-by-nonesales'],
 })
 
-import { onMounted, computed, watch } from 'vue'
+import { onMounted, computed, ref, watch } from 'vue'
 
 const router = useRouter()
 const route = useRoute()
@@ -58,8 +63,12 @@ const backToList = () =>
     query: { feedback_type: feedbackType },
   })
 
-// nobody can give feedback on behalf of another user
-const isNotTheGiver = Number(currentUser.login_id) !== Number(who_give_feedback_id)
+// A feedback is confidential: only the one who gives it can fill it in or change it.
+// admin and poweruser can open it only to VIEW it (the middleware feedback-by-nonesales lets them in).
+const isViewer = ['admin', 'poweruser'].includes(currentUser.role)
+const feedbackLoaded = ref(false)    // the answers of the month were loaded (a viewer sees the form only with them)
+
+const isNotTheGiver = !isViewer && Number(currentUser.login_id) !== Number(who_give_feedback_id)
 if (isNotTheGiver) {
   alert(`You are not allowed to give or update feedback on ${who_give_feedback_db_name}'s behalf`)
   backToList()
@@ -73,9 +82,15 @@ const feedbackSubtitle = feedbackType === 'by_member'
 // same questions the composable holds for every none-sales department
 // by_member: member (agentType 0) rates the head -> 'lm_by_agent'
 // by_head  : head   (agentType 1) rates the member -> 'agent_by_lm'
+// The questions are the ones of the department of the feedback. The staff gives feedback in his/her own department
+// (the token), but admin and poweruser are not in that department: for them the link carries it (?department_code=).
+const questionsDepartment = isViewer
+  ? (route.query.department_code || currentUser.department_code)
+  : currentUser.department_code
+
 const { questions } = feedbackType === 'by_member'
-  ? useNoneSalesFeedbackQuestions(0, 'lm_by_agent', currentUser.department_code)
-  : useNoneSalesFeedbackQuestions(1, 'agent_by_lm', currentUser.department_code)
+  ? useNoneSalesFeedbackQuestions(0, 'lm_by_agent', questionsDepartment)
+  : useNoneSalesFeedbackQuestions(1, 'agent_by_lm', questionsDepartment)
 
 const feedbackStore = useFeedbackNoneSalesStore()
 
@@ -90,16 +105,24 @@ const feedbackQuery = () => ({
 
 const fetchFeedback = async () => {
   feedbackStore.state[feedbackType] = []
+  feedbackLoaded.value = false
   if (isFutureMonth.value || isNotTheGiver) return
 
   try {
     await feedbackStore.fetchNoneSalesFeedback(who_receive_feedback_id, feedbackQuery(), feedbackType)
   } catch (error) {
     alert(error.message)
+  } finally {
+    feedbackLoaded.value = true
   }
 }
 
 const addUpdateDeleteFeedback = async (feedbackResponse, httpMethod) => {
+  if (isViewer) {
+    alert('View Only Mode. Cannot perform update')
+    return
+  }
+
   if (isFutureMonth.value) {
     alert('You cannot give feedback for a future month')
     return
