@@ -100,7 +100,7 @@ export const csdMenu = [
               route: null, icon: ['fas', 'poll'],
               subMenu:[
                 // admin only
-                { name: 'FEEDBACK ADMIN', route: '/feedback/feedback_by_admin', icon: ['fas', 'users'], allowedRoles: ['admin'] },
+                { name: 'FEEDBACK ADMIN', route: '/csd/feedback_by_admin', icon: ['fas', 'users'], allowedRoles: ['admin'] },
                 { name: 'FEEDBACK QA', route: '/feedback/feedback_by_qa', icon: ['fas', 'users'], allowedRoles: ['admin'] },
 
                 // none-admin, by position level (admin never sees these two)

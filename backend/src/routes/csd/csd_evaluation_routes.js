@@ -6,6 +6,7 @@ const router = express.Router()
 
 const csdEvaluation= require('../../controllers/csd/csd_evaluation_controller')
 const { authenticateToken, authorizeRoles} = require('../../middleware/auth')
+const { canChangeCsdEvaluation } = require('../../middleware/csd_evaluation_access')
 
 
 // router.post('/csd_evaluation/submit/:submit_type/:employee_id', authenticateToken, authorizeRoles('admin'),  csdEvaluation.submitCsdEvaluation)
@@ -17,9 +18,9 @@ const { authenticateToken, authorizeRoles} = require('../../middleware/auth')
 router.get('/csd_evaluation/:eval_type/:employee_id', authenticateToken,csdEvaluation.fetchCsdEvaluation)
 router.get('/csd_evaluation/:eval_type', authenticateToken,csdEvaluation.fetchCsdEvaluation)
 
-router.post('/csd_evaluation/:eval_type/:employee_id', authenticateToken,csdEvaluation.addCsdEvaluation)
-router.put('/csd_evaluation/:eval_type/:employee_id', authenticateToken,csdEvaluation.updateCsdEvaluation)
-router.delete('/csd_evaluation/:eval_type/:employee_id', authenticateToken,csdEvaluation.deleteCsdEvaluation)
+router.post('/csd_evaluation/:eval_type/:employee_id', authenticateToken, canChangeCsdEvaluation, csdEvaluation.addCsdEvaluation)
+router.put('/csd_evaluation/:eval_type/:employee_id', authenticateToken, canChangeCsdEvaluation, csdEvaluation.updateCsdEvaluation)
+router.delete('/csd_evaluation/:eval_type/:employee_id', authenticateToken, canChangeCsdEvaluation, csdEvaluation.deleteCsdEvaluation)
 
 
 
