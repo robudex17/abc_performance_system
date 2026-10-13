@@ -83,7 +83,6 @@ export const useCsdStore = defineStore('csdStore', () => {
            
         } catch (error) {
             console.error('Failed to fetch leaderboard:', error)
-            state.
             state.error = error.message
         } finally {
             state.loading = false
@@ -144,8 +143,9 @@ export const useCsdStore = defineStore('csdStore', () => {
             customError.originalError = error;  // Attach the original error
             throw customError;
         }
-    }
-
+    }                                                            
+                                                        //  agent.employee_id, eval_type.value , 'evaluation', route.query, agent
+                                                        // /evaluation/feedback_by_admin
     const addCsdPerformanceMetricsOrEvaluation = async (employee_id, entity_type, entity, queryString, body) => {
         state.loading = true
         state.error = null

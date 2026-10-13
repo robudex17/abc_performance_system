@@ -107,6 +107,7 @@ definePageMeta({
 })
 
 import { useRouter } from 'vue-router'
+import { DEPARTMENT_HOME } from '~/config/departments'
 
 const router = useRouter()
 
@@ -134,16 +135,10 @@ const config = useRuntimeConfig()
 const apiUrl = config.public.apiUrl
 
 
-//SALES i WILL ROUTE IT TO '/' TEMPORARILY, BUT I WILL CHANGE IT TO '/sales' LATER ONCE I CREATE THE SALES PAGE
+// The home of each department is in config/departments.js (sales is '/' until the sales pages move to '/sales').
+// A department that is not in the config follows the convention '/<code>'.
 const selectDepartment = (dept) => {
-
-
-  // Sales goes to root, everything else follows convention
-  const targetRoute = dept.code === 'sales'
-    ? '/'
-    : `/${dept.code}`
-
-  router.push(targetRoute)
+  router.push(DEPARTMENT_HOME[dept.code] ?? `/${dept.code}`)
 }
 
 

@@ -83,6 +83,7 @@
 
 <script setup>
 import { ref, onMounted } from 'vue'
+import { canSwitchDepartment, getDepartmentHome } from '~/config/departments'
 
 
 
@@ -118,26 +119,15 @@ const login = async () => {
     const user = authStore.state.user
 
     // ✅ STEP 1: Who can select department
-    if (
-      user.role === 'admin' ||
-      (user.role === 'manager' && user.position_level >= 10)
-    ) {
-      
+    if (canSwitchDepartment(user)) {
       return router.push('/select_department')
     }
 
-    // ✅ STEP 2: Department routing
-    const departmentRoutes = {
-      csd: '/csd',
-      collection: '/collection',
-      purchasing: '/purchasing',
-      hradmin: '/hr',
-      it: '/it',
-      uploading: '/uploading'
-    }
+    // ✅ STEP 2: Department routing (config/departments.js)
+    const departmentHome = getDepartmentHome(user)
 
-    if (departmentRoutes[user.department_code]) {
-      return router.push(departmentRoutes[user.department_code])
+    if (departmentHome) {
+      return router.push(departmentHome)
     }
 
     // ✅ STEP 3: fallback (sales legacy)
@@ -164,10 +154,12 @@ const login = async () => {
 }
 
 onMounted(() => {
+  // already logged in: go to the right place (department staff to their department, the others to '/')
   if (authStore.state.token) {
     authStore.fetchTokenFromLocalStore()
     if (authStore.state.token) {
-      router.push('/')
+      const user = authStore.state.user
+      router.push(canSwitchDepartment(user) ? '/select_department' : (getDepartmentHome(user) ?? '/'))
     }
   }
 })

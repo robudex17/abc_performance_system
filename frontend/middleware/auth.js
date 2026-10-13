@@ -1,4 +1,6 @@
 
+import { canSwitchDepartment, getDepartmentHome } from '~/config/departments'
+
 export default defineNuxtRouteMiddleware((to, from) => {
   if (!import.meta.env.SSR) {                     // Runs only on the client
     // const token = localStorage.getItem('jwt')
@@ -14,18 +16,13 @@ export default defineNuxtRouteMiddleware((to, from) => {
     if (authStore.state.token && to.path === '/login') {
       console.log('User already logged in')
 
-      // Redirect based on role
-      if (authStore.state.user?.role === 'admin'  || authStore.state.user?.role !== 'poweruser' || authStore.state.user?.role === 'manager') {
-        console.log('Redirecting admin to /admin')
-        // return navigateTo('/')
+      // admin and the top managers choose the department, the department staff go to their own department,
+      // everybody else (sales) goes to the sales root (config/departments.js)
+      const user = authStore.state.user
+      if (canSwitchDepartment(user)) {
         return navigateTo('/select_department')
-      } else if (authStore.state.user?.role === 'user') {
-        console.log('Redirecting user to /user-home')
-        return navigateTo('/')
-      } else {
-        console.log('Redirecting to default home page')
-        return navigateTo('/')
       }
+      return navigateTo(getDepartmentHome(user) ?? '/')
     }
   } else {
     console.log('Running on the server')

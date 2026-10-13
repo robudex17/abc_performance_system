@@ -1,171 +1,134 @@
 <template>
-    <div>
-        <feedback-form-component 
-         v-if="agentFeedback.length > 0"
-        :questions="questions" :feedbackTitle="feedbackTitle" 
-         :feedbackSubtitle="feedbackSubtitle"
-         :feedback="agentFeedback" :feedbackType="feedbackType"
-         :admin_view_only="admin_view_only"
-         @passFeedbackData="addUpdateDeleteFeedback">
-
-        </feedback-form-component>
-        <feedback-form-component v-else 
-         :questions="questions" :feedbackTitle="feedbackTitle"
-         :feedbackSubtitle="feedbackSubtitle"
-         :feedback="[]" :feedbackType="feedbackType"
-         :admin_view_only="admin_view_only"
-         @passFeedbackData="addUpdateDeleteFeedback">
-
-        </feedback-form-component>
-
-       
+  <div>
+    <div v-if="isFutureMonth" class="mt-24 text-center">
+      <p class="text-2xl font-bold text-red-600">You cannot give feedback for a future month ({{ yearMonth }}).</p>
+      <p class="text-gray-600 mt-2">Select the current month or an earlier month in the date picker.</p>
     </div>
-  </template>
-  
-  <script setup>
+    <!-- the questions come from useNoneSalesFeedbackQuestions -->
+    <none-sales-feedback-form-component
+      v-else-if="questions.length > 0"
+      :questions="questions"
+      :feedbackTitle="feedbackTitle"
+      :feedbackSubtitle="feedbackSubtitle"
+      :feedback="feedback"
+      :feedbackType="feedbackType"
+      :yearMonth="yearMonth"
+      :whoReceiveName="who_receive_feedback_db_name"
+      :whoGiveName="who_give_feedback_db_name"
+      @passFeedbackData="addUpdateDeleteFeedback"
+    />
+    <p v-else class="mt-24 text-center text-gray-500">No feedback questions found for this department.</p>
+  </div>
+</template>
 
-      definePageMeta({
-         middleware: ['auth' ],
-         layout: 'csd'
-     })
+<script setup>
+// Give feedback (none-sales departments). NOT the sales page: it uses the none-sales store, questions and form.
+//   by_member: the member rates his/her immediate head
+//   by_head  : the immediate head rates his/her member
+// 'department-layout' puts the page in the layout (sidebar/navbar) of the user's department
+definePageMeta({
+  middleware: ['auth', 'department-layout', 'feedback-by-nonesales'],
+})
 
-     import { onMounted, watch, computed } from 'vue';
-     import { feedbackStore } from '~/stores/feedback';
-     import { months } from '@/utils/constants'
+import { onMounted, computed, watch } from 'vue'
 
-     const router = useRouter()
-     const route = useRoute()
-     const query = route.query
-     const month = ref(null)
-     const year = ref(null)
+const router = useRouter()
+const route = useRoute()
 
-     const admin_view_only = route.query.admin_view_only=='true'
+const authStore = useAuthStore()
+authStore.fetchTokenFromLocalStore()
+const currentUser = authStore.state.user
 
-     const {who_receive_feedback_id } = query
+const feedbackType = route.params.feedback_type
 
-    month.value= route.query.month
-    year.value = route.query.year 
+// read once: the navbar date picker replaces the query of the page, these must survive it
+const { who_receive_feedback_id, who_receive_feedback_db_name, who_give_feedback_id, who_give_feedback_db_name } = route.query
 
-    if (month.value == null || month.value == ""){
-        month.value= months[new Date().getMonth()]
-     }
+// feedback is given once a month (YYYY-MM). The month follows the date picker of the navbar.
+const today = new Date()
+const currentYearMonth = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}`
+const yearMonth = computed(() => route.query.year_month || currentYearMonth)
 
-    if (year.value == null || year.value == ""){
-        year.value = new Date().getFullYear()
-    }
-   
-    console.log('the month is', month.value )
-    console.log('the year is ', year.value)
-    const today = new Date()
-    const date = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
+// no feedback for a month that has not started yet (YYYY-MM strings compare correctly as text)
+const isFutureMonth = computed(() => yearMonth.value > currentYearMonth)
 
+const backToList = () =>
+  router.push({
+    path: '/feedback/feedback_by_nonesales',
+    query: { feedback_type: feedbackType },
+  })
 
-      //get the current user
-    const authStore = useAuthStore()
-    authStore.fetchTokenFromLocalStore()
+// nobody can give feedback on behalf of another user
+const isNotTheGiver = Number(currentUser.login_id) !== Number(who_give_feedback_id)
+if (isNotTheGiver) {
+  alert(`You are not allowed to give or update feedback on ${who_give_feedback_db_name}'s behalf`)
+  backToList()
+}
 
-    const currentUser = authStore.state.user 
-    const  feedbackType = route.params.feedback_type
+const feedbackTitle = feedbackType === 'by_member' ? 'IMMEDIATE HEAD FEEDBACK EVALUATION' : 'MEMBER FEEDBACK EVALUATION'
+const feedbackSubtitle = feedbackType === 'by_member'
+  ? 'Rate your immediate head based on the following questions.'
+  : 'Rate your member based on the following questions.'
 
+// same questions the composable holds for every none-sales department
+// by_member: member (agentType 0) rates the head -> 'lm_by_agent'
+// by_head  : head   (agentType 1) rates the member -> 'agent_by_lm'
+const { questions } = feedbackType === 'by_member'
+  ? useNoneSalesFeedbackQuestions(0, 'lm_by_agent', currentUser.department_code)
+  : useNoneSalesFeedbackQuestions(1, 'agent_by_lm', currentUser.department_code)
 
-    //make sure that no one will give  feedback on for other user
-     if(currentUser.login_type != 'standarduser'){
-       
-        if(Number(currentUser.login_id) !== Number(route.query.who_give_feedback_id)){
-            alert(`Your are not ${route.query.who_give_feedback_db_name} your not allowed to give or update feedback on  ${route.query.who_give_feedback_db_name}'s behalf`)
-           
-        }
-       
-    }
+const feedbackStore = useFeedbackNoneSalesStore()
 
-  
-    const who_give_feedback_agent_type = currentUser.login_type == 'standarduser' ? route.query.who_give_feedback_agent_type : currentUser.agent_type
+// the feedback already submitted for the selected month (empty list = not submitted yet)
+const feedback = computed(() => feedbackStore.state[feedbackType] || [])
 
+const feedbackQuery = () => ({
+  feedback_type: feedbackType,
+  who_give_feedback_id,
+  year_month: yearMonth.value,
+})
 
+const fetchFeedback = async () => {
+  feedbackStore.state[feedbackType] = []
+  if (isFutureMonth.value || isNotTheGiver) return
 
-    console.log('the feedback type is', feedbackType)
-    const feedbackTitle = ref('')
-    const feedbackSubtitle = ref('')
+  try {
+    await feedbackStore.fetchNoneSalesFeedback(who_receive_feedback_id, feedbackQuery(), feedbackType)
+  } catch (error) {
+    alert(error.message)
+  }
+}
 
-    if(feedbackType == 'lm_by_agent' || feedbackType == 'um_by_lm'){
-       
-        feedbackTitle.value = 'MANAGER FEEDBACK EVALUATION'
-        feedbackSubtitle.value = 'Rate your Manager based on the following questions.'
-    }else if(feedbackType == 'agent_by_lm'){
-        
-        feedbackTitle.value = 'SALES FEEDBACK EVALUATION'
-        feedbackSubtitle.value = 'Rate your agent based on the following questions.'
-    }else if(feedbackType == 'lm_by_um'){
-        
-        feedbackTitle.value = 'LOCAL MANAGER FEEDBACK EVALUATION'
-        feedbackSubtitle.value = 'Rate your local-Manager based on the following questions.'
-    }
+const addUpdateDeleteFeedback = async (feedbackResponse, httpMethod) => {
+  if (isFutureMonth.value) {
+    alert('You cannot give feedback for a future month')
+    return
+  }
 
-    const { questions } =   useFeedbackQuestions(Number(who_give_feedback_agent_type), feedbackType)
+  feedbackResponse.who_give_feedback_id = who_give_feedback_id
+  feedbackResponse.who_receive_feedback_id = who_receive_feedback_id
+  feedbackResponse.date = `${yearMonth.value}-${String(today.getDate()).padStart(2, '0')}`
+  feedbackResponse.year_month = yearMonth.value
 
+  await feedbackStore.addUpdateDeleteFeedback(
+    who_receive_feedback_id,
+    feedbackResponse,
+    feedbackType,
+    feedbackQuery(),
+    httpMethod
+  )
 
+  // the store keeps the error instead of throwing: stay on the form when saving failed
+  if (feedbackStore.state.error) {
+    alert(feedbackStore.state.error)
+    return
+  }
 
-     //get agent_id
-    //  const agentId = route.params.id
+  backToList()
+}
 
-     //use feedback state management
-     const useFeedbackStore  = feedbackStore()
+onMounted(fetchFeedback)
 
-    const agentFeedback = computed(() => useFeedbackStore.state[feedbackType])
-
-   
-
-    const addUpdateDeleteFeedback  = async(feedbackResponse, httpMethod)  => {
-        //make sure that no one will give  feedback on for other user
-            if(currentUser.login_type != 'standarduser'){
-            
-            
-                if(Number(currentUser.login_id) !== Number(route.query.who_give_feedback_id)){
-                    alert(`Your are not ${route.query.who_give_feedback_db_name} your not allowed to give or update feedback on  ${route.query.who_give_feedback_db_name}'s behalf`)
-                   return
-                }
-            
-            }
-
-        feedbackResponse.date = date 
-        feedbackResponse.month = month.value 
-        feedbackResponse.year = year.value
-       
-
-        try {
-            await useFeedbackStore.addUpdateDeleteFeedback(feedbackResponse.who_receive_feedback_id, feedbackResponse, feedbackType, query, httpMethod)
-         
-           router.push({
-            path: '/feedback/feedback_by_sales',
-            query: {
-                feedback_type: feedbackType
-            }
-           })
-           
-        }catch(error){
-            console.log(error)
-        }
-    }
-    
-    onMounted(async()=> {
-       await useFeedbackStore.fetchFeedback(who_receive_feedback_id, query, feedbackType)
-
-    })
-
-
-    watch(route, async (newRoute) => {
-    alert(`chaange to ${newRoute.query.month} ${newRoute.query.year}`)
-    month.value = newRoute.query.month
-    year.value = newRoute.query.year
-    router.push(newRoute.fullPath);
-
-     await useFeedbackStore.fetchFeedback(who_receive_feedback_id, newRoute.query, feedbackType)
-});
-
-   
-  
-
-
-
-  </script>
-  
+// a different month was picked in the navbar
+watch(yearMonth, fetchFeedback)
+</script>

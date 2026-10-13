@@ -341,6 +341,11 @@ exports.generateCsdPerformanceMetrics  = async (year_month, scope, department_co
          });
          break
     }
+    // ids that are written in the SQL filter must be whole numbers (the employee_id comes from the url)
+    const asId = (value) => (Number.isInteger(Number(value)) && Number(value) > 0 ? Number(value) : 0)
+    // the employee login token has login_id (= employees.id); it has no 'id'
+    const currentUserId = asId(current_user.login_id ?? current_user.id)
+
     let filter = ""
     if( current_user.role == 'admin'  || (current_user.role == 'manager' &&  [10, 9].includes(current_user.position_level))){
         switch (scope){
@@ -358,7 +363,7 @@ exports.generateCsdPerformanceMetrics  = async (year_month, scope, department_co
                 break
             case "single":
                 
-                filter = `AND e.id=${employee_id}`
+                filter = `AND e.id=${asId(employee_id)}`
                 break    
         
         }
@@ -371,11 +376,11 @@ exports.generateCsdPerformanceMetrics  = async (year_month, scope, department_co
             case "agent":
             case  "team_leader":
             case  "team":    
-                filter = `AND p.level IN (1,2,3) AND ea.manager_id = ${current_user.id}`
+                filter = `AND p.level IN (1,2,3) AND ea.manager_id = ${currentUserId}`
                 break 
             case "single":
                 
-                filter = `AND e.id=${employee_id}`
+                filter = `AND e.id=${asId(employee_id)}`
                 break    
         
         }        
@@ -384,13 +389,24 @@ exports.generateCsdPerformanceMetrics  = async (year_month, scope, department_co
 
       if (current_user.role == 'user' &&  [1,2,3].includes(current_user.position_level) ){
 
+        // An agent without a filter got the whole department (managers included) and the scoring
+        // crashed on them: the leaderboard of an agent is the agent / team leader leaderboard.
         switch (scope){
+            case "agent":
+                filter = "AND p.level IN (1,2,3)"
+                break
+            case "team_leader":
+            case "team":
+                filter = "AND p.level IN (1,2,3,8)"
+                break
             case "single":
-                
-                filter = `AND e.id=${employee_id}`
-                break    
-        
-        }        
+                // an agent can only open his own details
+                filter = `AND e.id=${currentUserId && asId(employee_id) === currentUserId ? currentUserId : 0}`
+                break
+            default:
+                filter = "AND 1=0"
+                break
+        }
     }
 
 
