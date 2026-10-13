@@ -54,6 +54,8 @@
 //   }
 // ]
 
+import { QA_POSITION_NAME } from './departments'
+
 export const csdMenu = [
 
             // { name: "Dashboard", route: '/csd/dashboard', icon: ['fas', 'tachometer-alt']},
@@ -101,13 +103,14 @@ export const csdMenu = [
               subMenu:[
                 // admin only
                 { name: 'FEEDBACK ADMIN', route: '/csd/feedback_by_admin', icon: ['fas', 'users'], allowedRoles: ['admin'] },
-                { name: 'FEEDBACK QA', route: '/feedback/feedback_by_qa', icon: ['fas', 'users'], allowedRoles: ['admin'] },
 
-                // none-admin, by position level (admin never sees these two)
-                // head rates the members: level 10, 9, 8
-                { name: 'FEEDBACK MEMBERS', route: '/feedback/feedback_by_nonesales?feedback_type=by_head', icon: ['fas', 'users'], allowedLevels: [10, 9, 8], excludedRoles: ['admin'] },
+                // staff items, by position level (admin and poweruser never see them: they only view a feedback through its link)
+                // head rates the members (questionnaire): level 10, 9, 8 - but not the Quality Analyst (level 9 too)
+                { name: 'FEEDBACK MEMBERS', route: '/feedback/feedback_by_nonesales?feedback_type=by_head', icon: ['fas', 'users'], allowedLevels: [10, 9, 8], excludedRoles: ['admin', 'poweruser'], excludedPositionNames: [QA_POSITION_NAME] },
+                // the Quality Analyst gives a score to all the CSD staff of level 8 and below (no questionnaire, like the feedback by admin)
+                { name: 'FEEDBACK MEMBERS', route: '/csd/feedback_by_qa', icon: ['fas', 'users'], allowedPositionNames: [QA_POSITION_NAME], excludedRoles: ['admin', 'poweruser'] },
                 // members rate the head: level 9, 8, 3, 1
-                { name: 'FEEDBACK HEAD', route: '/feedback/feedback_by_nonesales?feedback_type=by_member', icon: ['fas', 'user-tie'], allowedLevels: [9, 8, 3, 1], excludedRoles: ['admin'] },
+                { name: 'FEEDBACK HEAD', route: '/feedback/feedback_by_nonesales?feedback_type=by_member', icon: ['fas', 'user-tie'], allowedLevels: [9, 8, 3, 1], excludedRoles: ['admin', 'poweruser'] },
 
               ]
 

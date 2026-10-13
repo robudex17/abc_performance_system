@@ -297,7 +297,7 @@ exports.computeOverallFeedback = computeOverallFeedback
 //   months       the selected month with the averages and the overall feedback (empty for a future month)
 //   from_members feedback of the members about their head (feedback_by_members)  -> list of the modal
 //   from_head    feedback of the head about the member (feedback_by_heads)       -> list of the modal
-//   qa           feedback by the QA (feedback_by_qa)
+//   qa           feedback by the QA (feedback_by_nonesales_qa)
 //   admin        feedback by the admin (feedback_by_admin)
 exports.getNoneSalesFeedbackSummary = async (req, res, next) => {
     const employeeId = Number(req.params.employee_id)
@@ -337,14 +337,16 @@ exports.getNoneSalesFeedbackSummary = async (req, res, next) => {
             [employeeId, yearMonth]
         )
 
-        // the QA table keeps the month as a name and the year as a number
+        // feedback_by_nonesales_qa( employee_id, db_name, qa_id, qa_dbname, qa_role, year_month, feedback ):
+        // one record per employee and month, given by the Quality Analyst (same shape as the other lists of the modals)
         const [qaRows] = await pool.execute(
-            `SELECT id, qa_id AS who_give_feedback_id, qa_dbname AS who_give_feedback_name, feedback_score, month, year
-               FROM feedback_by_qa
-              WHERE agent_id = ? AND year = ? AND month = ?`,
-            [employeeId, year, MONTH_NAMES[month - 1]]
+            `SELECT employee_id AS id, qa_id AS who_give_feedback_id, qa_dbname AS who_give_feedback_name,
+                    feedback AS feedback_score, \`year_month\`
+               FROM feedback_by_nonesales_qa
+              WHERE employee_id = ? AND \`year_month\` = ?`,
+            [employeeId, yearMonth]
         )
-        const qa = qaRows.map(row => ({ ...row, feedback_type: 'qa', year_month: yearMonth }))
+        const qa = qaRows.map(row => ({ ...row, feedback_type: 'qa' }))
 
         const [admin] = await pool.execute(
             `SELECT admin_id, admin_dbname, \`year_month\`, feedback

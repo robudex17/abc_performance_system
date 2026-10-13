@@ -30,3 +30,12 @@ export const getDepartmentHome = (user) => {
 
 // is the path inside the area of the department with this home ('/csd' owns '/csd' and '/csd/...')
 export const isInsideArea = (path, areaPrefix) => path === areaPrefix || path.startsWith(areaPrefix + '/')
+
+// The CSD & Collections Quality Analyst / Trainer (position level 9, like the assistant managers) gives the QA feedback:
+// a score to the CSD staff of position level 8 and below, instead of the questionnaire to his/her members.
+// The position is read from the login token (position_name). The backend has the same name: middleware/qa_access.js
+export const QA_POSITION_NAME = 'CSD & Collections Quality Analyst/ Trainer'
+
+const normalizePositionName = (text) => String(text ?? '').replace(/\s+/g, ' ').trim().toLowerCase()
+
+export const isQaStaff = (user) => normalizePositionName(user?.position_name) === normalizePositionName(QA_POSITION_NAME)

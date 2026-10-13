@@ -45,13 +45,12 @@ export const collectionMenu = [
               subMenu:[
                 // admin only
                 { name: 'FEEDBACK ADMIN', route: '/collection/feedback/feedback_by_admin', icon: ['fas', 'users'], allowedRoles: ['admin'] },
-                { name: 'FEEDBACK QA', route: '/collection/feedback/feedback_by_qa', icon: ['fas', 'users'], allowedRoles: ['admin'] },
 
-                // none-admin, by position level (admin never sees these two)
+                // staff items, by position level (admin and poweruser never see them: they only view a feedback through its link)
                 // head rates the members: level 10, 9, 8
-                { name: 'FEEDBACK MEMBERS', route: '/collection/feedback/feedback_by_members', icon: ['fas', 'users'], allowedLevels: [10, 9, 8], excludedRoles: ['admin'] },
+                { name: 'FEEDBACK MEMBERS', route: '/collection/feedback/feedback_by_members', icon: ['fas', 'users'], allowedLevels: [10, 9, 8], excludedRoles: ['admin', 'poweruser'] },
                 // members rate the head: level 9, 8, 3, 1
-                { name: 'FEEDBACK HEAD', route: '/collection/feedback/feedback_by_head', icon: ['fas', 'user-tie'], allowedLevels: [9, 8, 3, 1], excludedRoles: ['admin'] },
+                { name: 'FEEDBACK HEAD', route: '/collection/feedback/feedback_by_head', icon: ['fas', 'user-tie'], allowedLevels: [9, 8, 3, 1], excludedRoles: ['admin', 'poweruser'] },
 
               ]
 
