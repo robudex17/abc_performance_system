@@ -423,6 +423,47 @@ export const useCsdStore = defineStore('csdStore', () => {
         }
     } 
     
+    // Submit (POST) or Review (DELETE) of the CSD evaluation of a month. employee_id can be 'all'.
+    // Returns true when it worked, the list is fetched again so the buttons and the locks follow the database.
+    const changeCsdEvaluationStatus = async (employee_id, year_month, httpMethod, query_string) => {
+        state.loading = true
+        state.error = null
+        try {
+            const response = await fetch(`${API.csd_evaluation_status}/${employee_id}`, {
+                method: httpMethod,
+                body: JSON.stringify({ year_month }),
+                headers: {
+                  'Content-Type': 'application/json',
+                  'Authorization': `Bearer ${token}`,
+                },
+            })
+
+            const result = await response.json().catch(() => ({}))
+
+            //token is  invalid  remove to local storage
+            if(!response.ok && response.status == 403 && result.message == 'Invalid Access Token'){
+                localStorage.removeItem('jwt')
+                alert('Your Session has been expired, Please Login again.')
+                location.reload()
+            }
+
+            if (!response.ok) {
+                throw new Error(result.message || result.error || 'An unknown error occurred')
+            }
+
+            await fetchCsdOrEvaluationPerformanceMetrics(null, 'all', 'evaluation', query_string)
+            alert(result.message)
+            return true
+        } catch (error) {
+            console.log(error.message)
+            state.error = error.message
+            alert(error.message)
+            return false
+        } finally {
+            state.loading = false
+        }
+    }
+
     const addUpdateDeleteDeduction = async(id, data , query, httpMethod) => {
         state.loading = true
         state.error = null
@@ -483,6 +524,7 @@ export const useCsdStore = defineStore('csdStore', () => {
         
         submitPerformanceMetricsOrEvaluation,
         reviewPerformanceMetricsOrEvaluation,
+        changeCsdEvaluationStatus,
         addUpdateDeleteDeduction,
         fetchCsdOrEvaluationPerformanceMetrics,
         addCsdPerformanceMetricsOrEvaluation,

@@ -1,5 +1,3 @@
-const csdMetricsController   = require('./csd_performance_metrics_controller')
-
 const pool = require('../../config/db')
 const { validationResult, body } = require('express-validator')
 
@@ -39,6 +37,12 @@ const getAdminIdentity = async (req, fromBody) => {
     }
 }
 
+
+// Performance must not be 0 and at least one of Feedback (Admin), (QA), (Immediate Head), (Members) must have a value.
+const isReadyToSubmit = (agent) =>
+    Number(agent.performance) > 0 &&
+    [agent.feedback_by_admin, agent.feedback_by_qa, agent.feedback_by_immediate_head, agent.feedback_by_members]
+        .some(value => Number(value) > 0)
 
 exports.fetchCsdEvaluation = async (req, res, next) => {
 
@@ -151,6 +155,11 @@ exports.addCsdEvaluation = async (req, res, next) => {
                 return res.status(400).json({
                     message: 'Performance value cannot be greater than 100.'
                 });
+            }
+            // 0 is not a performance: nothing is stored (and an old 0 record is removed)
+            if (perfValue === 0) {
+                await pool.execute(delete_eval_queries.performance, [employee_id, year_month])
+                return res.status(200).json({ message: `Performance 0 is not stored for employee_id: ${employee_id}` })
             }
             array_of_values = [performance, year_month, employee_id]
             success_message = `${performance} ${eval_type} for employee_id: ${employee_id} are created or recorded`
@@ -292,6 +301,11 @@ exports.updateCsdEvaluation  = async (req,res, next) => {
                 return res.status(400).json({
                     message: 'Performance value cannot be greater than 100.'
                 });
+            }
+            // updating to 0 deletes the record completely (Performance 0 means not set)
+            if (perfValue === 0) {
+                await pool.execute(delete_eval_queries.performance, [employee_id, year_month])
+                return res.status(200).json({ message: ` ${eval_type} is removed` })
             }
             array_of_values = [performance,  employee_id, year_month]
             success_message = `Agent ${eval_type} is updated`
@@ -537,6 +551,12 @@ exports.generateCsdEvaluation  = async (year_month, scope, department_code,  met
      // the feedback of the QA, the immediate head and the members (view only on the CSD Evaluation page)
      await attachReceivedFeedback(employee_to_evaluate, year_month)
 
+     // submit status: ready when Performance is not 0 and at least one of the four feedback has a value
+     for (const agent of employee_to_evaluate) {
+        agent['submitted'] = Number(agent.eval_submitted) === 1 ? 1 : 0
+        agent['ready_to_submit'] = isReadyToSubmit(agent)
+     }
+
 
 
       //GET THE EQUIVALENT POINTS  TABLES
@@ -619,142 +639,77 @@ exports.generateCsdEvaluation  = async (year_month, scope, department_code,  met
 }
 
 
-//This is for submitting the sales evaluation  
-exports.submitCsdPerformanceMetrics= async (req, res, next) => {
+// Submit the CSD evaluation of the month: admin only (routes/csd/csd_evaluation_routes.js).
+// employee_id 'all' submits everybody (the Submit button of the CSD & Collection Manager and the Submit All button),
+// it needs all the rows to be ready. What is ready is decided here, not by what the page sends.
+// Table: csd_evaluation_status( employee_id, dbname, year_month, submitted )
+const readStatusYearMonth = (req) => {
+    const yearMonth = req.body?.year_month || req.query.year_month
+    if (!/^\d{4}-(0[1-9]|1[0-2])$/.test(yearMonth || '')) return null
+    return yearMonth
+}
 
-  const employee_id  = req.params.employee_id 
+exports.submitCsdEvaluation = async (req, res, next) => {
+    const employeeId = req.params.employee_id
+    const yearMonth = readStatusYearMonth(req)
+    if (!yearMonth) return res.status(400).json({ message: 'year_month must be in YYYY-MM format' })
 
-  const submit_type = req.params.submit_type
+    const today = new Date()
+    if (yearMonth > `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}`) {
+        return res.status(400).json({ message: 'Submitting the evaluation of a future month is prohibited' })
+    }
 
-  const table = {
-    'metrics': 'csd_performance_status',
-    'evaluation': 'csd_evaluation_status'
-  }
+    let connection
+    try {
+        const evaluation = await exports.generateCsdEvaluation(yearMonth, 'all', 'csd', 'all', 'all', null, req.user)
+        const targets = employeeId === 'all' ? evaluation : evaluation.filter(agent => String(agent.id) === String(employeeId))
 
+        if (targets.length === 0) return res.status(404).json({ message: `Employee ${employeeId} not found in the CSD evaluation of ${yearMonth}` })
 
-
-  if (employee_id === 'all') {
-     // delete all records first base on month and year
-     // then insert new records
-      const payload = req.body; // array of agents
-
-      const year_month = payload[0].year_month
-      
-      if (!Array.isArray(payload) || payload.length === 0) {
-        return res.status(400).json({ error: "Invalid payload" });
-      }
-   
-    
-     
-      try {
-          // 1. Delete existing rows for that month & year
-          await pool.query(
-            `DELETE FROM ${table[submit_type]} WHERE \`year_month\` =? `,
-            [year_month]
-          );
-
-        const values = payload.map(item => [
-            item.employee_id,
-            item.dbname,
-            item.year_month || null,
-            item.submitted
-        ]);
-
-        const [result] = await pool.query(
-            `
-            INSERT INTO ${table[submit_type]}
-           (\`employee_id\`, \`dbname\`, \`year_month\`, \`submitted\`)
-            VALUES ?
-            `,
-            [values]
-        );
-
-        res.json({
-            success: true,
-            deletedOld: true,
-            inserted: result.affectedRows
-        });          
-
-
-        } catch (error) {
-          console.error("Error in submit-all:", error);
-          res.status(500).json({ error: "Database operation failed" });
+        const notReady = targets.filter(agent => !agent.ready_to_submit)
+        if (notReady.length > 0) {
+            return res.status(400).json({ message: `Not ready to submit: ${notReady.map(agent => agent.db_name).join(', ')}. Performance must not be 0 and at least one Feedback must have a value` })
         }
 
-  }else{
-    // insert new record base on month and year
-    const {dbname, year_month, submitted } = req.body
+        connection = await pool.getConnection()
+        await connection.beginTransaction()
+        for (const agent of targets) {
+            await connection.execute('DELETE FROM csd_evaluation_status WHERE employee_id = ? AND `year_month` = ?', [agent.id, yearMonth])
+            await connection.execute(
+                'INSERT INTO csd_evaluation_status (employee_id, dbname, `year_month`, submitted) VALUES (?, ?, ?, 1)',
+                [agent.id, agent.db_name, yearMonth]
+            )
+        }
+        await connection.commit()
 
-   
-
-    try {
-      const [result] = await pool.execute(
-        `INSERT INTO  ${table[submit_type]}  (employee_id, dbname, \`year_month\`, submitted)
-         VALUES (?, ?, ?, ?)
-         ON DUPLICATE KEY UPDATE submitted = VALUES(submitted)`,
-        [employee_id, dbname, year_month, submitted]
-      );
-              res.status(201).json({
-            message: `Performance Metrics  employee_id: ${employee_id} are created or recorded`
-        });
+        res.status(201).json({ message: `CSD evaluation of ${employeeId} (${yearMonth}) is submitted`, submitted: targets.length })
     } catch (error) {
-      console.error('Error inserting csd performance metrics data:', error);
-      res.status(500).json({ error: 'Error inserting csd performance metrics data' });
+        if (connection) await connection.rollback()
+        console.error('Error submitting the CSD evaluation:', error)
+        res.status(500).json({ error: 'Database Error, Cannot submit the CSD evaluation' })
+    } finally {
+        if (connection) connection.release()
     }
-  }
 }
 
-//This is for reviewing the sales evaluation 
-exports.reviewCsdPerformanceMetrics = async (req, res, next) => {
-
-  const review_type = req.params.review_type
-
-   const table = {
-    'metrics': 'csd_performance_status',
-    'evaluation': 'csd_evaluation_status'
-   }
-
-  
-    
-   const employee_id  = req.params.employee_id
-   const { year_month } = req.body
-
-
-   let successMessage
-   if(employee_id == 'all'){
-    successMessage = `Performance Metrics  Data for all agents are marked for review`
-   }else{
-    successMessage = `Performance Metrics Data for ${employee_id} is marked for review`
-   }
-  
+// Review = delete the submitted status, the data can be changed again (not for the resigned staff, see the lock middleware).
+exports.reviewCsdEvaluation = async (req, res, next) => {
+    const employeeId = req.params.employee_id
+    const yearMonth = readStatusYearMonth(req)
+    if (!yearMonth) return res.status(400).json({ message: 'year_month must be in YYYY-MM format' })
 
     try {
-        if(employee_id == 'all'){
-            const query = `DELETE FROM  ${table[review_type]} WHERE  \`year_month\`=? `
-            const [result] = await pool.execute(query, [year_month])
-            return res.status(200).send({ message: successMessage });
-    
-        }
-        const query = `DELETE FROM  ${table[review_type]} WHERE employee_id=? AND \`year_month\`=? `
-        const [result] = await pool.execute(query, [employee_id, year_month])
-
-        if (result.affectedRows === 0){
-            return res.status(400).json({message: 'Agent Metrics Not found'})
+        if (employeeId === 'all') {
+            await pool.execute('DELETE FROM csd_evaluation_status WHERE `year_month` = ?', [yearMonth])
+            return res.status(200).json({ message: `CSD evaluation of ${yearMonth} is marked for review` })
         }
 
-        res.status(200).send({ message:  successMessage });
-    }
-    catch(error) {
-        console.error('Error marked for review:', error)
-        res.status(500).json({error: 'Database Error, Cannot marked for review'})
+        const [result] = await pool.execute('DELETE FROM csd_evaluation_status WHERE employee_id = ? AND `year_month` = ?', [employeeId, yearMonth])
+        if (result.affectedRows === 0) return res.status(404).json({ message: 'The evaluation is not submitted' })
+
+        res.status(200).json({ message: `CSD evaluation of ${employeeId} (${yearMonth}) is marked for review` })
+    } catch (error) {
+        console.error('Error marking the CSD evaluation for review:', error)
+        res.status(500).json({ error: 'Database Error, Cannot mark the CSD evaluation for review' })
     }
 }
-
-
-
-
-
-
-
-
-

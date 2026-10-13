@@ -444,7 +444,7 @@ exports.fetch_eval_queries = {
 }
 
 exports.add_eval_queries = {
-    performance: "INSERT INTO none_sales_performance(`performance`,`year_month`,`employee_id`) VALUES (?,?,?)",
+    performance: "INSERT INTO none_sales_performance(`performance`,`year_month`,`employee_id`) VALUES (?,?,?) ON DUPLICATE KEY UPDATE performance = VALUES(performance)",
     absences: "INSERT INTO absences2(`count`,`year_month`,`employee_id`, `description`) VALUES (?,?,?,?)",
     tardiness: "INSERT INTO tardiness2(`count`,`year_month`,`employee_id`, `description`) VALUES (?,?,?,?)",
     memo: "INSERT INTO memo2(`count`,`year_month`,`employee_id`, `description`) VALUES (?,?,?,?)",

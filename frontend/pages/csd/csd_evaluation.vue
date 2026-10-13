@@ -120,7 +120,7 @@
                    
                   <CSDTooltipCell :title="agent.db_name" class="text-blue-700">
                     
-                      <button  @click="openMetricsTypeModal({ year_month: agent.year_month,employee_status: agent.employee_status, eval_submittedsubmitted: agent.eval_submitted, employee_id: agent.id, db_name:agent.db_name, month: agent.month, year: agent.year, position_id: agent.position_id, position_name: agent.position_name, team_id:agent.team_id, 
+                      <button  @click="openMetricsTypeModal({ year_month: agent.year_month,employee_status: agent.employee_status, eval_submitted: agent.eval_submitted, employee_id: agent.id, db_name:agent.db_name, month: agent.month, year: agent.year, position_id: agent.position_id, position_name: agent.position_name, team_id:agent.team_id, 
                         tardiness: agent.tardiness,image_link: agent.image_link, eval_type: 'tardiness' })" >
                           {{ agent.tardiness }}
                       </button>
@@ -129,7 +129,7 @@
 
                    <CSDTooltipCell :title="agent.db_name" class="text-blue-700">
                     
-                      <button  @click="openMetricsTypeModal({ year_month: agent.year_month, employee_status: agent.employee_status, submitted: agent.submitted, employee_id: agent.id, db_name:agent.db_name, month: agent.month, year: agent.year, position_id: agent.position_id, position_name: agent.position_name, team_id:agent.team_id, 
+                      <button  @click="openMetricsTypeModal({ year_month: agent.year_month, employee_status: agent.employee_status, eval_submitted: agent.eval_submitted, employee_id: agent.id, db_name:agent.db_name, month: agent.month, year: agent.year, position_id: agent.position_id, position_name: agent.position_name, team_id:agent.team_id, 
                         memo: agent.memo,   image_link: agent.image_link, eval_type: 'memo' })" >
                           {{ agent.memo }}
                       </button>
@@ -138,7 +138,7 @@
             
 
                     <CSDTooltipCell :title="agent.db_name" class="text-blue-700">
-                      <button  @click="openMetricsTypeModal({ year_month: agent.year_month, employee_status: agent.employee_status, submitted: agent.submitted, employee_id: agent.id, db_name:agent.db_name, month: agent.month, year: agent.year, position_id: agent.position_id, position_name: agent.position_name, team_id:agent.team_id, 
+                      <button  @click="openMetricsTypeModal({ year_month: agent.year_month, employee_status: agent.employee_status, eval_submitted: agent.eval_submitted, employee_id: agent.id, db_name:agent.db_name, month: agent.month, year: agent.year, position_id: agent.position_id, position_name: agent.position_name, team_id:agent.team_id, 
                         feedback_by_admin: parseFloat(agent.feedback_by_admin),
                         image_link: agent.image_link, eval_type: 'feedback_by_admin' })" >
                           {{ agent.feedback_by_admin }}
@@ -190,74 +190,70 @@
                     </td>
 
                                      
-                    <!-- Actions -->
+                    <!-- Actions: Submit / Submitted + Review. The row of the CSD & Collection Manager (position level 10) is the Submit All -->
                     <td class="py-0.5 px-4 text-center border" >
-                      <div class="flex justify-center space-x-2" v-if="agent.position_level == 9">
+                      <div class="flex justify-center space-x-2" v-if="agent.position_level == 10">
 
-                    <!-- Submit All button -->
-                              <button
-                                v-if="!submittedAll"
-                                @click="submitAllPerformanceMetrics"
-                                :disabled="!canSubmitAll"
-                                :class="[
-                                  'py-0.5 px-3 rounded-lg flex items-center gap-2 text-sm',
-                                  canSubmitAll
-                                    ? 'bg-blue-500 text-white hover:bg-blue-600'
-                                    : 'bg-gray-400 text-white cursor-not-allowed'
-                                ]"
-                              >
-                                Submit
-                              </button>
+                        <!-- Submit All: only when every row (his own too) is ready -->
+                        <button
+                          v-if="!submittedAll"
+                          @click="submitAllEvaluation"
+                          :disabled="!canSubmitAll"
+                          :class="[
+                            'py-0.5 px-3 rounded-lg flex items-center gap-2 text-sm',
+                            canSubmitAll
+                              ? 'bg-green-500 text-white hover:bg-green-600'
+                              : 'bg-gray-400 text-white cursor-not-allowed'
+                          ]"
+                        >
+                          Submit
+                        </button>
 
-                              <!-- Submitted All button (disabled + gray) -->
-                              <button
-                                v-else
-                                disabled
-                                class="bg-gray-400 text-white cursor-not-allowed text-sm rounded-lg px-3"
-                              >
-                                Submitted 
-                              </button>
+                        <!-- Submitted All (disabled + gray) -->
+                        <button
+                          v-else
+                          disabled
+                          class="bg-gray-400 text-white cursor-not-allowed text-sm rounded-lg px-3"
+                        >
+                          Submitted
+                        </button>
 
-                              <!-- Review All button (purple) -->
-                              <button
-                                v-if="submittedAll"
-                                @click="reviewAllPerformanceMetrics"
-                                class="bg-purple-500 text-white py-0.5 px-3 rounded-lg hover:bg-purple-600 disabled:bg-gray-400 disabled:cursor-not-allowed text-sm"
-                              >
-                                Review 
-                              </button>
-
+                        <!-- Review All (purple) -->
+                        <button
+                          v-if="submittedAll"
+                          @click="reviewAllEvaluation"
+                          class="bg-purple-500 text-white py-0.5 px-3 rounded-lg hover:bg-purple-600 text-sm"
+                        >
+                          Review
+                        </button>
                       </div>
 
-                          <div class="flex justify-center space-x-2" v-else>
+                      <div class="flex justify-center space-x-2" v-else>
 
-                          <!-- Submit / Submitted Button -->
-                          <button
-                            @click="submitPerformanceMetrics(agent)"
-                          :disabled="agent.submitted == 1"
+                        <!-- Submit / Submitted: green only when Performance is not 0 and at least one Feedback has a value -->
+                        <button
+                          @click="submitEvaluation(agent)"
+                          :disabled="agent.submitted == 1 || !agent.ready_to_submit"
                           :class="[
-                              'py-0.5 px-3 rounded-lg flex items-center gap-2 text-sm',
-                              agent.submitted == 1
-                              ? 'bg-gray-400 text-white cursor-not-allowed' // Already submitted
-                              : 'bg-green-500 text-white hover:bg-green-600' // Ready to submit
-                                   
+                            'py-0.5 px-3 rounded-lg flex items-center gap-2 text-sm',
+                            agent.submitted != 1 && agent.ready_to_submit
+                              ? 'bg-green-500 text-white hover:bg-green-600'
+                              : 'bg-gray-400 text-white cursor-not-allowed'
                           ]"
-                          >
+                        >
                           {{ agent.submitted == 1 ? 'Submitted' : 'Submit' }}
-                          </button>
+                        </button>
 
-                          <!-- Review Button -->
-                          <button
+                        <!-- Review -->
+                        <button
                           v-if="agent.submitted == 1"
-                          @click="reviewPerformanceMetrics(agent)"
-                          class="bg-purple-500 text-white py-0.5 px-3 rounded-lg hover:bg-purple-600 disabled:bg-gray-400 disabled:cursor-not-allowed text-sm"
-                          >
+                          @click="reviewEvaluation(agent)"
+                          class="bg-purple-500 text-white py-0.5 px-3 rounded-lg hover:bg-purple-600 text-sm"
+                        >
                           Review
-                          </button>
-
-                      </div>                    
+                        </button>
+                      </div>
                     </td>
-
 
                 </tr>
                 </tbody>     
@@ -375,22 +371,20 @@
             </button>
           </div>
 
-                <!-- Centered Submit All Button -->
+        <!-- Centered Submit All Button -->
         <div class="flex justify-center items-center my-6 space-x-4">
-          <!-- Submit All button -->
           <button
             v-if="!submittedAll"
-            @click="submitAllPerformanceMetrics"
-            
-            class="'py-2 px-6 rounded-lg text-lg font-semibold transition-colors bg-blue-500 text-white hover:bg-blue-600"
-            
-             
-            
+            @click="submitAllEvaluation"
+            :disabled="!canSubmitAll"
+            :class="[
+              'py-2 px-6 rounded-lg text-lg font-semibold transition-colors',
+              canSubmitAll ? 'bg-green-500 text-white hover:bg-green-600' : 'bg-gray-400 text-white cursor-not-allowed'
+            ]"
           >
             Submit All
           </button>
 
-          <!-- Submitted All button (disabled + gray) -->
           <button
             v-else
             disabled
@@ -399,18 +393,14 @@
             Submitted All
           </button>
 
-          <!-- Review All button (purple) -->
           <button
             v-if="submittedAll"
-            @click="reviewAllPerformanceMetrics"
+            @click="reviewAllEvaluation"
             class="py-2 px-6 rounded-lg text-lg font-semibold bg-purple-600 text-white hover:bg-purple-700 transition-colors"
           >
             Review All
           </button>
         </div>
-
-
-
 
     </div>
   </div>
@@ -481,20 +471,14 @@
 
     
 
-     if(selectedAgent.eval_submitted ==1 ){
-        alert(`Adding, Updating, or Deleting ${eval_type.value} that is already submitted is prohibited.`)
-        return
-      }
-
-   
-      if(selectedAgent.employee_status == 'Resigned' ){
+     // Resigned first (can never be changed, not even after Review), then the submitted evaluation (the backend checks the same)
+     if(selectedAgent.employee_status == 'Resigned' ){
         alert(`Adding, Updating, or Deleting Agent that is already resigned is prohibitted.`)
         return
       }
 
-      
-      if(selectedAgent.performance_score == 0 ){
-        alert(`Performance is not yet submit for ${selectedAgent.db_name}`)
+     if(selectedAgent.eval_submitted == 1 ){
+        alert(`Adding, Updating, or Deleting ${eval_type.value} that is already submitted is prohibited.`)
         return
       }
 
@@ -746,76 +730,30 @@
   
 
 
-     const submitPerformanceMetrics = async (agent) => {
-    // if (agent.submitted === 0 && agent.ready_to_submit) {
-    //   agent.submitted = 1; // Mark as submitted
-    // } else if (agent.submitted === 1) {
-    //   agent.submitted = 0; // Toggle back (just for demo)
-    // }
+  // Submit / Review of the evaluation: admin only. The backend decides what is ready and what is locked,
+  // the page refetches the list after each action (store.changeCsdEvaluationStatus).
+  const isAdmin = () => currentUser.role == 'admin'
 
-      if(currentUser.role != 'admin' ){
-        alert('No allowed to submit CSD Performance Metrics')
-        return
-     }
-    
-    await csdStoreInstance.submitPerformanceMetricsOrEvaluation(agent.id, {
-        agent_id: agent.id,
-        dbname: agent.db_name,
-        year_month: agent.year_month,
-        submitted: 1
-    }, 'metrics', {year_month: agent.year_month});
+  const submitEvaluation = async (agent) => {
+    if (!isAdmin()) return alert('Not allowed to submit the CSD Evaluation')
+    await csdStoreInstance.changeCsdEvaluationStatus(agent.id, agent.year_month, 'POST', route.query)
   }
 
-const submitAllPerformanceMetrics = async() => {
-    if(currentUser.role != 'admin' && currentUser.login_type != 'standarduser'){
-      alert('No allowed to submit Performance Metrics')
-      return
-    }
-    agents.value.forEach(agent => {
-      if (agent.submitted === 0) {
-        agent.submitted = 1;
-      }
-    });
+  const reviewEvaluation = async (agent) => {
+    if (!isAdmin()) return alert('Not allowed to review the CSD Evaluation')
+    await csdStoreInstance.changeCsdEvaluationStatus(agent.id, agent.year_month, 'DELETE', route.query)
+  }
 
-    const payload = agents.value.map(agent => ({
-          employee_id: agent.id,
-          dbname: agent.db_name,
-          year_month: agent.year_month,
-          submitted: 1
-      }));
+  const submitAllEvaluation = async () => {
+    if (!isAdmin()) return alert('Not allowed to submit the CSD Evaluation')
+    if (!canSubmitAll.value) return
+    await csdStoreInstance.changeCsdEvaluationStatus('all', agents.value[0].year_month, 'POST', route.query)
+  }
 
-      await csdStoreInstance.submitPerformanceMetricsOrEvaluation('all', payload, 'metrics', {year_month: payload[0].year_month}
-  );
-};
-
-
-
-const reviewAllPerformanceMetrics = async() => {
-   if(currentUser.role != 'admin' && currentUser.login_type != 'standarduser'){
-        alert('No allowed to review Sales Evaluation')
-        return
-     }
-
-   // Call the store action to review sales evaluation
-   await csdStoreInstance.reviewPerformanceMetricsOrEvaluation('all', {
-       year_month: agents.value[0].year_month
-   }, 'metrics', { year_month: agents.value[0].year_month});
-};
-
-
-
-const  reviewPerformanceMetrics = async (agent) => {
-
-   if(currentUser.role != 'admin' && currentUser.login_type != 'standarduser'){
-        alert('No allowed to review Performance Metrics')
-        return
-     }
-
-   // Call the store action to review sales evaluation
-   await csdStoreInstance.reviewPerformanceMetricsOrEvaluation(agent.id, {
-      year_month : agent.year_month
-   },'metrics', {year_month : agent.year_month});
-}
+  const reviewAllEvaluation = async () => {
+    if (!isAdmin()) return alert('Not allowed to review the CSD Evaluation')
+    await csdStoreInstance.changeCsdEvaluationStatus('all', agents.value[0].year_month, 'DELETE', route.query)
+  }
 
 
 const openModal = ( data, title = 'Feedback', emptyMessage = 'No Feedback Yet') => {
@@ -859,26 +797,15 @@ const openModal = ( data, title = 'Feedback', emptyMessage = 'No Feedback Yet') 
     return agents.value.slice(start, end);
   });
 
-// Computed: enable button only if all agents are ready
-  const canSubmitAll = computed(() => {
-    // only true if ALL agents are ready_to_submit
-    const agentReadyToSubmit = agents.value
-      .filter(agent => agent.position_level !=9)
-      .map(agent => agent.submitted);
-        return agents.value.length > 0 &&  agentReadyToSubmit.every(Boolean)
-  });
+// Submit All is enabled only when every row is ready (the manager's own row too) and nothing is submitted yet
+  const canSubmitAll = computed(() =>
+    agents.value.length > 0 && agents.value.every(agent => agent.ready_to_submit) && !submittedAll.value
+  );
 
-  const submittedAll = computed(() => {
-    // true if all agents have been submitted
-
-    const agentIsAllSubmitted = agents.value.filter(agent => agent.position_level != 9).map(agent => agent.submitted)
-    return agents.value.length > 0 && agentIsAllSubmitted.every(submitted => submitted === 1)
-  });
-
-
-
-   
-
+  // every row is submitted
+  const submittedAll = computed(() =>
+    agents.value.length > 0 && agents.value.every(agent => agent.submitted == 1)
+  );
 
  watch(route, (newRoute) => {
    // no employee_id and query all metrics

@@ -110,6 +110,7 @@ const API = {
   csd_leaderboard : `${HTTPADDR}/csd_leaderboard`,
   csd_qa_feedback: `${HTTPADDR}/csd_qa_feedback`,       // QA feedback (a score) of the CSD staff, Quality Analyst only
  csd_evaluation: `${HTTPADDR}/csd_evaluation`,
+  csd_evaluation_status: `${HTTPADDR}/csd_evaluation_status`,   // Submit (POST) / Review (DELETE) of the CSD evaluation, admin only
 
   csd_entities: {
     'metrics': `${HTTPADDR}/csd_performance_metrics`,
