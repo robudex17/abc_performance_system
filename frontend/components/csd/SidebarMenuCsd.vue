@@ -209,6 +209,17 @@ const menuItems = buildMenu(csdMenu, currentUser)
         }
 
 
+        // the details pages of an employee (opened from the list): highlight the Monthly / Yearly item of the list
+        const detailsPages = { '/csd/agent_performance/month': 'Agent_Monthly', '/csd/agent_performance/year': 'Agent_Yearly' }
+        if (detailsPages[currentRoute]) {
+          const group = menuItems.find(item => item.subMenu?.some(sub => sub.name === detailsPages[currentRoute]))
+          if (group) {
+            submenuStates.value[group.name] = true
+            activeMenu.value = detailsPages[currentRoute]
+            return
+          }
+        }
+
         for (const item of menuItems) {
           if (item.route === currentRoute) {
             activeMenu.value = item.name;

@@ -127,6 +127,9 @@ const writeTable = (rows, worksheet, title) => {
     })
 }
 
+// shared with the agent performance export (csd_agent_performance_export.js)
+exports.excel = { writeTable, RATING_COLORS, capitalize, toNumber, COLUMN_GROUPS }
+
 exports.csdLeaderboardExportToExcel = async (req, res, next) => {
     const scope = req.params.scope
 

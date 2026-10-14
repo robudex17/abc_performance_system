@@ -209,6 +209,9 @@ const groupByTeam = (allRows, rankedRows) => {
 
 // The leaderboard of a month: returns { data } or { error: { status, message } }.
 // Used by the page (fetchCsdLeaderboard) and by the Excel export.
+// shared with the agent performance pages (csd_agent_performance_controller.js)
+exports.scoring = { scoreEmployee, loadScoreTables, ratingName, toNumber, round4, INCOMPLETE }
+
 exports.buildCsdLeaderboard = async (user, scope, yearMonth, employeeId) => {
     if (!SCOPES.includes(scope)) {
         return { error: { status: 400, message: `Unknown leaderboard scope: ${scope}. Use ${SCOPES.join(', ')}` } }

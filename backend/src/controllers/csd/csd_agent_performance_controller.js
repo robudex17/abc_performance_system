@@ -1,0 +1,197 @@
+const { generateCsdEvaluation } = require('./csd_evaluation_controller')
+const { scoring } = require('./csd_leaderboard_controller')
+
+// Agent Monthly / Agent Yearly performance of the CSD staff (the "Agent Performance" and "Performance Evaluation" menus).
+// Same idea as the sales pages: a list of everybody the user may see, and the performance of one employee.
+// Scores and ratings are the ones of the CSD leaderboard (csd_leaderboard_controller.js, built on the CSD evaluation).
+//
+// Who sees whom (checked here, the pages only follow it):
+//   admin, poweruser, position level 10   everybody (level 1 - 10)
+//   position level 9 (assistant manager)  everybody of level 1 - 9
+//   position level 8 and 7                his/her own team (him/her included)
+//   position level 1, 2, 3                only him/herself
+//
+// Monthly:  GET /csd_agent_performance/monthly?year_month=YYYY-MM            the list
+//           GET /csd_agent_performance/monthly/:employee_id?year_month=...   one employee
+// Yearly:   GET /csd_agent_performance/yearly?year=YYYY                      the list (average of the submitted months)
+//           GET /csd_agent_performance/yearly/:employee_id?year=YYYY         the submitted months + the year average
+// Like the sales yearly pages, only the SUBMITTED months count.
+
+const MONTH_NAMES = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December']
+const { toNumber, round4, ratingName, scoreEmployee, loadScoreTables } = { ...scoring }
+
+const AVERAGE_KEYS = [
+    'performance', 'performance_score', 'absence_score', 'tardiness_score', 'memo_score', 'feedback_score',
+    'performance_rating', 'absence_rating', 'tardiness_rating', 'memo_rating', 'feedback_rating', 'final_ratings',
+]
+const SUM_KEYS = ['absences', 'tardiness', 'memo']
+
+const currentYearMonth = () => {
+    const today = new Date()
+    return `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}`
+}
+
+// is the row (an employee of a month) one the user may see
+const canSee = (user, row) => {
+    if (['admin', 'poweruser'].includes(user?.role)) return true
+
+    const level = Number(user?.position_level)
+    if (Number(row.id) === Number(user?.login_id)) return true       // always him/herself
+    if (level === 10) return true
+    if (level === 9) return Number(row.position_level) <= 9
+    if (level === 8 || level === 7) return row.team_id != null && Number(row.team_id) === Number(user?.team_id)
+    return false
+}
+
+// every employee of the month (all position levels) with the scores, only the ones the user may see
+const buildMonth = async (user, yearMonth, tables) => {
+    const evaluation = await generateCsdEvaluation(yearMonth, 'all', 'csd', 'all', 'all', null, user)
+    return evaluation
+        .map(agent => scoreEmployee(agent, tables))
+        .filter(row => canSee(user, row))
+}
+
+const monthsOfTheYear = (year) => {
+    const currentYear = new Date().getFullYear()
+    const currentMonth = new Date().getMonth()               // 0 = January
+    if (Number(year) < currentYear) return MONTH_NAMES.map((_, index) => index)
+    if (Number(year) === currentYear) return MONTH_NAMES.slice(0, currentMonth + 1).map((_, index) => index)
+    return []                                                // a future year has no data
+}
+
+// is there a month that is not submitted between submitted months (the months before the first one and after the last one are normal)
+const hasGap = (allRecords) => {
+    const submittedIndexes = allRecords.map((record, index) => (record.submitted === 1 ? index : -1)).filter(index => index >= 0)
+    if (submittedIndexes.length === 0) return false
+    const first = submittedIndexes[0], last = submittedIndexes[submittedIndexes.length - 1]
+    return allRecords.slice(first, last + 1).some(record => record.submitted !== 1)
+}
+
+// the average of the submitted months of one employee ('records' are the scored rows of the months)
+const yearAverage = (records, allRecords, tables, year) => {
+    const latest = records[records.length - 1] ?? allRecords[allRecords.length - 1]
+    const result = {
+        id: latest.id,
+        db_name: latest.db_name,
+        image_link: latest.image_link,
+        employee_status: latest.employee_status,
+        position_name: latest.position_name,
+        position_level: latest.position_level,
+        manager_dbname: latest.manager_dbname,
+        team_id: latest.team_id,
+        team_name: latest.team_name,
+        year: Number(year),
+        months_submitted: records.length,
+        // a month between the first and the last submitted month that is not submitted (it is not counted)
+        hasIncomplete: hasGap(allRecords),
+    }
+
+    AVERAGE_KEYS.forEach(key => {
+        const sum = records.reduce((total, record) => total + toNumber(record[key]), 0)
+        result[key] = records.length ? round4(sum / records.length) : '0.0000'
+    })
+    SUM_KEYS.forEach(key => {
+        result[key] = records.reduce((total, record) => total + toNumber(record[key]), 0)
+    })
+
+    if (records.length === 0) {
+        result.ratings_name = 'No Ratings'
+    } else {
+        result.ratings_name = ratingName(tables.ratings, parseFloat(result.final_ratings))
+    }
+    return result
+}
+
+// all the scored rows of the year, grouped by employee (only the employees the user may see)
+const buildYear = async (user, year) => {
+    const tables = await loadScoreTables()
+    const months = monthsOfTheYear(year)
+
+    const byEmployee = new Map()
+    for (const monthIndex of months) {
+        const yearMonth = `${year}-${String(monthIndex + 1).padStart(2, '0')}`
+        const rows = await buildMonth(user, yearMonth, tables)
+        for (const row of rows) {
+            if (!byEmployee.has(row.id)) byEmployee.set(row.id, [])
+            byEmployee.get(row.id).push(row)
+        }
+    }
+    return { tables, byEmployee }
+}
+
+const readYear = (req) => {
+    const year = req.query.year || String(new Date().getFullYear())
+    return /^\d{4}$/.test(year) ? year : null
+}
+
+// the data of the four pages, used by the routes and by the Excel export (csd_agent_performance_export.js)
+exports.getMonthlyList = async (user, yearMonth) => {
+    const tables = await loadScoreTables()
+    const rows = await buildMonth(user, yearMonth, tables)
+    return rows.sort((a, b) => parseFloat(b.final_ratings) - parseFloat(a.final_ratings))
+}
+
+exports.getMonthlyOne = async (user, yearMonth, employeeId) => {
+    const rows = await exports.getMonthlyList(user, yearMonth)
+    return rows.find(row => String(row.id) === String(employeeId)) ?? null
+}
+
+exports.getYearlyList = async (user, year) => {
+    const { tables, byEmployee } = await buildYear(user, year)
+    const list = []
+    for (const records of byEmployee.values()) {
+        list.push(yearAverage(records.filter(record => record.submitted === 1), records, tables, year))
+    }
+    return list.sort((a, b) => parseFloat(b.final_ratings) - parseFloat(a.final_ratings))
+}
+
+exports.getYearlyOne = async (user, year, employeeId) => {
+    const { tables, byEmployee } = await buildYear(user, year)
+    const records = byEmployee.get(Number(employeeId))
+    if (!records) return null
+
+    const submitted = records.filter(record => record.submitted === 1)
+    return {
+        agentMetricsFullYear: submitted,
+        yearAverage: yearAverage(submitted, records, tables, year),
+    }
+}
+
+const sendResult = async (res, work) => {
+    try {
+        const data = await work()
+        res.status(200).json(data)
+    } catch (error) {
+        console.error('Error fetching the CSD agent performance', error)
+        res.status(500).json({ error: 'Database Error, Cannot Fetch CSD agent performance' })
+    }
+}
+
+exports.fetchMonthly = async (req, res) => {
+    const yearMonth = req.query.year_month || currentYearMonth()
+    if (!/^\d{4}-(0[1-9]|1[0-2])$/.test(yearMonth)) {
+        return res.status(400).json({ message: 'Invalid year_month format. Expected YYYY-MM' })
+    }
+
+    const employeeId = req.params.employee_id
+    await sendResult(res, async () => {
+        if (!employeeId) return exports.getMonthlyList(req.user, yearMonth)
+
+        const row = await exports.getMonthlyOne(req.user, yearMonth, employeeId)
+        // not in the month, or not somebody the user may see: nothing is told about the difference
+        return row ? [row] : []
+    })
+}
+
+exports.fetchYearly = async (req, res) => {
+    const year = readYear(req)
+    if (!year) return res.status(400).json({ message: 'Invalid year format. Expected YYYY' })
+
+    const employeeId = req.params.employee_id
+    await sendResult(res, async () => {
+        if (!employeeId) return exports.getYearlyList(req.user, year)
+
+        const data = await exports.getYearlyOne(req.user, year, employeeId)
+        return data ?? { agentMetricsFullYear: [], yearAverage: null }
+    })
+}

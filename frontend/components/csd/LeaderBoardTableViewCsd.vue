@@ -34,7 +34,7 @@
           </tr>
         </thead>
         <tbody>
-          <tr class="odd:bg-green-50 even:bg-white" v-for="agent in agents" :key="agent.id">
+          <tr class="odd:bg-green-50 even:bg-white" v-for="agent in agents" :key="`${agent.id}-${agent.year_month}`">
             <td class="border border-gray-300 px-2 py-0.5 text-xs text-center">{{ agent.year }}</td>
             <td class="border border-gray-300 px-2 py-0.5 text-xs text-center">{{ agent.month }}</td>
             <td class="border border-gray-300 px-2 py-0.5 capitalize text-xs text-center">

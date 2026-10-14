@@ -33,7 +33,17 @@
                   <label for="end-date" class="text-sm font-medium text-gray-700 whitespace-nowrap">
                     Select Date:
                   </label>
+                  <!-- the yearly pages (Agent_Yearly) pick a year, the others a month -->
+                  <select
+                    v-if="isYearPage"
+                    id="end-date"
+                    v-model="yearValue"
+                    class="border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-300"
+                  >
+                    <option v-for="y in yearOptions" :key="y" :value="y">{{ y }}</option>
+                  </select>
                   <input
+                    v-else
                     id="end-date"
                     type="month"
                     v-model="yearMonth"
@@ -121,6 +131,12 @@
     const employementStatus = ref('Hired')
     const scope = ref(route.query.scope || 'agent')
 
+    // the yearly pages of the CSD Agent Performance: the list (yearly) and the details of one employee (year)
+    const isYearPage = computed(() => ['/csd/agent_performance/yearly', '/csd/agent_performance/year'].includes(route.path))
+    const thisYear = new Date().getFullYear()
+    const yearOptions = Array.from({ length: 6 }, (_, index) => String(thisYear - index))
+    const yearValue = ref(route.query.year || String(thisYear))
+
 
     const fetchCsdEmployees = () => {
       if (route.path == '/csd/csd_employees_management'){ {
@@ -141,6 +157,18 @@
 
    const SubmitYearMonth = () => {   
           const currentRoute = router.currentRoute.value 
+
+          // the yearly pages: only the year (and the employee of the details page)
+          if (isYearPage.value) {
+            router.push({
+              path: currentRoute.path,
+              query: {
+                year: yearValue.value,
+                ...(currentRoute.query.employee_id ? { employee_id: currentRoute.query.employee_id } : {}),
+              }
+            })
+            return
+          }
 
           if(yearMonth.value){
              if(isFutureMonth(yearMonth.value)){
@@ -163,6 +191,8 @@
                    .filter(key => currentRoute.query[key] !== undefined)
                    .map(key => [key, currentRoute.query[key]])
                ),
+               // the details page of one employee (Agent Performance) needs its employee after the date is changed
+               ...(currentRoute.query.employee_id ? { employee_id: currentRoute.query.employee_id } : {}),
                // the employee details page needs it to keep its layout after the date is changed
                ...(currentRoute.query.department_code ? { department_code: currentRoute.query.department_code } : {}),
              }

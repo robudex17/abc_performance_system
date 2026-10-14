@@ -73,9 +73,10 @@ export const csdMenu = [
               icon: ['fas', 'cog'],
               allowedLevels: [1, 2, 3],
               excludedRoles: ['admin', 'poweruser'],
+              // their own performance (the details pages), the list pages are for the managers
               subMenu: [
-                { name: 'Agent_Monthly', route: '/csd/agent_performance/monthly', icon: ['fas', 'user'] },
-                { name: 'Agent_Yearly', route: '/csd/agent_performance/yearly', icon: ['fas', 'user'] },
+                { name: 'Agent_Monthly', route: '/csd/agent_performance/month', icon: ['fas', 'user'] },
+                { name: 'Agent_Yearly', route: '/csd/agent_performance/year', icon: ['fas', 'user'] },
               ]
             },
             { 
@@ -87,6 +88,9 @@ export const csdMenu = [
               subMenu: [
                 { name: 'Agent_Monthly', route: '/csd/agent_performance/monthly', icon: ['fas', 'user'] },
                 { name: 'Agent_Yearly', route: '/csd/agent_performance/yearly', icon: ['fas', 'user'] },
+                // hidden: not in the menu, the details pages opened from the list (the page guard uses them)
+                { name: 'Agent_Monthly_Details', route: '/csd/agent_performance/month', hidden: true },
+                { name: 'Agent_Yearly_Details', route: '/csd/agent_performance/year', hidden: true },
               ]
             },
             { 

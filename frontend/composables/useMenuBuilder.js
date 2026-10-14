@@ -8,8 +8,9 @@ export const useMenuBuilder = () => {
         if (!canAccess(user, item)) return null
 
         if (item.subMenu) {
+          // hidden items are only for the page guard (middleware/csd-menu-access.global.js), they are not shown
           const filteredSub = item.subMenu.filter(sub =>
-            canAccess(user, sub)
+            !sub.hidden && canAccess(user, sub)
           )
 
           if (filteredSub.length === 0) return null
