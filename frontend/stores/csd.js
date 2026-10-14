@@ -71,7 +71,7 @@ export const useCsdStore = defineStore('csdStore', () => {
             }
             if (!response.ok) {
                
-                state.csdLeaderboardleaderboard = []
+                state.csdLeaderboard = []
                 throw new Error(`Error: ${response.status} ${response.statusText}`)
             }
             

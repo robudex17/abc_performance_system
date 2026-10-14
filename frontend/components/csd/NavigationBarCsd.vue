@@ -1,6 +1,6 @@
 <template>
     <div>
-        <header class="w-full bg-white shadow-md flex items-center justify-between px-6 py-4 fixed">
+        <header class="bg-white shadow-md flex items-center justify-between px-6 py-4 fixed left-[304px] right-0">
           <!-- Brand -->
           <div class="flex items-center gap-10">
               <div class="text-lg font-bold">SBTPH CSD APP</div>
@@ -111,7 +111,7 @@
     const router = useRouter()
     const route = useRoute()
     const urlPath = ref(route.fullPath)
-    const yearMonth = ref("")
+    const yearMonth = ref(route.query.year_month || "")
    
 
     const  filterBy = ref([])
@@ -119,7 +119,7 @@
 
 
     const employementStatus = ref('Hired')
-    const scope = ref('agent')
+    const scope = ref(route.query.scope || 'agent')
 
 
     const fetchCsdEmployees = () => {

@@ -1,6 +1,6 @@
 <template>
     <div>
-        <header class="w-full bg-white shadow-md flex items-center justify-between px-6 py-4 fixed">
+        <header class="bg-white shadow-md flex items-center justify-between px-6 py-4 fixed left-[304px] right-0">
           <!-- Brand -->
           <div class="flex items-center gap-10">
               <div class="text-lg font-bold">SBTPH COLLECTION APP</div>

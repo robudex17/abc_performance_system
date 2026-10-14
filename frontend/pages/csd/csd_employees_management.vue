@@ -1,7 +1,5 @@
 <template>
-    <div class="p4 mt-20" >
-    <div>{{ employees[0] }}</div>
-       
+    <div class="p4 mt-20" >   
         <ManageEmployeeComponent 
             :employees="employees" 
             :teams="teams" 
