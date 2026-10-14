@@ -131,8 +131,10 @@
     const employementStatus = ref('Hired')
     const scope = ref(route.query.scope || 'agent')
 
-    // the yearly pages of the CSD Agent Performance: the list (yearly) and the details of one employee (year)
-    const isYearPage = computed(() => ['/csd/agent_performance/yearly', '/csd/agent_performance/year'].includes(route.path))
+    // the yearly pages of the CSD Agent / Team Performance: the list (yearly) and the details of one employee / team (year)
+    const isYearPage = computed(() => [
+      '/csd/agent_performance/yearly', '/csd/agent_performance/year', '/csd/team_performance/yearly', '/csd/team_performance/year',
+    ].includes(route.path))
     const thisYear = new Date().getFullYear()
     const yearOptions = Array.from({ length: 6 }, (_, index) => String(thisYear - index))
     const yearValue = ref(route.query.year || String(thisYear))
@@ -165,6 +167,7 @@
               query: {
                 year: yearValue.value,
                 ...(currentRoute.query.employee_id ? { employee_id: currentRoute.query.employee_id } : {}),
+                ...(currentRoute.query.team_id ? { team_id: currentRoute.query.team_id } : {}),
               }
             })
             return
@@ -193,6 +196,7 @@
                ),
                // the details page of one employee (Agent Performance) needs its employee after the date is changed
                ...(currentRoute.query.employee_id ? { employee_id: currentRoute.query.employee_id } : {}),
+               ...(currentRoute.query.team_id ? { team_id: currentRoute.query.team_id } : {}),
                // the employee details page needs it to keep its layout after the date is changed
                ...(currentRoute.query.department_code ? { department_code: currentRoute.query.department_code } : {}),
              }

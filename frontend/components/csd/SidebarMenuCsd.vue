@@ -210,7 +210,10 @@ const menuItems = buildMenu(csdMenu, currentUser)
 
 
         // the details pages of an employee (opened from the list): highlight the Monthly / Yearly item of the list
-        const detailsPages = { '/csd/agent_performance/month': 'Agent_Monthly', '/csd/agent_performance/year': 'Agent_Yearly' }
+        const detailsPages = {
+          '/csd/agent_performance/month': 'Agent_Monthly', '/csd/agent_performance/year': 'Agent_Yearly',
+          '/csd/team_performance/month': 'Team_Monthly', '/csd/team_performance/year': 'Team_Yearly',
+        }
         if (detailsPages[currentRoute]) {
           const group = menuItems.find(item => item.subMenu?.some(sub => sub.name === detailsPages[currentRoute]))
           if (group) {

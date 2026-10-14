@@ -153,16 +153,17 @@ const DETAIL_FIELDS = [
     'performance_rating', 'absence_rating', 'tardiness_rating', 'memo_rating', 'feedback_rating',
 ]
 
-const canSeeDetails = (user, row) => {
+// ownTeamId: the team of the user, read from his/her own row of the evaluation (the team of the login token is not reliable)
+const canSeeDetails = (user, row, ownTeamId) => {
     if (['admin', 'poweruser'].includes(user?.role)) return true
     const level = Number(user?.position_level)
     if (level === 10 || level === 9) return true
     if (Number(row.id) === Number(user?.login_id)) return true
-    return level === 8 && row.team_id != null && Number(row.team_id) === Number(user?.team_id)
+    return level === 8 && row.team_id != null && ownTeamId != null && Number(row.team_id) === Number(ownTeamId)
 }
 
-const limitDetails = (user, row) => {
-    const allowed = canSeeDetails(user, row)
+const limitDetails = (user, row, ownTeamId) => {
+    const allowed = canSeeDetails(user, row, ownTeamId)
     if (allowed) return { ...row, can_view_details: true }
     const publicRow = { ...row, can_view_details: false }
     DETAIL_FIELDS.forEach(field => delete publicRow[field])
@@ -222,6 +223,7 @@ exports.buildCsdLeaderboard = async (user, scope, yearMonth, employeeId) => {
 
     const evaluation = await generateCsdEvaluation(yearMonth, 'all', 'csd', 'all', 'all', null, user)
     const tables = await loadScoreTables()
+    const ownTeamId = evaluation.find(agent => Number(agent.id) === Number(user?.login_id))?.team_id ?? null
 
     const ranked = evaluation
         .filter(agent => RANKED_LEVELS.includes(Number(agent.position_level)))
@@ -245,7 +247,7 @@ exports.buildCsdLeaderboard = async (user, scope, yearMonth, employeeId) => {
     }
 
     // the details of the others stay on the server
-    data = data.map(row => row.teams ? { ...row, teams: row.teams.map(member => limitDetails(user, member)) } : limitDetails(user, row))
+    data = data.map(row => row.teams ? { ...row, teams: row.teams.map(member => limitDetails(user, member, ownTeamId)) } : limitDetails(user, row, ownTeamId))
 
     // one employee (the performance pages of the employees use this)
     if (employeeId) {

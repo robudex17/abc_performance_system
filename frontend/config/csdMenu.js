@@ -102,6 +102,9 @@ export const csdMenu = [
               subMenu: [
               { name: 'Team_Monthly', route: '/csd/team_performance/monthly', icon: ['fas', 'users'] },
               { name: 'Team_Yearly', route: '/csd/team_performance/yearly', icon: ['fas', 'users'] },
+              // hidden: not in the menu, the details pages opened from the list (the page guard uses them)
+              { name: 'Team_Monthly_Details', route: '/csd/team_performance/month', hidden: true },
+              { name: 'Team_Yearly_Details', route: '/csd/team_performance/year', hidden: true },
               ]
             },
 

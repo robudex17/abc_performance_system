@@ -31,24 +31,29 @@ const currentYearMonth = () => {
     return `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}`
 }
 
-// is the row (an employee of a month) one the user may see
-const canSee = (user, row) => {
+// is the row (an employee of a month) one the user may see.
+// ownTeamId: the team of the user in that month. It is NOT read from the login token: the employee login reads the team
+// from the sales table, so the team of the token can be empty or another team. It is the team of his/her own row.
+const canSee = (user, row, ownTeamId) => {
     if (['admin', 'poweruser'].includes(user?.role)) return true
 
     const level = Number(user?.position_level)
     if (Number(row.id) === Number(user?.login_id)) return true       // always him/herself
     if (level === 10) return true
     if (level === 9) return Number(row.position_level) <= 9
-    if (level === 8 || level === 7) return row.team_id != null && Number(row.team_id) === Number(user?.team_id)
+    if (level === 8 || level === 7) return row.team_id != null && ownTeamId != null && Number(row.team_id) === Number(ownTeamId)
     return false
 }
 
 // every employee of the month (all position levels) with the scores, only the ones the user may see
 const buildMonth = async (user, yearMonth, tables) => {
     const evaluation = await generateCsdEvaluation(yearMonth, 'all', 'csd', 'all', 'all', null, user)
-    return evaluation
-        .map(agent => scoreEmployee(agent, tables))
-        .filter(row => canSee(user, row))
+    const scored = evaluation.map(agent => scoreEmployee(agent, tables))
+
+    // the team of the user in the month: the team of his/her own row
+    const ownTeamId = scored.find(row => Number(row.id) === Number(user?.login_id))?.team_id ?? null
+
+    return scored.filter(row => canSee(user, row, ownTeamId))
 }
 
 const monthsOfTheYear = (year) => {
@@ -123,6 +128,9 @@ const readYear = (req) => {
     const year = req.query.year || String(new Date().getFullYear())
     return /^\d{4}$/.test(year) ? year : null
 }
+
+// shared with the team performance pages (csd_team_performance_controller.js)
+exports.shared = { canSee, buildMonth, buildYear, yearAverage, readYear, currentYearMonth }
 
 // the data of the four pages, used by the routes and by the Excel export (csd_agent_performance_export.js)
 exports.getMonthlyList = async (user, yearMonth) => {
