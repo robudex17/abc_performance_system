@@ -207,51 +207,57 @@ const groupByTeam = (allRows, rankedRows) => {
     return result
 }
 
-exports.fetchCsdLeaderboard = async (req, res, next) => {
-    const scope = req.params.scope || 'agent'
-    const employeeId = req.params.employee_id
-
+// The leaderboard of a month: returns { data } or { error: { status, message } }.
+// Used by the page (fetchCsdLeaderboard) and by the Excel export.
+exports.buildCsdLeaderboard = async (user, scope, yearMonth, employeeId) => {
     if (!SCOPES.includes(scope)) {
-        return res.status(400).json({ message: `Unknown leaderboard scope: ${scope}. Use ${SCOPES.join(', ')}` })
+        return { error: { status: 400, message: `Unknown leaderboard scope: ${scope}. Use ${SCOPES.join(', ')}` } }
     }
-
-    const yearMonth = req.query.year_month || currentYearMonth()
     if (!/^\d{4}-(0[1-9]|1[0-2])$/.test(yearMonth)) {
-        return res.status(400).json({ message: 'Invalid year_month format. Expected YYYY-MM' })
+        return { error: { status: 400, message: 'Invalid year_month format. Expected YYYY-MM' } }
     }
 
+    const evaluation = await generateCsdEvaluation(yearMonth, 'all', 'csd', 'all', 'all', null, user)
+    const tables = await loadScoreTables()
+
+    const ranked = evaluation
+        .filter(agent => RANKED_LEVELS.includes(Number(agent.position_level)))
+        .map(agent => scoreEmployee(agent, tables))
+
+    let data
+    if (scope === 'team') {
+        const teams = groupByTeam(evaluation, ranked)
+        const topTeamRating = Math.max(...teams.filter(team => team.isCompleted).map(team => parseFloat(team.final_ratings)))
+        data = teams
+            .map(team => ({
+                ...team,
+                ratings_name: team.isCompleted ? ratingName(tables.ratings, parseFloat(team.final_ratings)) : INCOMPLETE,
+                tag: team.isCompleted && parseFloat(team.final_ratings) === topTeamRating ? 'BEST TEAM' : '',
+            }))
+            .sort(byRatingDesc)
+    } else {
+        const levels = scope === 'agent' ? AGENT_LEVELS : TEAM_LEADER_LEVELS
+        const rows = ranked.filter(row => levels.includes(Number(row.position_level)))
+        data = addTopTag(rows, scope === 'agent' ? 'TOP AGENT' : 'TOP TEAM LEADER').sort(byRatingDesc)
+    }
+
+    // the details of the others stay on the server
+    data = data.map(row => row.teams ? { ...row, teams: row.teams.map(member => limitDetails(user, member)) } : limitDetails(user, row))
+
+    // one employee (the performance pages of the employees use this)
+    if (employeeId) {
+        data = data.filter(row => String(row.id ?? row.team_leader_id) === String(employeeId))
+    }
+
+    return { data }
+}
+
+exports.fetchCsdLeaderboard = async (req, res, next) => {
     try {
-        const evaluation = await generateCsdEvaluation(yearMonth, 'all', 'csd', 'all', 'all', null, req.user)
-        const tables = await loadScoreTables()
+        const { data, error } = await exports.buildCsdLeaderboard(
+            req.user, req.params.scope || 'agent', req.query.year_month || currentYearMonth(), req.params.employee_id)
 
-        const ranked = evaluation
-            .filter(agent => RANKED_LEVELS.includes(Number(agent.position_level)))
-            .map(agent => scoreEmployee(agent, tables))
-
-        let data
-        if (scope === 'team') {
-            const teams = groupByTeam(evaluation, ranked)
-            const topTeamRating = Math.max(...teams.filter(team => team.isCompleted).map(team => parseFloat(team.final_ratings)))
-            data = teams
-                .map(team => ({
-                    ...team,
-                    ratings_name: team.isCompleted ? ratingName(tables.ratings, parseFloat(team.final_ratings)) : INCOMPLETE,
-                    tag: team.isCompleted && parseFloat(team.final_ratings) === topTeamRating ? 'BEST TEAM' : '',
-                }))
-                .sort(byRatingDesc)
-        } else {
-            const levels = scope === 'agent' ? AGENT_LEVELS : TEAM_LEADER_LEVELS
-            const rows = ranked.filter(row => levels.includes(Number(row.position_level)))
-            data = addTopTag(rows, scope === 'agent' ? 'TOP AGENT' : 'TOP TEAM LEADER').sort(byRatingDesc)
-        }
-
-        // the details of the others stay on the server
-        data = data.map(row => row.teams ? { ...row, teams: row.teams.map(member => limitDetails(req.user, member)) } : limitDetails(req.user, row))
-
-        // one employee (the performance pages of the employees use this)
-        if (employeeId) {
-            data = data.filter(row => String(row.id ?? row.team_leader_id) === String(employeeId))
-        }
+        if (error) return res.status(error.status).json({ message: error.message })
 
         res.status(200).json(data)
 

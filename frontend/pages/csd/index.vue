@@ -9,6 +9,26 @@
     <!-- Leaderboard View -->
     <div v-else>
 
+      <!-- Toggle Button for Card/Table View (agent and team leader boards only, the team board is cards) -->
+      <div v-if="canViewTable && leaderboardOption != 'team' && csd_leaderboard.length > 0" class="mb-4 flex justify-end">
+        <button
+          @click="toggleView"
+          class="bg-blue-600 text-white py-1 px-2 rounded-lg hover:bg-blue-700 transition duration-300"
+        >
+          <font-awesome-icon :icon="['fas', isCardView ? 'toggle-off' : 'toggle-on']" />
+          Toggle to {{ isCardView ? 'Table' : 'Card' }} View
+        </button>
+        <export-to-excel-component
+          v-if="isExporter && !isCardView"
+          class="ml-2"
+          :exportUrl="exportUrl"
+          :exportFileName="exportFileName"
+          :query="route.query"
+          :token="token"
+          :incomplete="incomplete"
+        ></export-to-excel-component>
+      </div>
+
       <div class="text-red-700 font-bold text-5xl" v-if="csdStoreInstance.state.error">{{ csdStoreInstance.state.error }}</div>
       <div v-else-if="csd_leaderboard.length === 0" class="text-red-700 font-bold text-5xl">
         No Available Data.
@@ -71,6 +91,11 @@
               </button>
             </div>
           </div>
+        </div>
+
+        <!-- TABLE VIEW: AGENT and TEAM LEADER -->
+        <div v-else-if="!isCardView" class="overflow-x-auto shadow-xl rounded-lg">
+          <leader-board-table-view-csd :agents="csd_leaderboard"></leader-board-table-view-csd>
         </div>
 
         <!-- CARD VIEW: AGENT and TEAM LEADER -->
@@ -309,6 +334,8 @@
 
 import { onMounted, reactive, ref, watch, computed } from 'vue';
 import { getStarClass } from '@/utils/constants'
+import API from '~/utils/api'
+import LeaderBoardTableViewCsd from '~/components/csd/LeaderBoardTableViewCsd.vue'
 
 definePageMeta({
   middleware: ['auth'],
@@ -320,6 +347,16 @@ const config = useRuntimeConfig()
 const csdStoreInstance = useCsdStore()
 const { setRatingNameColor } = useRatingColor()
 
+// the table view and the Excel export need the details of everybody: admin, poweruser and the CSD managers (level 10 and 9)
+const authStore = useAuthStore()
+authStore.fetchTokenFromLocalStore()
+const currentUser = authStore.state.user
+const token = authStore.state.token
+const isExporter = ['admin', 'poweruser'].includes(currentUser?.role)
+const canViewTable = isExporter || [10, 9].includes(Number(currentUser?.position_level))
+
+const isCardView = ref(true)
+
 const selectedAgent = reactive({});
 const selectedTeam = reactive({});
 const showModal = ref(false);
@@ -327,6 +364,13 @@ const showModalForTeam = ref(false)
 
 // agent, team_leader or team (the select of the navigation bar sets it in the query)
 const leaderboardOption = ref(route.query.scope || 'agent')
+
+const toggleView = () => {
+  isCardView.value = !isCardView.value
+}
+
+const exportUrl = computed(() => `${API.csd_leaderboard_export}/${leaderboardOption.value}`)
+const exportFileName = computed(() => `csd-${leaderboardOption.value}-leaderboard-${route.query.year_month || 'current'}.xlsx`)
 
 const csd_leaderboard = computed(() => csdStoreInstance.state.csdLeaderboard);
 
@@ -390,6 +434,8 @@ const closeModalForTeam = () => {
 // the date or the scope is changed in the navigation bar
 watch(() => route.query, (query) => {
   leaderboardOption.value = query.scope || 'agent'
+  // the team board is only cards
+  if (leaderboardOption.value == 'team') isCardView.value = true
   fetchCsdLeaderboard(leaderboardOption.value, query)
 })
 
