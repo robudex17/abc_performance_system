@@ -62,30 +62,51 @@ export const csdMenu = [
             { name: 'Leaderboard', route: '/csd', icon: ['fas', 'list'] },
 
 
-           { 
-              name: 'Agent Performance', 
+            // Who sees what (the same rules guard the pages: middleware/csd-menu-access.global.js).
+            // The agent and team pages answer with different data for each role / position level:
+            //   level 1, 2, 3          -> 'Performance Evaluation': only their own performance, no team performance
+            //   level 7, 8, 9          -> 'Agent Performance' and 'Team Performance'
+            //   level 10 and admin     -> the same, level 10 can also switch department
+            { 
+              name: 'Performance Evaluation', 
               route: null, 
               icon: ['fas', 'cog'],
+              allowedLevels: [1, 2, 3],
+              excludedRoles: ['admin', 'poweruser'],
               subMenu: [
                 { name: 'Agent_Monthly', route: '/csd/agent_performance/monthly', icon: ['fas', 'user'] },
                 { name: 'Agent_Yearly', route: '/csd/agent_performance/yearly', icon: ['fas', 'user'] },
-              
+              ]
+            },
+            { 
+              name: 'Agent Performance', 
+              route: null, 
+              icon: ['fas', 'cog'],
+              allowedRoles: ['admin', 'poweruser'],
+              allowedLevels: [10, 9, 8, 7],
+              subMenu: [
+                { name: 'Agent_Monthly', route: '/csd/agent_performance/monthly', icon: ['fas', 'user'] },
+                { name: 'Agent_Yearly', route: '/csd/agent_performance/yearly', icon: ['fas', 'user'] },
               ]
             },
             { 
               name: 'Team Performance', 
               route: null, 
               icon: ['fas', 'cog'],
+              allowedRoles: ['admin', 'poweruser'],
+              allowedLevels: [10, 9, 8, 7],
               subMenu: [
               { name: 'Team_Monthly', route: '/csd/team_performance/monthly', icon: ['fas', 'users'] },
               { name: 'Team_Yearly', route: '/csd/team_performance/yearly', icon: ['fas', 'users'] },
               ]
             },
 
+            // not in the menu of the staff: admin and poweruser only
             { 
               name: 'Reports', 
               route: null, 
               icon: ['fas', 'cog'],
+              allowedRoles: ['admin', 'poweruser'],
               subMenu: [
               { name: 'Monthly_Target', route: '/csd/target/monthly', icon: ['fas', 'users'] },
              
@@ -109,8 +130,8 @@ export const csdMenu = [
                 { name: 'FEEDBACK MEMBERS', route: '/feedback/feedback_by_nonesales?feedback_type=by_head', icon: ['fas', 'users'], allowedLevels: [10, 9, 8], excludedRoles: ['admin', 'poweruser'], excludedPositionNames: [QA_POSITION_NAME] },
                 // the Quality Analyst gives a score to all the CSD staff of level 8 and below (no questionnaire, like the feedback by admin)
                 { name: 'FEEDBACK MEMBERS', route: '/csd/feedback_by_qa', icon: ['fas', 'users'], allowedPositionNames: [QA_POSITION_NAME], excludedRoles: ['admin', 'poweruser'] },
-                // members rate the head: level 9, 8, 3, 1
-                { name: 'FEEDBACK HEAD', route: '/feedback/feedback_by_nonesales?feedback_type=by_member', icon: ['fas', 'user-tie'], allowedLevels: [9, 8, 3, 1], excludedRoles: ['admin', 'poweruser'] },
+                // members rate the head: level 9, 8, 3, 2, 1
+                { name: 'FEEDBACK HEAD', route: '/feedback/feedback_by_nonesales?feedback_type=by_member', icon: ['fas', 'user-tie'], allowedLevels: [9, 8, 3, 2, 1], excludedRoles: ['admin', 'poweruser'] },
 
               ]
 
@@ -139,7 +160,9 @@ export const csdMenu = [
             {
               name: 'Switch Department',
               route: '/select_department',
-              icon: ['fas', 'layer-group']
+              icon: ['fas', 'layer-group'],
+              allowedRoles: ['admin'],
+              allowedLevels: [10]
             },
 
 ]

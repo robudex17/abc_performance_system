@@ -156,6 +156,13 @@
                scope:  scope.value,
                // the none-sales feedback list page needs its feedback_type after the date is changed
                ...(currentRoute.query.feedback_type ? { feedback_type: currentRoute.query.feedback_type } : {}),
+               // the Give Feedback form page needs who gives / receives the feedback after the date is changed
+               // (the page middleware denies the form when who_give_feedback_id is not the logged in user)
+               ...Object.fromEntries(
+                 ['who_give_feedback_id', 'who_give_feedback_db_name', 'who_receive_feedback_id', 'who_receive_feedback_db_name']
+                   .filter(key => currentRoute.query[key] !== undefined)
+                   .map(key => [key, currentRoute.query[key]])
+               ),
                // the employee details page needs it to keep its layout after the date is changed
                ...(currentRoute.query.department_code ? { department_code: currentRoute.query.department_code } : {}),
              }
