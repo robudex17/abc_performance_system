@@ -144,6 +144,23 @@ export const csdMenu = [
 
             },
 
+            // Leadership Individual Performance: the head evaluates the leaders (position level 7 - 10) with a form of tasks, scores and
+            // comments. The GOM (position level 15) evaluates the CSD & Collection Manager, the manager the assistant managers (and the
+            // Quality Analyst), an assistant manager his/her team leaders. The three items open the same page, it shows the leaders of
+            // the logged in head. The Quality Analyst has nobody to evaluate.
+            {
+              name: 'Leadership Performance',
+              route: null,
+              icon: ['fas', 'poll'],
+              allowedLevels: [15, 10, 9],
+              excludedPositionNames: [QA_POSITION_NAME],
+              subMenu: [
+                { name: 'EVALUATE MANAGER', route: '/leadership/leadership_evaluation', icon: ['fas', 'user-tie'], allowedLevels: [15] },
+                { name: 'EVALUATE ASSISTANT MANAGERS', route: '/leadership/leadership_evaluation', icon: ['fas', 'users'], allowedLevels: [10] },
+                { name: 'EVALUATE TEAM LEADERS', route: '/leadership/leadership_evaluation', icon: ['fas', 'users'], allowedLevels: [9] },
+              ]
+            },
+
             {
               name: 'Admin Panel',
               route: null,

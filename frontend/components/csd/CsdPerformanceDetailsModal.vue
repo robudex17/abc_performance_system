@@ -125,6 +125,13 @@ const metrics = computed(() => {
   const noData = !props.fullyear && agent.submitted != 1
   return [
     { name: 'PERFORMANCE (80%)', result: `${agent.performance}%`, description: agent.performance_description, score: agent.performance_score, rating: agent.performance_rating },
+    // the leaders (position level 7 - 10): the Performance score is the average of the team score and the leadership score
+    ...(agent.leadership_required && Number(agent.leadership_score) > 0
+      ? [
+          { name: '↳ Team Performance (score)', result: `${agent.performance}%`, score: agent.team_performance_score, rating: '' },
+          { name: '↳ Leadership Performance (score)', result: '', score: Number(agent.leadership_score).toFixed(2), rating: '' },
+        ]
+      : []),
     { name: 'ABSENCES (5%)', noData, result: agent.absences, score: agent.absence_score, rating: agent.absence_rating },
     { name: 'TARDINESS (5%)', noData, result: agent.tardiness, score: agent.tardiness_score, rating: agent.tardiness_rating },
     { name: 'MEMO (5%)', noData, result: agent.memo, score: agent.memo_score, rating: agent.memo_rating },

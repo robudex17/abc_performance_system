@@ -1,5 +1,6 @@
 const pool = require('../../config/db')
 const csdEvaluationController = require('./csd_evaluation_controller')
+const { FROM_SNAPSHOT, snapshotParams } = require('./csd_month_snapshot')
 
 // QA feedback of the CSD staff (feedback_by_nonesales_qa table, built like feedback_by_admin).
 // The Quality Analyst gives ONE score (greater than 0, 5 at most) per employee and month, like the feedback by admin.
@@ -12,7 +13,12 @@ const csdEvaluationController = require('./csd_evaluation_controller')
 // (feedback_by_qa is the QA table of the sales department: it is not used here.)
 
 const YEAR_MONTH_FORMAT = /^\d{4}-(0[1-9]|1[0-2])$/
-const MAX_POSITION_LEVEL = 8        // QA feedback is for the staff of position level 8 and below
+// The Quality Analyst belongs to CSD but is also the QA of Collection. The QA feedback is for:
+//   - the CSD staff of position level 8 and below
+//   - the Collection staff of position level 3, 2 and 1 (the Collection assistant manager and team leader are not rated by the QA)
+const MAX_POSITION_LEVEL = 8        // CSD
+const COLLECTION_MAX_POSITION_LEVEL = 3
+const maxLevelOf = (departmentCode) => (departmentCode === 'collection' ? COLLECTION_MAX_POSITION_LEVEL : MAX_POSITION_LEVEL)
 
 const currentYearMonth = () => {
     const today = new Date()
@@ -33,17 +39,17 @@ const readScore = (value) => {
     return score > 0 && score <= 5 ? score : null
 }
 
-// the CSD employee with his/her latest position and employment status
+// the CSD or Collection employee with his/her latest position and employment status
 const getCsdEmployee = async (employeeId) => {
     const [rows] = await pool.execute(
-        `SELECT e.id, e.db_name, p.level AS position_level,
+        `SELECT e.id, e.db_name, p.level AS position_level, d.code AS department_code,
                 (SELECT status FROM employee_employments WHERE employee_id = e.id ORDER BY id DESC LIMIT 1) AS employment_status
            FROM employees e
            JOIN employee_assignments ea ON ea.employee_id = e.id
                 AND ea.id = (SELECT MAX(id) FROM employee_assignments WHERE employee_id = e.id)
            JOIN positions p ON p.id = ea.position_id
            JOIN departments d ON d.id = ea.department_id
-          WHERE e.id = ? AND d.code = 'csd'`,
+          WHERE e.id = ? AND d.code IN ('csd', 'collection')`,
         [employeeId]
     )
     return rows[0]
@@ -84,9 +90,10 @@ const readChangeRequest = async (req, { needsScore }) => {
     }
 
     const employee = await getCsdEmployee(employeeId)
-    if (!employee) return { error: { status: 404, message: `CSD employee ${employeeId} not found` } }
-    if (Number(employee.position_level) > MAX_POSITION_LEVEL) {
-        return { error: { status: 400, message: `The QA feedback is only for the staff of position level ${MAX_POSITION_LEVEL} and below` } }
+    if (!employee) return { error: { status: 404, message: `CSD or Collection employee ${employeeId} not found` } }
+    const maxLevel = maxLevelOf(employee.department_code)
+    if (Number(employee.position_level) > maxLevel) {
+        return { error: { status: 400, message: `The QA feedback for the ${employee.department_code.toUpperCase()} staff is only for the position level ${maxLevel} and below` } }
     }
     if (employee.employment_status === 'Resigned') {
         return { error: { status: 400, message: 'Adding, Updating, or Deleting the QA feedback of a resigned employee is prohibited' } }
@@ -104,7 +111,25 @@ exports.fetchQaFeedbackStaff = async (req, res, next) => {
 
     try {
         const evaluation = await csdEvaluationController.generateCsdEvaluation(when.yearMonth, 'all', 'csd', 'all', 'all', null, req.user)
-        const staff = evaluation.filter(employee => Number(employee.position_level) <= MAX_POSITION_LEVEL)
+        const csdStaff = evaluation
+            .filter(employee => Number(employee.position_level) <= MAX_POSITION_LEVEL)
+            .map(employee => ({ ...employee, department_code: 'csd' }))
+
+        // the Collection staff of level 3, 2, 1 (they are not in the CSD evaluation)
+        const [collectionStaff] = await pool.execute(
+            `SELECT e.id, e.db_name, e.image_link, ee.status AS employee_status, p.position_name, p.level AS position_level,
+                    d.code AS department_code, mgr.db_name AS manager_dbname, t.name AS team_name,
+                    COALESCE(cs.submitted, 0) AS eval_submitted
+             ${FROM_SNAPSHOT}
+             LEFT JOIN employees mgr ON ea.manager_id = mgr.id
+             LEFT JOIN teams2 t ON ea.team_id = t.id
+             LEFT JOIN csd_evaluation_status cs ON cs.employee_id = e.id AND cs.\`year_month\` = ?
+             WHERE d.code = 'collection' AND p.level <= ?
+             ORDER BY p.level DESC, e.db_name`,
+            [...snapshotParams(when.yearMonth), when.yearMonth, COLLECTION_MAX_POSITION_LEVEL]
+        )
+
+        const staff = [...csdStaff, ...collectionStaff]
 
         const [qaRows] = await pool.execute(
             'SELECT employee_id, feedback, qa_dbname FROM feedback_by_nonesales_qa WHERE `year_month` = ?',
@@ -124,6 +149,7 @@ exports.fetchQaFeedbackStaff = async (req, res, next) => {
                 employee_status: employee.employee_status,
                 position_name: employee.position_name,
                 position_level: employee.position_level,
+                department_code: employee.department_code,
                 manager_dbname: employee.manager_dbname,
                 team_name: employee.team_name,
                 eval_submitted: employee.eval_submitted,

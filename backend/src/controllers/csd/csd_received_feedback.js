@@ -1,5 +1,6 @@
 const pool = require('../../config/db')
 const { isQaStaff } = require('../../middleware/qa_access')
+const { FROM_SNAPSHOT, snapshotParams } = require('./csd_month_snapshot')
 
 // The feedback an employee RECEIVED in a month, for the CSD Evaluation page (same idea as the sales evaluation, where
 // the list of every feedback has ALL the people who should give it: the ones who did not give yet have a score of 0).
@@ -107,6 +108,24 @@ exports.attachReceivedFeedback = async (employees, yearMonth) => {
         console.error('Error fetching the received feedback of the CSD evaluation', error)
     }
 
+    // members of the employees who are in ANOTHER department: the Collection assistant manager has the CSD & Collection Manager
+    // as immediate head, and the manager is in the CSD list only (the resigned ones are not expected to give feedback)
+    let outsideMembers = []
+    try {
+        const ids = employees.map(employee => Number(employee.id))
+        if (ids.length > 0) {
+            const [rows] = await pool.query(
+                `SELECT e.id, e.db_name, e.image_link, ea.manager_id
+                 ${FROM_SNAPSHOT}
+                 WHERE ea.manager_id IN (?) AND e.id NOT IN (?) AND ee.status <> 'Resigned'`,
+                [...snapshotParams(yearMonth), ids, ids]
+            )
+            outsideMembers = rows
+        }
+    } catch (error) {
+        console.error('Error fetching the members of the other departments', error)
+    }
+
     const stripEmployee = (rows = []) => rows.map(({ employee_id, ...feedback }) => feedback)
     const employeesById = new Map(employees.map(employee => [Number(employee.id), employee]))
     const qaStaff = employees.filter(employee => isQaStaff(employee))
@@ -115,7 +134,10 @@ exports.attachReceivedFeedback = async (employees, yearMonth) => {
         const id = Number(employee.id)
 
         // the members of the employee: everybody whose immediate head he/she is (the top manager is his/her own manager)
-        const members = employees.filter(other => Number(other.manager_id) === id && Number(other.id) !== id)
+        const members = [
+            ...employees.filter(other => Number(other.manager_id) === id && Number(other.id) !== id),
+            ...outsideMembers.filter(other => Number(other.manager_id) === id),
+        ]
 
         // the immediate head of the employee (none for the top manager)
         const hasHead = employee.manager_id && Number(employee.manager_id) !== id

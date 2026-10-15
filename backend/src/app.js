@@ -44,6 +44,7 @@ const csdPerformanceMetricsRoutes = require('./routes/csd/csd_performance_metric
 const csdLeadboardRoutes = require('./routes/csd/csd_leaderboard_routes')
 const csdAgentPerformanceRoutes = require('./routes/csd/csd_agent_performance_routes')
 const csdTeamPerformanceRoutes = require('./routes/csd/csd_team_performance_routes')
+const csdLeadershipRoutes = require('./routes/csd/csd_leadership_routes')
 const csdEvaluationRoute = require('./routes/csd/csd_evaluation_routes')
 const csdQaFeedbackRoutes = require('./routes/csd/csd_qa_feedback_routes')
 
@@ -97,6 +98,7 @@ app.use('/api', csdPerformanceMetricsRoutes)
 app.use('/api',  csdLeadboardRoutes)
 app.use('/api',  csdAgentPerformanceRoutes)
 app.use('/api',  csdTeamPerformanceRoutes)
+app.use('/api',  csdLeadershipRoutes)
 app.use('/api', csdEvaluationRoute)
 app.use('/api', csdQaFeedbackRoutes)
 

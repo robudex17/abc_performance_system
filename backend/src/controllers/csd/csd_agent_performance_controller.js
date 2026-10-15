@@ -21,7 +21,7 @@ const MONTH_NAMES = ['January', 'February', 'March', 'April', 'May', 'June', 'Ju
 const { toNumber, round4, ratingName, scoreEmployee, loadScoreTables } = { ...scoring }
 
 const AVERAGE_KEYS = [
-    'performance', 'performance_score', 'absence_score', 'tardiness_score', 'memo_score', 'feedback_score',
+    'performance', 'performance_score', 'team_performance_score', 'leadership_score', 'absence_score', 'tardiness_score', 'memo_score', 'feedback_score',
     'performance_rating', 'absence_rating', 'tardiness_rating', 'memo_rating', 'feedback_rating', 'final_ratings',
 ]
 const SUM_KEYS = ['absences', 'tardiness', 'memo']

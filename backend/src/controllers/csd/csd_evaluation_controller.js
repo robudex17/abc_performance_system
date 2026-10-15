@@ -3,6 +3,8 @@ const { validationResult, body } = require('express-validator')
 
 const { parseYearMonth } = require('../helper_scripts/global_variables_and_functions')
 const { attachReceivedFeedback } = require('./csd_received_feedback')
+const { applyComputedPerformance } = require('./csd_manager_performance')
+const { attachLeadership } = require('./csd_leadership')
 
 const { fetch_eval_queries, delete_eval_queries, update_eval_queries, add_eval_queries }  = require(`./csd_metrics_queries`)
 
@@ -39,8 +41,10 @@ const getAdminIdentity = async (req, fromBody) => {
 
 
 // Performance must not be 0 and at least one of Feedback (Admin), (QA), (Immediate Head), (Members) must have a value.
+// A leader (position level 7 - 10) also needs the Leadership Individual Performance (the evaluation of the head).
 const isReadyToSubmit = (agent) =>
     Number(agent.performance) > 0 &&
+    (!agent.leadership_required || Number(agent.leadership_score) > 0) &&
     [agent.feedback_by_admin, agent.feedback_by_qa, agent.feedback_by_immediate_head, agent.feedback_by_members]
         .some(value => Number(value) > 0)
 
@@ -547,6 +551,13 @@ exports.generateCsdEvaluation  = async (year_month, scope, department_code,  met
         agent['year'] = year
         agent['month'] = month
      }
+
+     // the performance of the assistant team leaders, team leaders, assistant managers and the manager is the average of
+     // their subordinates (it is not typed), see csd_manager_performance.js
+     await applyComputedPerformance(employee_to_evaluate, year_month)
+
+     // the Leadership Individual Performance (questionnaire) of the leaders, the other part of their Performance
+     await attachLeadership(employee_to_evaluate, year_month)
 
      // the feedback of the QA, the immediate head and the members (view only on the CSD Evaluation page)
      await attachReceivedFeedback(employee_to_evaluate, year_month)

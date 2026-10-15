@@ -6,6 +6,8 @@
 // Feedback (Immediate Head) and Feedback (Members) are given in the Give Feedback pages and are not part of this lock.
 const pool = require('../config/db')
 
+const { isPerformanceComputed } = require('../controllers/csd/csd_manager_performance')
+
 const YEAR_MONTH_FORMAT = /^\d{4}-(0[1-9]|1[0-2])$/
 
 const currentYearMonth = () => {
@@ -32,6 +34,12 @@ exports.lockCsdEvaluationWhenSubmitted = async (req, res, next) => {
         )
         if (employment[0]?.status === 'Resigned') {
             return res.status(409).json({ message: 'The data of a resigned employee can not be changed' })
+        }
+
+        // the computed performance (assistant team leaders, team leaders, assistant managers, the manager) can not be
+        // added, changed or deleted: it is the average of the subordinates
+        if (req.params.eval_type === 'performance' && await isPerformanceComputed(employeeId, yearMonth)) {
+            return res.status(409).json({ message: 'The performance of this employee is computed from the performance of the subordinates, it can not be changed' })
         }
 
         const [status] = await pool.execute(

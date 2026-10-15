@@ -28,6 +28,7 @@
           <tr class="bg-gradient-to-r from-blue-200 to-blue-300 text-gray-800">
             <th class="py-1 px-4 text-center text-xs font-bold text-green-900 border">ID</th>
             <th class="py-1 px-4 text-center text-xs font-bold text-green-900 border">Name</th>
+            <th class="py-1 px-4 text-center text-xs font-bold text-green-900 border">Department</th>
             <th class="py-1 px-4 text-center text-xs font-bold text-green-900 border">Employee Status</th>
             <th class="py-1 px-4 text-center text-xs font-bold text-green-900 border">Position</th>
             <th class="py-1 px-4 text-center text-xs font-bold text-green-900 border">Immediate Head</th>
@@ -58,6 +59,10 @@
               </div>
             </td>
 
+            <!-- the Quality Analyst also scores the Collection staff (level 3, 2, 1) -->
+            <td class="py-1 px-4 text-center text-xs font-bold border" :class="employee.department_code === 'collection' ? 'text-orange-600' : 'text-blue-700'">
+              {{ (employee.department_code || 'csd').toUpperCase() }}
+            </td>
             <td
               class="py-1 px-4 text-left text-xs border"
               :class="employee.employee_status === 'Resigned' ? 'text-red-600 font-bold' : 'text-green-600 font-bold'"
@@ -105,7 +110,7 @@
           </tr>
 
           <tr v-if="!qaStore.state.loading && filteredStaff.length === 0">
-            <td colspan="10" class="py-6 text-center text-gray-500">No employee found.</td>
+            <td colspan="11" class="py-6 text-center text-gray-500">No employee found.</td>
           </tr>
         </tbody>
       </table>
@@ -196,7 +201,7 @@ const filteredStaff = computed(() => {
   const text = search.value.trim().toLowerCase()
   if (!text) return qaStore.state.staff
   return qaStore.state.staff.filter(employee =>
-    [employee.db_name, employee.position_name, employee.team_name, employee.manager_dbname]
+    [employee.db_name, employee.position_name, employee.team_name, employee.manager_dbname, employee.department_code]
       .some(value => String(value ?? '').toLowerCase().includes(text))
   )
 })

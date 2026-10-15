@@ -86,6 +86,9 @@ const scoreEmployee = (agent, tables) => {
         performance: toNumber(agent.performance),
         performance_percent: performancePercent,
         performance_description: submitted ? (performanceRow?.description ?? '') : '',
+        // the Leadership Individual Performance (position level 7 - 10): the score of the questionnaire, 1 - 5 (0 = not answered)
+        leadership_required: Boolean(agent.leadership_required),
+        leadership_score: toNumber(agent.leadership_score),
         absences: toNumber(agent.absences),
         tardiness: toNumber(agent.tardiness),
         memo: toNumber(agent.memo),
@@ -99,13 +102,25 @@ const scoreEmployee = (agent, tables) => {
     if (!submitted) {
         return {
             ...result,
-            performance_score: 0, absence_score: 0, tardiness_score: 0, memo_score: 0, feedback_score: '0.0000',
+            performance_score: 0, team_performance_score: 0, absence_score: 0, tardiness_score: 0, memo_score: 0, feedback_score: '0.0000',
             performance_rating: 0, absence_rating: 0, tardiness_rating: 0, memo_rating: 0, feedback_rating: 0,
             final_ratings: '0.0000', ratings_name: INCOMPLETE,
         }
     }
 
-    const performanceScore = toNumber(performanceRow?.score)
+    // The score of the Performance percentage (csd_performance_score). For the leaders (position level 7 - 10) the Performance is
+    // the average of this team score and the leadership score (the questionnaire): (5 + 5) / 2 = 5, and it counts as the 80%.
+    // A leader without a leadership evaluation (a month submitted before the questionnaire existed) keeps the team score only.
+    const teamPerformanceScore = toNumber(performanceRow?.score)
+    const leadership = toNumber(agent.leadership_score)
+    const performanceScore = agent.leadership_required && leadership > 0
+        ? (teamPerformanceScore + leadership) / 2
+        : teamPerformanceScore
+    if (agent.leadership_required && leadership > 0) {
+        const combinedRow = tables.performance.find(row => toNumber(row.score) === Math.round(performanceScore))
+        result.performance_description = combinedRow?.description ?? result.performance_description
+    }
+
     const absenceScore = countScore(tables.absences, agent.absences)
     const tardinessScore = countScore(tables.tardiness, agent.tardiness)
     const memoScore = countScore(tables.memo, agent.memo)
@@ -121,6 +136,7 @@ const scoreEmployee = (agent, tables) => {
     return {
         ...result,
         performance_score: performanceScore,
+        team_performance_score: teamPerformanceScore,
         absence_score: absenceScore,
         tardiness_score: tardinessScore,
         memo_score: memoScore,
@@ -149,7 +165,7 @@ const addTopTag = (rows, tag) => {
 const DETAIL_FIELDS = [
     'performance', 'performance_percent', 'performance_description', 'absences', 'tardiness', 'memo',
     'feedback_by_admin', 'feedback_by_qa', 'feedback_by_immediate_head', 'feedback_by_members',
-    'performance_score', 'absence_score', 'tardiness_score', 'memo_score', 'feedback_score',
+    'performance_score', 'team_performance_score', 'leadership_required', 'leadership_score', 'absence_score', 'tardiness_score', 'memo_score', 'feedback_score',
     'performance_rating', 'absence_rating', 'tardiness_rating', 'memo_rating', 'feedback_rating',
 ]
 

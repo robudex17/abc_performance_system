@@ -209,6 +209,16 @@ const menuItems = buildMenu(csdMenu, currentUser)
         }
 
 
+        // the leadership evaluation pages (the list and the form): highlight the item of the Leadership Performance menu
+        if (currentRoute.startsWith('/leadership/leadership_evaluation')) {
+          const group = menuItems.find(item => item.name === 'Leadership Performance')
+          if (group?.subMenu?.length) {
+            submenuStates.value[group.name] = true
+            activeMenu.value = group.subMenu[0].name
+            return
+          }
+        }
+
         // the details pages of an employee (opened from the list): highlight the Monthly / Yearly item of the list
         const detailsPages = {
           '/csd/agent_performance/month': 'Agent_Monthly', '/csd/agent_performance/year': 'Agent_Yearly',

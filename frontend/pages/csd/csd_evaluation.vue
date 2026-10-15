@@ -29,6 +29,7 @@
                     <th class="py-0.5 px-4 text-center text-xs font-bold text-green-900 border">Month</th>
                     <th class="py-0.5 px-4 text-center text-xs font-bold text-green-900 border">Year</th>
                     <th class="py-0.5 px-4 text-center text-xs font-bold text-green-900 border"  >Performance</th>
+                    <th class="py-0.5 px-4 text-center text-xs font-bold text-green-900 border">Leadership Performance</th>
                     <th class="py-0.5 px-4 text-center text-xs font-bold text-green-900 border">Absences</th>
                     <th class="py-0.5 px-4 text-center text-xs font-bold text-green-900 border ">Tardiness</th>
                     <th class="py-0.5 px-4 text-center text-xs font-bold text-green-900 border">Memo</th>
@@ -103,10 +104,32 @@
                    </td> -->
 
                   <CSDTooltipCell :title="agent.db_name" class="text-blue-700">
-                     <button  @click="openMetricsTypeModal({ year_month: agent.year_month,employee_status: agent.employee_status, eval_submitted: agent.eval_submitted, employee_id: agent.id, db_name: agent.db_name, month: agent.month, year: agent.year, position_id: agent.position_id, position_name: agent.position_name, team_id:agent.team_id,performance:agent.performance,image_link: agent.image_link,eval_type: 'performance' })" >
+                     <button v-if="!agent.performance_computed"  @click="openMetricsTypeModal({ year_month: agent.year_month,employee_status: agent.employee_status, eval_submitted: agent.eval_submitted, employee_id: agent.id, db_name: agent.db_name, month: agent.month, year: agent.year, position_id: agent.position_id, position_name: agent.position_name, team_id:agent.team_id,performance:agent.performance,image_link: agent.image_link,eval_type: 'performance' })" >
                         {{ agent.performance }}
                     </button>
+                    <!-- the performance of the assistant team leaders, team leaders, assistant managers and the CSD & Collection Manager is the
+                         average of their subordinates (the ones with a performance of 0 are not counted): it is not typed, so it is not
+                         clickable. The title shows the subordinates and their values. -->
+                    <span
+                      v-else
+                      class="font-medium text-gray-700 cursor-pointer"
+                      :class="agent.performance > 0 ? '' : 'text-red-500 font-bold'"
+                      @click="alertComputedPerformance(agent)"
+                      :title="(agent.performance_sources || []).map(source => source.db_name + ' (' + source.department_code + '): ' + (source.counted ? source.performance : 'not counted')).join('  |  ')"
+                    >{{ agent.performance }}</span>
                    </CSDTooltipCell>                   
+
+                  <!-- Leadership Performance: VIEW ONLY, the result (1 - 5) of the leadership evaluation that the head of the leader
+                       answered in the menu Leadership Performance. Only the leaders (position level 7 - 10) have it, 0 = not answered
+                       yet (the leader can not be submitted). Never a popup: the answers are confidential. -->
+                  <td class="py-0.5 px-4 text-center text-lg border font-medium">
+                    <span v-if="!agent.leadership_required" class="text-gray-400">-</span>
+                    <span
+                      v-else
+                      :class="agent.leadership_score > 0 ? 'text-gray-700' : 'text-red-500 font-bold'"
+                      :title="(agent.leadership_by || []).map(item => item.evaluator_dbname + ': ' + item.leadership_score).join('  |  ')"
+                    >{{ agent.leadership_score > 0 ? Number(agent.leadership_score).toFixed(2) : 0 }}</span>
+                  </td>
                   
 
                   <CSDTooltipCell :title="agent.db_name" class="text-blue-700">
@@ -465,6 +488,19 @@
 
   const csdStoreInstance= useCsdStore()
       
+  // The performance of the assistant team leaders, team leaders, assistant managers and the manager is computed
+  // (the average of the subordinates): it can not be edited directly. The alert tells who is in the average.
+  const alertComputedPerformance = (agent) => {
+    const sources = (agent.performance_sources || [])
+      .map(source => `  - ${source.db_name} (${source.department_code}): ${source.counted ? source.performance : 'not counted (0)'}`)
+      .join('\n')
+
+    alert(
+      `The Performance of ${agent.db_name} cannot be edited directly.\n\n` +
+      `It is the average of the Performance of the subordinates (the ones with 0 are not counted):\n${sources}`
+    )
+  }
+
   const openMetricsTypeModal = (selectedAgent) => {
     
   eval_type.value = selectedAgent.eval_type
