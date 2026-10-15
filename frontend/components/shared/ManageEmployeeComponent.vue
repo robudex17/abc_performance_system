@@ -993,8 +993,14 @@
           return imageLink
         }
 
-        // ✅ Otherwise, assume it's a server path
-        return `${config.public.imageBaseUrl}${imageLink}`
+        // ✅ A full url is used as it is
+        if (/^https?:\/\//.test(imageLink)) {
+          return imageLink
+        }
+
+        // ✅ Filename only: the backend serves the image of the MinIO server (the same as the sales agents).
+        // Older rows keep a '/images/...' path: only the file name is used.
+        return `${config.public.imageBaseUrl}${imageLink.split('/').pop()}`
     }
 
 

@@ -44,4 +44,24 @@ const uploadToMinio = async (file) => {
     return filename
 }
 
-module.exports = { upload, uploadToMinio }
+// Removes an image from the bucket (best effort: a failure is only logged). The default image is never removed.
+const DEFAULT_IMAGE = 'sbtlogo.png'
+
+const removeFromMinio = async (filename) => {
+    if (!filename || filename === DEFAULT_IMAGE) return
+
+    try {
+        const minioClient = new Minio.Client({
+            endPoint: process.env.S3_ENDPOINT,
+            port: parseInt(process.env.S3_PORT) || 9000,
+            useSSL: false,
+            accessKey: process.env.S3_ACCESS_KEY,
+            secretKey: process.env.S3_SECRET_KEY,
+        })
+        await minioClient.removeObject(BUCKET, filename)
+    } catch (error) {
+        console.error(`Could not remove ${filename} from MinIO:`, error.message)
+    }
+}
+
+module.exports = { upload, uploadToMinio, removeFromMinio }

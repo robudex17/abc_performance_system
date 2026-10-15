@@ -1,8 +1,11 @@
 const e = require('express')
 const pool = require('../../config/db')
 const { validationResult} = require('express-validator')
-const fs = require('fs')
-const path = require('path')
+const { uploadToMinio, removeFromMinio } = require('../../middleware/fileupload_to_minio')
+
+// the image is saved in the MinIO server: the database keeps only the file name (the same as the sales agents),
+// the page builds the url of the image from it (config.public.imageBaseUrl)
+const DEFAULT_IMAGE = 'sbtlogo.png'
 
 // Shared select for the feedback lookups below: latest assignment + latest employment of every employee.
 // Append a WHERE clause (with ? placeholders) when using it.
@@ -279,13 +282,16 @@ exports.addNewEmployee = async( req, res, next) => {
 
    let market_id = req.body.market_id
     
-    let imageLink = ""
-    if (!req.file) {
-        imageLink = "/images/sbtlogo.png"  // put a default image link or null if no image is uploaded
-    }else {
-         // Construct the URL for the uploaded image
-    //    imageLink = `${req.protocol}://${req.get('host')}/images/${req.file.filename}`;
-          imageLink = `/images/${req.file.filename}`;
+    // default image when no image is uploaded, else upload it to MinIO and keep the file name
+    let imageLink = DEFAULT_IMAGE
+    if (req.file) {
+        try {
+            imageLink = await uploadToMinio(req.file)
+        } catch (error) {
+            connection.release()
+            console.error('Error uploading the employee image to MinIO', error)
+            return res.status(500).json({ error: 'Failed to upload the image. Please try again later.' })
+        }
     }
 
     // Check if there is atleast 1 senior manager in the system if there is none then the first agent to be created must be a senior manager 
@@ -402,7 +408,17 @@ exports.updateEmployee = async (req, res, next) => {
 
 
 
-    let imageLink = req.file ? `/images/${req.file.filename}` : image_link;
+    // a new image goes to MinIO, else the image stays as it is
+    let imageLink = image_link
+    if (req.file) {
+        try {
+            imageLink = await uploadToMinio(req.file)
+        } catch (error) {
+            connection.release()
+            console.error('Error uploading the employee image to MinIO', error)
+            return res.status(500).json({ error: 'Failed to upload the image. Please try again later.' })
+        }
+    }
 
     //there is file change info into true
 
@@ -558,28 +574,19 @@ exports.deleteEmployee = async (req, res, next) => {
         const [fetchEmployeeImageLink] = await pool.execute("SELECT image_link FROM employees WHERE id=?",[employee_id])
         const [employeeImageLink] = fetchEmployeeImageLink
         
-        const image_link = employeeImageLink.image_link
-        if(image_link != null || image_link != ""){
-            // const filePath = new URL(image_link).pathname.substring(1)
-            
-            // Remove leading slash to avoid path issues
-             const filePath = image_link.startsWith('/') ? image_link.substring(1) : image_link;
-            //Construct absolute path
-            const absolutePath = path.join(__dirname, '../', filePath)
+        // the image file name (older rows keep a '/images/...' path: only the file name is the object of the bucket)
+        const imageName = String(employeeImageLink?.image_link ?? '').split('/').pop()
 
-            //Delete the agent Image file
-
-            fs.unlink(absolutePath, (error) => {
-                console.log(`File ${filePath} deleted successfully`)
-            })
-        }
-        
         const query = "DELETE FROM employees WHERE id=?"
         const [result] = await pool.execute(query, [employee_id])
 
         if (result.affectedRows === 0){
             return res.status(400).json({message: 'Employee not found'})
         }
+
+        // remove the image from MinIO unless another employee uses the same file (the default image is never removed)
+        const [sameImage] = await pool.execute("SELECT id FROM employees WHERE image_link = ? OR image_link = ? LIMIT 1", [imageName, `/images/${imageName}`])
+        if (sameImage.length === 0) await removeFromMinio(imageName)
 
         res.status(204).send({ message: 'Employee deleted successfully' })
     }

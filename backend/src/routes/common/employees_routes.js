@@ -7,7 +7,8 @@ const { validateNewAndUpdateEmployee } = require('../../middleware/validator')
 
 const employeesController = require('../../controllers/common/employees_controler')
 
-const uploadImage = require('../../middleware/fileupload')
+// the images are saved in the MinIO server (the same as the sales agents), the database keeps only the file name
+const { upload: uploadImage } = require('../../middleware/fileupload_to_minio')
 const { authenticateToken, authorizeRoles} = require('../../middleware/auth')
 
 
