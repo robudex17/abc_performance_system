@@ -5,6 +5,7 @@ const { parseYearMonth } = require('../helper_scripts/global_variables_and_funct
 const { attachReceivedFeedback } = require('./csd_received_feedback')
 const { applyComputedPerformance } = require('./csd_manager_performance')
 const { attachLeadership } = require('./csd_leadership')
+const { readDepartment, badDepartment } = require('./csd_department')
 
 const { fetch_eval_queries, delete_eval_queries, update_eval_queries, add_eval_queries }  = require(`./csd_metrics_queries`)
 
@@ -64,8 +65,9 @@ exports.fetchCsdEvaluation = async (req, res, next) => {
     
     
    
-    // later I will use this as dynamic maybe I will put in params or on the query
-    let department_code = 'csd'
+    // csd (default) or collection: ?department=collection
+    const department_code = readDepartment(req)
+    if (!department_code) return badDepartment(res)
     let metrics_type = 'all'
 
     let year_month 
@@ -670,9 +672,13 @@ exports.submitCsdEvaluation = async (req, res, next) => {
         return res.status(400).json({ message: 'Submitting the evaluation of a future month is prohibited' })
     }
 
+    // the department of the evaluation (csd, or collection): 'all' is everybody of THAT department
+    const department = readDepartment(req)
+    if (!department) return badDepartment(res)
+
     let connection
     try {
-        const evaluation = await exports.generateCsdEvaluation(yearMonth, 'all', 'csd', 'all', 'all', null, req.user)
+        const evaluation = await exports.generateCsdEvaluation(yearMonth, 'all', department, 'all', 'all', null, req.user)
         const targets = employeeId === 'all' ? evaluation : evaluation.filter(agent => String(agent.id) === String(employeeId))
 
         if (targets.length === 0) return res.status(404).json({ message: `Employee ${employeeId} not found in the CSD evaluation of ${yearMonth}` })
@@ -709,10 +715,18 @@ exports.reviewCsdEvaluation = async (req, res, next) => {
     const yearMonth = readStatusYearMonth(req)
     if (!yearMonth) return res.status(400).json({ message: 'year_month must be in YYYY-MM format' })
 
+    const department = readDepartment(req)
+    if (!department) return badDepartment(res)
+
     try {
         if (employeeId === 'all') {
-            await pool.execute('DELETE FROM csd_evaluation_status WHERE `year_month` = ?', [yearMonth])
-            return res.status(200).json({ message: `CSD evaluation of ${yearMonth} is marked for review` })
+            // only the employees of THIS department: the status table is shared by CSD and Collection
+            const evaluation = await exports.generateCsdEvaluation(yearMonth, 'all', department, 'all', 'all', null, req.user)
+            const ids = evaluation.map(agent => agent.id)
+            if (ids.length > 0) {
+                await pool.query('DELETE FROM csd_evaluation_status WHERE `year_month` = ? AND employee_id IN (?)', [yearMonth, ids])
+            }
+            return res.status(200).json({ message: `${department.toUpperCase()} evaluation of ${yearMonth} is marked for review` })
         }
 
         const [result] = await pool.execute('DELETE FROM csd_evaluation_status WHERE employee_id = ? AND `year_month` = ?', [employeeId, yearMonth])

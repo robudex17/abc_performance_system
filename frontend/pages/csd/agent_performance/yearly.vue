@@ -5,7 +5,7 @@
     </div>
 
     <template v-else>
-      <h1 class="text-2xl font-extrabold text-gray-800 mb-2 text-center">CSD Agents Yearly Performance Information</h1>
+      <h1 class="text-2xl font-extrabold text-gray-800 mb-2 text-center">{{ departmentLabel }} Agents Yearly Performance Information</h1>
       <p class="text-center text-sm text-gray-500 mb-3">Only the submitted months are counted.</p>
 
       <div v-if="agents.length === 0" class="text-red-700 font-bold text-5xl">
@@ -36,7 +36,7 @@
                       v-if="isAdmin"
                       :exportUrl="exportUrl"
                       :exportFileName="exportFileName"
-                      :query="{ year }"
+                      :query="{ year, department: departmentCode }"
                       :token="token"
                       :submitted="1"
                       :submittedArray="false"
@@ -74,7 +74,7 @@
                 <div v-if="agent.months_submitted === 0" class="flex justify-center space-x-2 text-red-500 font-bold">NO Yearly Performance Details</div>
                 <div v-else class="flex justify-center">
                   <NuxtLink
-                    :to="{ path: '/csd/agent_performance/year', query: { employee_id: agent.id, year: agent.year } }"
+                    :to="{ path: base + '/agent_performance/year', query: { employee_id: agent.id, year: agent.year } }"
                     class="px-2 py-2 bg-blue-500 text-white font-bold rounded hover:bg-blue-600"
                   >
                     Yearly Performance Details
@@ -110,8 +110,10 @@ import API from '~/utils/api'
 import { setRatingColor, setRatingNameColor } from '@/utils/constants'
 
 definePageMeta({
-  middleware: ['auth'],
+  middleware: ['auth', 'department-layout'],
   layout: 'csd',
+  // Collection uses this page too (the layout and the staff follow the url)
+  alias: ['/collection/agent_performance/yearly'],
 })
 
 const authStore = useAuthStore()
@@ -120,6 +122,8 @@ const currentUser = authStore.state.user
 const token = authStore.state.token
 
 const route = useRoute()
+// csd or collection (from the url): the backend answers with the staff of that department
+const { code: departmentCode, base, label: departmentLabel } = useDepartmentView()
 const config = useRuntimeConfig()
 const store = useCsdAgentPerformanceStore()
 
@@ -130,7 +134,7 @@ const year = computed(() => route.query.year || String(new Date().getFullYear())
 const agents = computed(() => store.state.yearly)
 
 const exportUrl = `${API.csd_agent_performance_export}/yearly`
-const exportFileName = computed(() => `csd-agents-yearly-performance-${year.value}.xlsx`)
+const exportFileName = computed(() => `${departmentCode.value}-agents-yearly-performance-${year.value}.xlsx`)
 
 const itemsPerPage = 10
 const currentPage = ref(1)
@@ -145,7 +149,7 @@ const updateImageLink = (imageLink) => {
 
 const load = () => {
   currentPage.value = 1
-  store.fetchPerformance('yearly', null, { year: year.value })
+  store.fetchPerformance('yearly', null, { year: year.value, department: departmentCode.value })
 }
 
 onMounted(load)

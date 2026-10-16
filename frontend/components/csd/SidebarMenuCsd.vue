@@ -3,7 +3,7 @@
       <!-- Sidebar -->
       <aside :class="sidebarClass" class="bg-gray-800 text-white transition-all fixed h-screen">
           <div class="flex justify-between items-center p-4 text-center text-2xl font-bold border-b border-gray-700">
-            <div v-if="!isCollapsed" class="pr-2">CSD Performance System </div>
+            <div v-if="!isCollapsed" class="pr-2">{{ view.label }} Performance System </div>
             <button @click="toggleSidebar" class="text-white">
               <font-awesome-icon :icon="['fas', 'bars']" />
             </button>
@@ -59,7 +59,13 @@
 <script setup>
 import { useRouter } from 'vue-router'
 import { useMenuBuilder } from '~/composables/useMenuBuilder'
-import { csdMenu } from '~/config/csdMenu'
+import { DEPARTMENT_VIEWS } from '~/config/departmentViews'
+
+// the same sidebar for CSD and Collection (the layouts pass the department): each one has its own menu (config/csdMenu.js, config/collectionMenu.js)
+const props = defineProps({
+  department: { type: String, default: 'csd' },
+})
+const view = DEPARTMENT_VIEWS[props.department] ?? DEPARTMENT_VIEWS.csd
 
      //get the current user
 const authStore = useAuthStore()
@@ -76,7 +82,7 @@ const submenuStates = ref({});
 const { buildMenu } = useMenuBuilder()
 
 // 🔥 dynamic filtered menu
-const menuItems = buildMenu(csdMenu, currentUser)
+const menuItems = buildMenu(view.menu, currentUser)
 
 
       const logout = () => {
@@ -120,7 +126,7 @@ const menuItems = buildMenu(csdMenu, currentUser)
         // details of an employee (opened from the employees management page)
         if (/^\/admin\/employee\/\d+\/details$/.test(currentRoute)) {
               submenuStates.value["Admin Panel"] = true;
-              activeMenu.value = "CSD Employees Management";
+              activeMenu.value = `${view.label} Employees Management`;
               return;
         }
 
@@ -221,8 +227,8 @@ const menuItems = buildMenu(csdMenu, currentUser)
 
         // the details pages of an employee (opened from the list): highlight the Monthly / Yearly item of the list
         const detailsPages = {
-          '/csd/agent_performance/month': 'Agent_Monthly', '/csd/agent_performance/year': 'Agent_Yearly',
-          '/csd/team_performance/month': 'Team_Monthly', '/csd/team_performance/year': 'Team_Yearly',
+          [`${view.base}/agent_performance/month`]: 'Agent_Monthly', [`${view.base}/agent_performance/year`]: 'Agent_Yearly',
+          [`${view.base}/team_performance/month`]: 'Team_Monthly', [`${view.base}/team_performance/year`]: 'Team_Yearly',
         }
         if (detailsPages[currentRoute]) {
           const group = menuItems.find(item => item.subMenu?.some(sub => sub.name === detailsPages[currentRoute]))

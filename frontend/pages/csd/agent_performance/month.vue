@@ -21,7 +21,7 @@
             class="ml-2"
             :exportUrl="exportUrl"
             :exportFileName="exportFileName"
-            :query="{ year_month: yearMonth }"
+            :query="{ year_month: yearMonth, department: departmentCode }"
             :token="token"
             :submitted="agent.submitted"
             :submittedArray="false"
@@ -66,8 +66,10 @@ import API from '~/utils/api'
 import LeaderBoardTableViewCsd from '~/components/csd/LeaderBoardTableViewCsd.vue'
 
 definePageMeta({
-  middleware: ['auth'],
+  middleware: ['auth', 'department-layout'],
   layout: 'csd',
+  // Collection uses this page too (the layout and the staff follow the url)
+  alias: ['/collection/agent_performance/month'],
 })
 
 const authStore = useAuthStore()
@@ -76,6 +78,8 @@ const currentUser = authStore.state.user
 const token = authStore.state.token
 
 const route = useRoute()
+// csd or collection (from the url): the backend answers with the staff of that department
+const { code: departmentCode, base } = useDepartmentView()
 const store = useCsdAgentPerformanceStore()
 const { setRatingNameColor } = useRatingColor()
 
@@ -92,7 +96,7 @@ const employeeId = computed(() => route.query.employee_id || currentUser?.login_
 const agent = computed(() => store.state.monthly[0] ?? null)
 
 const exportUrl = computed(() => `${API.csd_agent_performance_export}/monthly/${employeeId.value}`)
-const exportFileName = computed(() => `csd-${agent.value?.db_name}-monthly-performance-${yearMonth.value}.xlsx`)
+const exportFileName = computed(() => `${departmentCode.value}-${agent.value?.db_name}-monthly-performance-${yearMonth.value}.xlsx`)
 
 const selectedAgent = reactive({})
 const showModal = ref(false)
@@ -101,7 +105,7 @@ const showDetails = (row) => {
   showModal.value = true
 }
 
-const load = () => store.fetchPerformance('monthly', employeeId.value, { year_month: yearMonth.value })
+const load = () => store.fetchPerformance('monthly', employeeId.value, { year_month: yearMonth.value, department: departmentCode.value })
 
 onMounted(load)
 watch(() => [route.query.year_month, route.query.employee_id], load)

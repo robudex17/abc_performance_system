@@ -74,8 +74,10 @@ import { ref, reactive, computed, onMounted, watch } from 'vue'
 import LeaderBoardTableViewCsd from '~/components/csd/LeaderBoardTableViewCsd.vue'
 
 definePageMeta({
-  middleware: ['auth'],
+  middleware: ['auth', 'department-layout'],
   layout: 'csd',
+  // Collection uses this page too (the layout and the staff follow the url)
+  alias: ['/collection/team_performance/month'],
 })
 
 const authStore = useAuthStore()
@@ -84,6 +86,8 @@ const currentUser = authStore.state.user
 
 const isAdminUser = ['admin', 'poweruser'].includes(currentUser?.role)
 const route = useRoute()
+// csd or collection (from the url): the backend answers with the staff of that department
+const { code: departmentCode, base } = useDepartmentView()
 const store = useCsdTeamPerformanceStore()
 const { setRatingNameColor } = useRatingColor()
 
@@ -108,7 +112,7 @@ const showDetails = (row) => {
 const load = () => {
   // no team chosen (admin without ?team_id): nothing to show
   if (!teamId.value) { store.state.monthly = []; return }
-  store.fetchTeams('monthly', teamId.value, { year_month: yearMonth.value })
+  store.fetchTeams('monthly', teamId.value, { year_month: yearMonth.value, department: departmentCode.value })
 }
 
 onMounted(load)

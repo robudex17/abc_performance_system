@@ -29,6 +29,8 @@ export const useCsdTeamPerformanceStore = defineStore('csdTeamPerformanceStore',
             const url = new URL(`${API.csd_team_performance}/${period}${teamId ? `/${teamId}` : ''}`)
             if (period === 'monthly' && queryString?.year_month) url.searchParams.append('year_month', queryString.year_month)
             if (period === 'yearly' && queryString?.year) url.searchParams.append('year', queryString.year)
+            // csd (default) or collection: the teams of that department
+            if (queryString?.department) url.searchParams.append('department', queryString.department)
 
             const response = await fetch(url, {
                 method: 'GET',

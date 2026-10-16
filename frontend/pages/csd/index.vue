@@ -23,7 +23,7 @@
           class="ml-2"
           :exportUrl="exportUrl"
           :exportFileName="exportFileName"
-          :query="route.query"
+          :query="{ ...route.query, department: departmentCode }"
           :token="token"
           :incomplete="incomplete"
         ></export-to-excel-component>
@@ -338,11 +338,15 @@ import API from '~/utils/api'
 import LeaderBoardTableViewCsd from '~/components/csd/LeaderBoardTableViewCsd.vue'
 
 definePageMeta({
-  middleware: ['auth'],
-  layout: 'csd'
+  middleware: ['auth', 'department-layout'],
+  layout: 'csd',
+  // the leaderboard of Collection is this page too (the layout and the staff follow the url)
+  alias: ['/collection'],
 })
 
 const route = useRoute()
+// csd or collection (from the url): the backend answers with the staff of that department
+const { code: departmentCode } = useDepartmentView()
 const config = useRuntimeConfig()
 const csdStoreInstance = useCsdStore()
 const { setRatingNameColor } = useRatingColor()
@@ -370,7 +374,7 @@ const toggleView = () => {
 }
 
 const exportUrl = computed(() => `${API.csd_leaderboard_export}/${leaderboardOption.value}`)
-const exportFileName = computed(() => `csd-${leaderboardOption.value}-leaderboard-${route.query.year_month || 'current'}.xlsx`)
+const exportFileName = computed(() => `${departmentCode.value}-${leaderboardOption.value}-leaderboard-${route.query.year_month || 'current'}.xlsx`)
 
 const csd_leaderboard = computed(() => csdStoreInstance.state.csdLeaderboard);
 
@@ -417,7 +421,7 @@ const selectedAgentMetrics = computed(() => {
 })
 
 const fetchCsdLeaderboard = (scope, query) => {
-  csdStoreInstance.fetchLeaderboard(scope, null, query);
+  csdStoreInstance.fetchLeaderboard(scope, null, { ...query, department: departmentCode.value });
 };
 
 const showAgentDetails = (agent) => {

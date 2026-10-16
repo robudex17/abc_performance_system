@@ -10,7 +10,7 @@
    
     <div >
 
-        <h1 class="text-3xl font-extrabold text-gray-800 mb-6 text-center">Customer Service Performance Evaluation</h1>
+        <h1 class="text-3xl font-extrabold text-gray-800 mb-6 text-center">{{ view.evaluationTitle }}</h1>
         <!-- Agents Table -->
        <div class="relative overflow-x-auto overflow-y-auto max-h-[80vh] shadow-xl rounded-lg">
           <table class="min-w-max table-auto border-collapse bg-white">
@@ -215,7 +215,7 @@
                                      
                     <!-- Actions: Submit / Submitted + Review. The row of the CSD & Collection Manager (position level 10) is the Submit All -->
                     <td class="py-0.5 px-4 text-center border" >
-                      <div class="flex justify-center space-x-2" v-if="agent.position_level == 10">
+                      <div class="flex justify-center space-x-2" v-if="agent.position_level == topLevel">
 
                         <!-- Submit All: only when every row (his own too) is ready -->
                         <button
@@ -432,8 +432,10 @@
   <script setup>
   
   definePageMeta({
-    middleware: ['auth', 'adminmanager'],
-    layout: 'csd'
+    middleware: ['auth', 'adminmanager', 'department-layout'],
+    layout: 'csd',
+    // the evaluation of Collection is this page too (the layout and the staff follow the url)
+    alias: ['/collection/collection_evaluation'],
   })
   
   import { ref, computed } from 'vue';
@@ -487,6 +489,10 @@
 
 
   const csdStoreInstance= useCsdStore()
+
+  // csd or collection (from the url): every request carries ?department=..., the backend answers with the staff of that department
+  const { view, query: withDepartment } = useDepartmentView()
+  const deptQuery = computed(() => withDepartment(route.query))
       
   // The performance of the assistant team leaders, team leaders, assistant managers and the manager is computed
   // (the average of the subordinates): it can not be edited directly. The alert tells who is in the average.
@@ -623,8 +629,8 @@
       switch (eval_type.value){
         case "performance":
           
-            await  csdStoreInstance.addCsdPerformanceMetricsOrEvaluation(agent.employee_id, 'performance',  'evaluation',route.query, agent)
-            fetchCsdOrEvaluationPerformanceMetrics(null, 'all', 'evaluation', route.query)
+            await  csdStoreInstance.addCsdPerformanceMetricsOrEvaluation(agent.employee_id, 'performance',  'evaluation',deptQuery.value, agent)
+            fetchCsdOrEvaluationPerformanceMetrics(null, 'all', 'evaluation', deptQuery.value)
             break
         case  "absences": 
               if(agent.absences == ''  || agent.absences == 0){
@@ -632,8 +638,8 @@
                 return
               }
           
-            await  csdStoreInstance.addCsdPerformanceMetricsOrEvaluation(agent.employee_id, 'absences',  'evaluation',route.query, {new_count: agent.new_count})
-            fetchCsdOrEvaluationPerformanceMetrics(null, 'all', 'evaluation', route.query)
+            await  csdStoreInstance.addCsdPerformanceMetricsOrEvaluation(agent.employee_id, 'absences',  'evaluation',deptQuery.value, {new_count: agent.new_count})
+            fetchCsdOrEvaluationPerformanceMetrics(null, 'all', 'evaluation', deptQuery.value)
             break
         case "tardiness":
 
@@ -642,8 +648,8 @@
               return
             }
       
-            await  csdStoreInstance.addCsdPerformanceMetricsOrEvaluation(agent.employee_id, 'tardiness', 'evaluation', route.query, {new_count: agent.new_count})
-            fetchCsdOrEvaluationPerformanceMetrics(null, 'all', 'evaluation', route.query)
+            await  csdStoreInstance.addCsdPerformanceMetricsOrEvaluation(agent.employee_id, 'tardiness', 'evaluation', deptQuery.value, {new_count: agent.new_count})
+            fetchCsdOrEvaluationPerformanceMetrics(null, 'all', 'evaluation', deptQuery.value)
             break 
           case "memo":
 
@@ -652,8 +658,8 @@
                 return
               }
           
-            await  csdStoreInstance.addCsdPerformanceMetricsOrEvaluation(agent.employee_id, 'memo', 'evaluation', route.query, { new_count: agent.new_count})
-            fetchCsdOrEvaluationPerformanceMetrics(null, 'all', 'evaluation', route.query)
+            await  csdStoreInstance.addCsdPerformanceMetricsOrEvaluation(agent.employee_id, 'memo', 'evaluation', deptQuery.value, { new_count: agent.new_count})
+            fetchCsdOrEvaluationPerformanceMetrics(null, 'all', 'evaluation', deptQuery.value)
             break   
 
           case "feedback_by_admin":
@@ -663,8 +669,8 @@
             }  
          
           
-            await  csdStoreInstance.addCsdPerformanceMetricsOrEvaluation(agent.employee_id, eval_type.value , 'evaluation', route.query, agent)
-            fetchCsdOrEvaluationPerformanceMetrics(null, 'all', 'evaluation', route.query)
+            await  csdStoreInstance.addCsdPerformanceMetricsOrEvaluation(agent.employee_id, eval_type.value , 'evaluation', deptQuery.value, agent)
+            fetchCsdOrEvaluationPerformanceMetrics(null, 'all', 'evaluation', deptQuery.value)
             break   
             
 
@@ -675,8 +681,8 @@
               return
             }
 
-            await  csdStoreInstance.addCsdPerformanceMetrics(agent.employee_id, 'call_email_calibration', route.query, { calibration_not_good: agent.calibration_not_good, calibration_just_ok: agent.calibration_just_ok, calibration_awesome: agent.calibration_awesome})
-            fetchCsdOrEvaluationPerformanceMetrics(null, 'all', 'evaluation', route.query)
+            await  csdStoreInstance.addCsdPerformanceMetrics(agent.employee_id, 'call_email_calibration', deptQuery.value, { calibration_not_good: agent.calibration_not_good, calibration_just_ok: agent.calibration_just_ok, calibration_awesome: agent.calibration_awesome})
+            fetchCsdOrEvaluationPerformanceMetrics(null, 'all', 'evaluation', deptQuery.value)
             break            
         
         default:
@@ -691,21 +697,21 @@
     const editDataAgent = async(agent) => {
       switch (eval_type.value){
         case "performance":
-          await  csdStoreInstance.updateCsdPerformanceMetricsOrEvaluation(agent.employee_id, eval_type.value, 'evaluation', route.query, agent)
-          fetchCsdOrEvaluationPerformanceMetrics(null, 'all', 'evaluation', route.query)
+          await  csdStoreInstance.updateCsdPerformanceMetricsOrEvaluation(agent.employee_id, eval_type.value, 'evaluation', deptQuery.value, agent)
+          fetchCsdOrEvaluationPerformanceMetrics(null, 'all', 'evaluation', deptQuery.value)
           break
         case  "absences": 
         case "tardiness":
         case "memo":
         
-          await  csdStoreInstance.updateCsdPerformanceMetricsOrEvaluation(agent.employee_id, eval_type.value, 'evaluation', route.query, {new_count: agent.new_count})
-          fetchCsdOrEvaluationPerformanceMetrics(null, 'all', 'evaluation', route.query)
+          await  csdStoreInstance.updateCsdPerformanceMetricsOrEvaluation(agent.employee_id, eval_type.value, 'evaluation', deptQuery.value, {new_count: agent.new_count})
+          fetchCsdOrEvaluationPerformanceMetrics(null, 'all', 'evaluation', deptQuery.value)
           break
 
         case "feedback_by_admin":
            
-          await  csdStoreInstance.updateCsdPerformanceMetricsOrEvaluation(agent.employee_id, eval_type.value, 'evaluation', route.query, agent)
-          fetchCsdOrEvaluationPerformanceMetrics(null, 'all', 'evaluation', route.query)
+          await  csdStoreInstance.updateCsdPerformanceMetricsOrEvaluation(agent.employee_id, eval_type.value, 'evaluation', deptQuery.value, agent)
+          fetchCsdOrEvaluationPerformanceMetrics(null, 'all', 'evaluation', deptQuery.value)
           break    
 
         default:
@@ -723,13 +729,13 @@
           case "tardiness":
           case "memo":  
           case "feedback_by_admin":   
-              await  csdStoreInstance.deleteCsdPerformanceMetricsOrEvaluation(agent.employee_id, eval_type.value, 'evaluation', route.query, {employee_id:agent.employee_id})
-             fetchCsdOrEvaluationPerformanceMetrics(null, 'all', 'evaluation', route.query)
+              await  csdStoreInstance.deleteCsdPerformanceMetricsOrEvaluation(agent.employee_id, eval_type.value, 'evaluation', deptQuery.value, {employee_id:agent.employee_id})
+             fetchCsdOrEvaluationPerformanceMetrics(null, 'all', 'evaluation', deptQuery.value)
             break
           case "deduction":
               agent.evaluation = true
-              await useManageSalesStore.addUpdateDeleteDeduction(agent.agent_id, agent, route.query, 'DELETE')
-              fetchSalesAgentsEvaluation(null, 'all', route.query)
+              await useManageSalesStore.addUpdateDeleteDeduction(agent.agent_id, agent, deptQuery.value, 'DELETE')
+              fetchSalesAgentsEvaluation(null, 'all', deptQuery.value)
                                      
             default:
               console.log("Unknow Metircs type");
@@ -753,7 +759,8 @@
 
   // who receives each feedback (same rules as the details page of the employee):
   //  QA: the staff of position level 8 and below, immediate head: everybody but the top level 10, members: level 8 and up
-  const receivesQaFeedback = (agent) => Number(agent.position_level) <= 8
+  // the Quality Analyst gives the QA feedback to level 8 and below in CSD, to level 3 and below in Collection
+  const receivesQaFeedback = (agent) => Number(agent.position_level) <= view.value.qaMaxLevel
   const receivesImmediateHeadFeedback = (agent) => Number(agent.position_level) < 10
   const receivesMembersFeedback = (agent) => Number(agent.position_level) >= 8
 
@@ -772,23 +779,23 @@
 
   const submitEvaluation = async (agent) => {
     if (!isAdmin()) return alert('Not allowed to submit the CSD Evaluation')
-    await csdStoreInstance.changeCsdEvaluationStatus(agent.id, agent.year_month, 'POST', route.query)
+    await csdStoreInstance.changeCsdEvaluationStatus(agent.id, agent.year_month, 'POST', deptQuery.value)
   }
 
   const reviewEvaluation = async (agent) => {
     if (!isAdmin()) return alert('Not allowed to review the CSD Evaluation')
-    await csdStoreInstance.changeCsdEvaluationStatus(agent.id, agent.year_month, 'DELETE', route.query)
+    await csdStoreInstance.changeCsdEvaluationStatus(agent.id, agent.year_month, 'DELETE', deptQuery.value)
   }
 
   const submitAllEvaluation = async () => {
     if (!isAdmin()) return alert('Not allowed to submit the CSD Evaluation')
     if (!canSubmitAll.value) return
-    await csdStoreInstance.changeCsdEvaluationStatus('all', agents.value[0].year_month, 'POST', route.query)
+    await csdStoreInstance.changeCsdEvaluationStatus('all', agents.value[0].year_month, 'POST', deptQuery.value)
   }
 
   const reviewAllEvaluation = async () => {
     if (!isAdmin()) return alert('Not allowed to review the CSD Evaluation')
-    await csdStoreInstance.changeCsdEvaluationStatus('all', agents.value[0].year_month, 'DELETE', route.query)
+    await csdStoreInstance.changeCsdEvaluationStatus('all', agents.value[0].year_month, 'DELETE', deptQuery.value)
   }
 
 
@@ -811,7 +818,7 @@ const openModal = ( data, title = 'Feedback', emptyMessage = 'No Feedback Yet') 
   onMounted(() => {
     // no employee_id and query all metrics
     
-    fetchCsdOrEvaluationPerformanceMetrics(null, 'all', 'evaluation', route.query)
+    fetchCsdOrEvaluationPerformanceMetrics(null, 'all', 'evaluation', deptQuery.value)
   
   });
   
@@ -820,6 +827,9 @@ const openModal = ( data, title = 'Feedback', emptyMessage = 'No Feedback Yet') 
   
 
  const agents = computed(() => csdStoreInstance.state.csdEvaluation);
+
+  // the highest position level of the list: its row has the Submit All button (CSD: level 10, Collection: level 9)
+  const topLevel = computed(() => Math.max(0, ...agents.value.map(agent => Number(agent.position_level))))
 
  
 
@@ -845,7 +855,7 @@ const openModal = ( data, title = 'Feedback', emptyMessage = 'No Feedback Yet') 
 
  watch(route, (newRoute) => {
    // no employee_id and query all metrics
-   fetchCsdOrEvaluationPerformanceMetrics(null, 'all', 'evaluation', newRoute.query);
+   fetchCsdOrEvaluationPerformanceMetrics(null, 'all', 'evaluation', withDepartment(newRoute.query));
 
 });
 

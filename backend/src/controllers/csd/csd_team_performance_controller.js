@@ -1,5 +1,6 @@
 const { scoring } = require('./csd_leaderboard_controller')
 const { shared } = require('./csd_agent_performance_controller')
+const { readDepartment, badDepartment } = require('./csd_department')
 
 // Team Monthly / Team Yearly performance of the CSD teams (the "Team Performance" menu), same idea as the sales team pages.
 // A team is the staff with the same team_id. The team rating is the average of the final ratings of its members:
@@ -33,8 +34,8 @@ const leaderOf = (members) => [...members].sort(byLevelThenName)[0]
 const average = (rows) => (rows.length ? rows.reduce((sum, row) => sum + toNumber(row.final_ratings), 0) / rows.length : 0)
 
 // ---------------------------------------------------------------- monthly
-const buildTeamsOfMonth = async (user, yearMonth, tables) => {
-    const rows = await buildMonth(user, yearMonth, tables)
+const buildTeamsOfMonth = async (user, yearMonth, tables, department = 'csd') => {
+    const rows = await buildMonth(user, yearMonth, tables, department)
 
     const groups = new Map()
     for (const row of rows) {
@@ -79,14 +80,14 @@ const pickTeam = (teams, teamId, user) => {
     return teams.filter(team => String(team.team_id) === String(teamId))
 }
 
-exports.getTeamsMonthly = async (user, yearMonth, teamId) => {
+exports.getTeamsMonthly = async (user, yearMonth, teamId, department = 'csd') => {
     const tables = await loadScoreTables()
-    return pickTeam(await buildTeamsOfMonth(user, yearMonth, tables), teamId, user)
+    return pickTeam(await buildTeamsOfMonth(user, yearMonth, tables, department), teamId, user)
 }
 
 // ---------------------------------------------------------------- yearly
-const buildTeamsOfYear = async (user, year) => {
-    const { tables, byEmployee } = await buildYear(user, year)
+const buildTeamsOfYear = async (user, year, department = 'csd') => {
+    const { tables, byEmployee } = await buildYear(user, year, department)
 
     // team -> { months: Map(year_month -> rows), members: Map(employee id -> rows of the employee in this team) }
     const teams = new Map()
@@ -152,8 +153,8 @@ const buildTeamsOfYear = async (user, year) => {
     return result.sort(byRatingDesc)
 }
 
-exports.getTeamsYearly = async (user, year, teamId) => {
-    return pickTeam(await buildTeamsOfYear(user, year), teamId, user)
+exports.getTeamsYearly = async (user, year, teamId, department = 'csd') => {
+    return pickTeam(await buildTeamsOfYear(user, year, department), teamId, user)
 }
 
 // ---------------------------------------------------------------- routes
@@ -166,13 +167,16 @@ const denyWithoutTeams = (user, res) => {
 exports.fetchMonthly = async (req, res) => {
     if (denyWithoutTeams(req.user, res)) return
 
+    const department = readDepartment(req)
+    if (!department) return badDepartment(res)
+
     const yearMonth = req.query.year_month || currentYearMonth()
     if (!/^\d{4}-(0[1-9]|1[0-2])$/.test(yearMonth)) {
         return res.status(400).json({ message: 'Invalid year_month format. Expected YYYY-MM' })
     }
 
     try {
-        res.status(200).json(await exports.getTeamsMonthly(req.user, yearMonth, req.params.team_id))
+        res.status(200).json(await exports.getTeamsMonthly(req.user, yearMonth, req.params.team_id, department))
     } catch (error) {
         console.error('Error fetching the CSD team performance', error)
         res.status(500).json({ error: 'Database Error, Cannot Fetch CSD team performance' })
@@ -182,11 +186,14 @@ exports.fetchMonthly = async (req, res) => {
 exports.fetchYearly = async (req, res) => {
     if (denyWithoutTeams(req.user, res)) return
 
+    const department = readDepartment(req)
+    if (!department) return badDepartment(res)
+
     const year = readYear(req)
     if (!year) return res.status(400).json({ message: 'Invalid year format. Expected YYYY' })
 
     try {
-        const teams = await exports.getTeamsYearly(req.user, year, req.params.team_id)
+        const teams = await exports.getTeamsYearly(req.user, year, req.params.team_id, department)
         res.status(200).json(req.params.team_id ? (teams[0] ?? null) : teams)
     } catch (error) {
         console.error('Error fetching the CSD team performance', error)

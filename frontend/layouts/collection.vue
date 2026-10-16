@@ -1,9 +1,9 @@
 
 <template>
   <div class="flex">
-  <CollectionSidebarMenuCollection />
+  <SidebarMenuCsd department="collection" />
     <div class="flex-1 relative">
-      <NavigationBarCollection />
+      <NavigationBarCsd department="collection" />
       <NuxtPage />
 
       <!-- 🚀 Global ShipOK Notification Component -->
@@ -17,8 +17,9 @@
 </template>
 
 <script setup>
-import NavigationBarCollection from '~/components/collection/NavigationBarCollection.vue';
-import CollectionSidebarMenuCollection from '~/components/collection/SidebarMenuCollection.vue';
+// Collection uses the same sidebar and navigation bar as CSD (components/csd), with its own menu: config/collectionMenu.js
+import NavigationBarCsd from '~/components/csd/NavigationBarCsd.vue';
+import SidebarMenuCsd from '~/components/csd/SidebarMenuCsd.vue';
 
 
 </script>

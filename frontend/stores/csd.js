@@ -429,7 +429,11 @@ export const useCsdStore = defineStore('csdStore', () => {
         state.loading = true
         state.error = null
         try {
-            const response = await fetch(`${API.csd_evaluation_status}/${employee_id}`, {
+            // csd (default) or collection: 'all' is everybody of that department
+            const statusUrl = new URL(`${API.csd_evaluation_status}/${employee_id}`)
+            if (query_string?.department) statusUrl.searchParams.append('department', query_string.department)
+
+            const response = await fetch(statusUrl, {
                 method: httpMethod,
                 body: JSON.stringify({ year_month }),
                 headers: {

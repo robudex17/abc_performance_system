@@ -5,7 +5,7 @@
     </div>
 
     <template v-else>
-      <h1 class="text-2xl font-extrabold text-gray-800 mb-3 text-center">CSD Team Monthly Performance Information</h1>
+      <h1 class="text-2xl font-extrabold text-gray-800 mb-3 text-center">{{ departmentLabel }} Team Monthly Performance Information</h1>
 
       <div v-if="store.state.error" class="text-red-700 font-bold text-2xl">{{ store.state.error }}</div>
       <div v-else-if="teams.length === 0" class="text-red-700 font-bold text-2xl">
@@ -50,7 +50,7 @@
               <td class="py-0.5 px-2 border text-center text-xs">
                 <div class="flex justify-center space-x-2" v-if="team.isCompleted">
                   <NuxtLink
-                    :to="{ path: '/csd/team_performance/month', query: { team_id: team.team_id, year_month: team.year_month } }"
+                    :to="{ path: base + '/team_performance/month', query: { team_id: team.team_id, year_month: team.year_month } }"
                     class="px-2 py-2 bg-blue-500 text-white font-bold rounded hover:bg-blue-600"
                   >
                     Team Monthly Performance Details
@@ -86,11 +86,15 @@ import { ref, computed, onMounted, watch } from 'vue'
 import { setRatingColor, setRatingNameColor } from '@/utils/constants'
 
 definePageMeta({
-  middleware: ['auth'],
+  middleware: ['auth', 'department-layout'],
   layout: 'csd',
+  // Collection uses this page too (the layout and the staff follow the url)
+  alias: ['/collection/team_performance/monthly'],
 })
 
 const route = useRoute()
+// csd or collection (from the url): the backend answers with the staff of that department
+const { code: departmentCode, base, label: departmentLabel } = useDepartmentView()
 const config = useRuntimeConfig()
 const store = useCsdTeamPerformanceStore()
 
@@ -113,7 +117,7 @@ const updateImageLink = (imageLink) => {
 
 const load = () => {
   currentPage.value = 1
-  store.fetchTeams('monthly', null, { year_month: yearMonth.value })
+  store.fetchTeams('monthly', null, { year_month: yearMonth.value, department: departmentCode.value })
 }
 
 onMounted(load)

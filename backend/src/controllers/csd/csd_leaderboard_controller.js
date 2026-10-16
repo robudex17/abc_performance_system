@@ -1,5 +1,6 @@
 const pool = require('../../config/db')
 const { generateCsdEvaluation } = require('./csd_evaluation_controller')
+const { readDepartment, badDepartment } = require('./csd_department')
 
 // CSD leaderboard, built like the sales leaderboard but on the CSD evaluation (not on csd_performance_metrics):
 //   - the rows are the ones of the CSD Evaluation page: Performance (typed by the admin), Absences, Tardiness, Memo and
@@ -229,7 +230,7 @@ const groupByTeam = (allRows, rankedRows) => {
 // shared with the agent performance pages (csd_agent_performance_controller.js)
 exports.scoring = { scoreEmployee, loadScoreTables, ratingName, toNumber, round4, INCOMPLETE }
 
-exports.buildCsdLeaderboard = async (user, scope, yearMonth, employeeId) => {
+exports.buildCsdLeaderboard = async (user, scope, yearMonth, employeeId, department = 'csd') => {
     if (!SCOPES.includes(scope)) {
         return { error: { status: 400, message: `Unknown leaderboard scope: ${scope}. Use ${SCOPES.join(', ')}` } }
     }
@@ -237,7 +238,7 @@ exports.buildCsdLeaderboard = async (user, scope, yearMonth, employeeId) => {
         return { error: { status: 400, message: 'Invalid year_month format. Expected YYYY-MM' } }
     }
 
-    const evaluation = await generateCsdEvaluation(yearMonth, 'all', 'csd', 'all', 'all', null, user)
+    const evaluation = await generateCsdEvaluation(yearMonth, 'all', department, 'all', 'all', null, user)
     const tables = await loadScoreTables()
     const ownTeamId = evaluation.find(agent => Number(agent.id) === Number(user?.login_id))?.team_id ?? null
 
@@ -274,9 +275,12 @@ exports.buildCsdLeaderboard = async (user, scope, yearMonth, employeeId) => {
 }
 
 exports.fetchCsdLeaderboard = async (req, res, next) => {
+    const department = readDepartment(req)
+    if (!department) return badDepartment(res)
+
     try {
         const { data, error } = await exports.buildCsdLeaderboard(
-            req.user, req.params.scope || 'agent', req.query.year_month || currentYearMonth(), req.params.employee_id)
+            req.user, req.params.scope || 'agent', req.query.year_month || currentYearMonth(), req.params.employee_id, department)
 
         if (error) return res.status(error.status).json({ message: error.message })
 

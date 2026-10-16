@@ -1,9 +1,9 @@
 
 <template>
   <div class="flex">
-  <SidebarMenuCsd />
+  <SidebarMenuCsd department="csd" />
     <div class="flex-1 relative">
-      <NavigationBarCsd />
+      <NavigationBarCsd department="csd" />
       <NuxtPage />
 
       <!-- 🚀 Global ShipOK Notification Component -->

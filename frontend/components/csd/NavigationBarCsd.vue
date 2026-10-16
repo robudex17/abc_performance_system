@@ -3,9 +3,9 @@
         <header class="bg-white shadow-md flex items-center justify-between px-6 py-4 fixed left-[304px] right-0">
           <!-- Brand -->
           <div class="flex items-center gap-10">
-              <div class="text-lg font-bold">SBTPH CSD APP</div>
+              <div class="text-lg font-bold">SBTPH {{ view.label.toUpperCase() }} APP</div>
               <!-- Dropdown for manage sales agent -->
-              <div v-if="route.path =='/csd/csd_employees_management'" class="flex items-center gap-2">
+              <div v-if="route.path == employeesPath" class="flex items-center gap-2">
          
                 <select 
                   class="px-2 py-1 border  font-bold text-sm rounded bg-gray-50 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500"
@@ -50,7 +50,7 @@
                     class="border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-300"
                   />
 
-                <select v-if="route.path == '/csd'"
+                <select v-if="route.path == view.base"
                   class="p-2 border rounded bg-gray-50 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500"
                   v-model="scope"
                 >
@@ -100,6 +100,14 @@
     import { ref, watch,computed } from "vue";
     
     import { months, monthMap, isFutureMonth } from '@/utils/constants'
+    import { DEPARTMENT_VIEWS } from '~/config/departmentViews'
+
+    // the same navigation bar for CSD and Collection (the layouts pass the department)
+    const props = defineProps({
+      department: { type: String, default: 'csd' },
+    })
+    const view = DEPARTMENT_VIEWS[props.department] ?? DEPARTMENT_VIEWS.csd
+    const employeesPath = `${view.base}/${view.code}_employees_management`
 
 
     //get the current user
@@ -133,7 +141,8 @@
 
     // the yearly pages of the CSD Agent / Team Performance: the list (yearly) and the details of one employee / team (year)
     const isYearPage = computed(() => [
-      '/csd/agent_performance/yearly', '/csd/agent_performance/year', '/csd/team_performance/yearly', '/csd/team_performance/year',
+      `${view.base}/agent_performance/yearly`, `${view.base}/agent_performance/year`,
+      `${view.base}/team_performance/yearly`, `${view.base}/team_performance/year`,
     ].includes(route.path))
     const thisYear = new Date().getFullYear()
     const yearOptions = Array.from({ length: 6 }, (_, index) => String(thisYear - index))
@@ -141,7 +150,7 @@
 
 
     const fetchCsdEmployees = () => {
-      if (route.path == '/csd/csd_employees_management'){ {
+      if (route.path == employeesPath){ {
          
           const currentRoute = router.currentRoute.value 
 

@@ -1,6 +1,7 @@
 const ExcelJS = require('exceljs')
 const { getMonthlyList, getMonthlyOne, getYearlyList, getYearlyOne } = require('./csd_agent_performance_controller')
 const { excel } = require('./csd_leaderboard_export')
+const { readDepartment, badDepartment, DEPARTMENT_LABELS } = require('./csd_department')
 const { getDataBorder, getHeaderBorder, getHeaderStyle } = require('../helper_scripts/global_variables_and_functions')
 
 // Excel of the Agent Monthly / Agent Yearly pages (same pattern as the sales exports, with the CSD data only).
@@ -66,14 +67,17 @@ const metricsOf = (row, month) => [
 ]
 
 exports.exportMonthly = async (req, res) => {
+    const department = readDepartment(req)
+    if (!department) return badDepartment(res)
+
     try {
         const yearMonth = req.query.year_month || currentYearMonth()
         if (!/^\d{4}-(0[1-9]|1[0-2])$/.test(yearMonth)) return res.status(400).json({ message: 'Invalid year_month format. Expected YYYY-MM' })
 
         const employeeId = req.params.employee_id
         const rows = employeeId
-            ? [await getMonthlyOne(req.user, yearMonth, employeeId)].filter(Boolean)
-            : await getMonthlyList(req.user, yearMonth)
+            ? [await getMonthlyOne(req.user, yearMonth, employeeId, department)].filter(Boolean)
+            : await getMonthlyList(req.user, yearMonth, department)
 
         if (rows.length === 0) return res.status(404).json({ message: 'No data to export' })
         if (rows.some(row => row.submitted !== 1)) {
@@ -86,12 +90,12 @@ exports.exportMonthly = async (req, res) => {
             const worksheet = workbook.addWorksheet(`${capitalize(row.db_name)}-${row.month}-${row.year}-SCORE`)
             writeTable(rows, worksheet, `${capitalize(row.db_name)} - (MONTHLY PERFORMANCE) ${row.final_ratings} / ${row.ratings_name}`)
             writeMetricsSummary(worksheet, worksheet.lastRow.number + 3, 'Metrics Summary', metricsOf(row, row.month), true)
-            return await send(res, workbook, `csd-${row.db_name}-monthly-performance-${yearMonth}.xlsx`)
+            return await send(res, workbook, `${department}-${row.db_name}-monthly-performance-${yearMonth}.xlsx`)
         }
 
         const worksheet = workbook.addWorksheet(`${rows[0].month}-${rows[0].year}-SCORE`)
-        writeTable(rows, worksheet, 'CSD AGENTS MONTHLY PERFORMANCE')
-        await send(res, workbook, `csd-agents-monthly-performance-${yearMonth}.xlsx`)
+        writeTable(rows, worksheet, `${DEPARTMENT_LABELS[department]} AGENTS MONTHLY PERFORMANCE`)
+        await send(res, workbook, `${department}-agents-monthly-performance-${yearMonth}.xlsx`)
 
     } catch (error) {
         console.error('Error exporting the CSD monthly performance', error)
@@ -140,6 +144,9 @@ const writeYearlyList = (rows, worksheet, title) => {
 }
 
 exports.exportYearly = async (req, res) => {
+    const department = readDepartment(req)
+    if (!department) return badDepartment(res)
+
     try {
         const year = req.query.year || String(new Date().getFullYear())
         if (!/^\d{4}$/.test(year)) return res.status(400).json({ message: 'Invalid year format. Expected YYYY' })
@@ -148,22 +155,22 @@ exports.exportYearly = async (req, res) => {
         const workbook = new ExcelJS.Workbook()
 
         if (employeeId) {
-            const data = await getYearlyOne(req.user, year, employeeId)
+            const data = await getYearlyOne(req.user, year, employeeId, department)
             if (!data || data.agentMetricsFullYear.length === 0) return res.status(404).json({ message: 'No data to export' })
 
             const average = data.yearAverage
             const worksheet = workbook.addWorksheet(`${capitalize(average.db_name)}-${year}-SCORE`)
             writeTable(data.agentMetricsFullYear, worksheet, `${capitalize(average.db_name)} - (YEARLY PERFORMANCE) ${average.final_ratings} / ${average.ratings_name}`)
             writeMetricsSummary(worksheet, worksheet.lastRow.number + 3, 'Metrics Year Summary', metricsOf(average, undefined), false)
-            return await send(res, workbook, `csd-${average.db_name}-yearly-performance-${year}.xlsx`)
+            return await send(res, workbook, `${department}-${average.db_name}-yearly-performance-${year}.xlsx`)
         }
 
-        const rows = (await getYearlyList(req.user, year)).filter(row => row.months_submitted > 0)
+        const rows = (await getYearlyList(req.user, year, department)).filter(row => row.months_submitted > 0)
         if (rows.length === 0) return res.status(404).json({ message: 'No data to export' })
 
         const worksheet = workbook.addWorksheet(`${year}-YEARLY`)
-        writeYearlyList(rows, worksheet, 'CSD AGENTS YEARLY PERFORMANCE')
-        await send(res, workbook, `csd-agents-yearly-performance-${year}.xlsx`)
+        writeYearlyList(rows, worksheet, `${DEPARTMENT_LABELS[department]} AGENTS YEARLY PERFORMANCE`)
+        await send(res, workbook, `${department}-agents-yearly-performance-${year}.xlsx`)
 
     } catch (error) {
         console.error('Error exporting the CSD yearly performance', error)

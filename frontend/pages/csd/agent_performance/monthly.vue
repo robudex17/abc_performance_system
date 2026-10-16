@@ -10,7 +10,7 @@
 
     <!-- Agents Table -->
     <div v-else class="overflow-x-auto shadow-xl rounded-lg">
-      <h1 class="text-2xl font-extrabold text-gray-800 mb-3 text-center">CSD Agents Monthly Performance Information</h1>
+      <h1 class="text-2xl font-extrabold text-gray-800 mb-3 text-center">{{ departmentLabel }} Agents Monthly Performance Information</h1>
       <table class="w-full table-auto border-collapse bg-white">
         <thead>
           <tr class="bg-gradient-to-r from-blue-200 to-blue-300 text-gray-800">
@@ -33,7 +33,7 @@
                     v-if="isAdmin"
                     :exportUrl="exportUrl"
                     :exportFileName="exportFileName"
-                    :query="{ year_month: yearMonth }"
+                    :query="{ year_month: yearMonth, department: departmentCode }"
                     :token="token"
                     :submitted="1"
                     :submittedArray="false"
@@ -70,7 +70,7 @@
             <td class="py-0.5 px-2 border text-center text-xs">
               <div class="flex justify-center space-x-2" v-if="agent.submitted == 1">
                 <NuxtLink
-                  :to="{ path: '/csd/agent_performance/month', query: { employee_id: agent.id, year_month: agent.year_month } }"
+                  :to="{ path: base + '/agent_performance/month', query: { employee_id: agent.id, year_month: agent.year_month } }"
                   class="px-2 py-2 bg-blue-500 text-white font-bold rounded hover:bg-blue-600"
                 >
                   Monthly Performance Details
@@ -106,8 +106,10 @@ import API from '~/utils/api'
 import { setRatingColor, setRatingNameColor } from '@/utils/constants'
 
 definePageMeta({
-  middleware: ['auth'],
+  middleware: ['auth', 'department-layout'],
   layout: 'csd',
+  // Collection uses this page too (the layout and the staff follow the url)
+  alias: ['/collection/agent_performance/monthly'],
 })
 
 const authStore = useAuthStore()
@@ -116,6 +118,8 @@ const currentUser = authStore.state.user
 const token = authStore.state.token
 
 const route = useRoute()
+// csd or collection (from the url): the backend answers with the staff of that department
+const { code: departmentCode, base, label: departmentLabel } = useDepartmentView()
 const config = useRuntimeConfig()
 const store = useCsdAgentPerformanceStore()
 
@@ -130,7 +134,7 @@ const agents = computed(() => store.state.monthly)
 const incomplete = computed(() => agents.value.some(agent => agent.submitted !== 1))
 
 const exportUrl = `${API.csd_agent_performance_export}/monthly`
-const exportFileName = computed(() => `csd-agents-monthly-performance-${yearMonth.value}.xlsx`)
+const exportFileName = computed(() => `${departmentCode.value}-agents-monthly-performance-${yearMonth.value}.xlsx`)
 
 const itemsPerPage = 10
 const currentPage = ref(1)
@@ -145,7 +149,7 @@ const updateImageLink = (imageLink) => {
 
 const load = () => {
   currentPage.value = 1
-  store.fetchPerformance('monthly', null, { year_month: yearMonth.value })
+  store.fetchPerformance('monthly', null, { year_month: yearMonth.value, department: departmentCode.value })
 }
 
 onMounted(load)

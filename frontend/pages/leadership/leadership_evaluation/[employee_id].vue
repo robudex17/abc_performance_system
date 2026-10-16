@@ -42,7 +42,10 @@
               <th class="py-2 px-3 border text-sm font-semibold uppercase w-1/5">Task</th>
               <th class="py-2 px-3 border text-sm font-semibold uppercase w-1/4">Key Performance Indicators</th>
               <th class="py-2 px-3 border text-sm font-semibold uppercase w-1/6">Score</th>
-              <th class="py-2 px-3 border text-sm font-semibold uppercase">Comments</th>
+              <th class="py-2 px-3 border text-sm font-semibold uppercase">
+                Comments
+                <span class="block text-xs font-semibold normal-case">(explain the reason for giving the score)</span>
+              </th>
             </tr>
           </thead>
           <tbody>

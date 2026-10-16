@@ -5,7 +5,7 @@
       <spinner></spinner>
     </div>
 
-    <h1 class="text-3xl font-extrabold text-gray-800 mb-2 text-center">CSD Feedback By Admin</h1>
+    <h1 class="text-3xl font-extrabold text-gray-800 mb-2 text-center">{{ departmentLabel }} Feedback By Admin</h1>
     <p class="text-center text-gray-600 mb-6">
       The feedback of the admin for <span class="font-bold text-red-600">{{ monthLabel }}</span>.
       When there is one, it is the overall feedback of the employee (it overrules all the other feedback).
@@ -145,7 +145,9 @@
 // the csd store, the /csd_evaluation endpoints and the CsdEvaluation modal.
 definePageMeta({
   layout: 'csd',
-  middleware: ['auth', 'admin-only'],
+  middleware: ['auth', 'admin-only', 'department-layout'],
+  // the feedback by admin of Collection is this page too (the layout and the staff follow the url)
+  alias: ['/collection/feedback_by_admin'],
 })
 
 import { ref, computed, watch, onMounted } from 'vue'
@@ -154,6 +156,9 @@ import { isFutureMonth } from '@/utils/constants'
 
 const route = useRoute()
 const csdStoreInstance = useCsdStore()
+// csd or collection (from the url): every request carries ?department=..., the backend answers with the staff of that department
+const { label: departmentLabel, query: withDepartment } = useDepartmentView()
+const deptQuery = computed(() => withDepartment(route.query))
 const config = useRuntimeConfig()
 
 const eval_type = 'feedback_by_admin'
@@ -204,7 +209,7 @@ const updateImageLink = (imageLink) => {
 
 const fetchEmployees = () => {
   currentPage.value = 1
-  csdStoreInstance.fetchCsdOrEvaluationPerformanceMetrics(null, 'all', 'evaluation', route.query)
+  csdStoreInstance.fetchCsdOrEvaluationPerformanceMetrics(null, 'all', 'evaluation', deptQuery.value)
 }
 
 // same rules as openMetricsTypeModal of the CSD Evaluation page
@@ -258,12 +263,12 @@ const addDataAgent = async (agent) => {
     alert(`${eval_type} cannot be 0 or empty`)
     return
   }
-  await csdStoreInstance.addCsdPerformanceMetricsOrEvaluation(agent.employee_id, eval_type, 'evaluation', route.query, agent)
+  await csdStoreInstance.addCsdPerformanceMetricsOrEvaluation(agent.employee_id, eval_type, 'evaluation', deptQuery.value, agent)
   fetchEmployees()
 }
 
 const editDataAgent = async (agent) => {
-  await csdStoreInstance.updateCsdPerformanceMetricsOrEvaluation(agent.employee_id, eval_type, 'evaluation', route.query, agent)
+  await csdStoreInstance.updateCsdPerformanceMetricsOrEvaluation(agent.employee_id, eval_type, 'evaluation', deptQuery.value, agent)
   fetchEmployees()
 }
 
@@ -271,7 +276,7 @@ const deleteFeedback = async (agent) => {
   if (!canChange(agent)) return
   if (!confirm(`Delete the admin feedback of ${agent.db_name} for ${monthLabel.value}?`)) return
 
-  await csdStoreInstance.deleteCsdPerformanceMetricsOrEvaluation(agent.id, eval_type, 'evaluation', route.query, { employee_id: agent.id })
+  await csdStoreInstance.deleteCsdPerformanceMetricsOrEvaluation(agent.id, eval_type, 'evaluation', deptQuery.value, { employee_id: agent.id })
   fetchEmployees()
 }
 

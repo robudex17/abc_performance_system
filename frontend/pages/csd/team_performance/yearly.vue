@@ -5,7 +5,7 @@
     </div>
 
     <template v-else>
-      <h1 class="text-2xl font-extrabold text-gray-800 mb-2 text-center">CSD Team Yearly Performance Information</h1>
+      <h1 class="text-2xl font-extrabold text-gray-800 mb-2 text-center">{{ departmentLabel }} Team Yearly Performance Information</h1>
       <p class="text-center text-sm text-gray-500 mb-3">Only the submitted months are counted.</p>
 
       <div v-if="store.state.error" class="text-red-700 font-bold text-2xl">{{ store.state.error }}</div>
@@ -50,7 +50,7 @@
                 <div v-if="team.months_counted === 0" class="text-red-500 font-bold">NO Team Yearly Performance Details</div>
                 <div v-else class="flex justify-center space-x-2">
                   <NuxtLink
-                    :to="{ path: '/csd/team_performance/year', query: { team_id: team.team_id, year: team.year } }"
+                    :to="{ path: base + '/team_performance/year', query: { team_id: team.team_id, year: team.year } }"
                     class="px-2 py-2 bg-blue-500 text-white font-bold rounded hover:bg-blue-600"
                   >
                     Team Yearly Performance Details
@@ -85,11 +85,15 @@ import { ref, computed, onMounted, watch } from 'vue'
 import { setRatingColor, setRatingNameColor } from '@/utils/constants'
 
 definePageMeta({
-  middleware: ['auth'],
+  middleware: ['auth', 'department-layout'],
   layout: 'csd',
+  // Collection uses this page too (the layout and the staff follow the url)
+  alias: ['/collection/team_performance/yearly'],
 })
 
 const route = useRoute()
+// csd or collection (from the url): the backend answers with the staff of that department
+const { code: departmentCode, base, label: departmentLabel } = useDepartmentView()
 const config = useRuntimeConfig()
 const store = useCsdTeamPerformanceStore()
 
@@ -110,7 +114,7 @@ const updateImageLink = (imageLink) => {
 
 const load = () => {
   currentPage.value = 1
-  store.fetchTeams('yearly', null, { year: year.value })
+  store.fetchTeams('yearly', null, { year: year.value, department: departmentCode.value })
 }
 
 onMounted(load)

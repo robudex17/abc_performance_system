@@ -128,7 +128,22 @@ exports.attachReceivedFeedback = async (employees, yearMonth) => {
 
     const stripEmployee = (rows = []) => rows.map(({ employee_id, ...feedback }) => feedback)
     const employeesById = new Map(employees.map(employee => [Number(employee.id), employee]))
-    const qaStaff = employees.filter(employee => isQaStaff(employee))
+    // the Quality Analyst belongs to CSD but is also the QA of Collection: read from the employees of ALL the departments,
+    // the list of the page only has the staff of one department
+    let qaStaff = employees.filter(employee => isQaStaff(employee))
+    try {
+        // the position name is compared in the code (isQaStaff ignores the spaces and the capitals)
+        const [rows] = await pool.query(
+            `SELECT e.id, e.db_name, e.image_link, p.position_name
+             ${FROM_SNAPSHOT}
+             WHERE ee.status <> 'Resigned'`,
+            snapshotParams(yearMonth)
+        )
+        const qaRows = rows.filter(row => isQaStaff(row))
+        if (qaRows.length > 0) qaStaff = qaRows
+    } catch (error) {
+        console.error('Error fetching the Quality Analyst', error)
+    }
 
     for (const employee of employees) {
         const id = Number(employee.id)

@@ -1,6 +1,6 @@
 <template>
   <div class="p-4 mt-20">
-    <h1 class="text-3xl font-extrabold text-gray-800 mb-6 text-center  "> Customer Service Teams Information</h1>
+    <h1 class="text-3xl font-extrabold text-gray-800 mb-6 text-center  "> Collection Teams Information</h1>
 
     <MarketAndTeamComponent t :entity="teams" entityType="team"
         class="pt-10 pb-10"

@@ -29,6 +29,8 @@ export const useCsdAgentPerformanceStore = defineStore('csdAgentPerformanceStore
             const url = new URL(`${API.csd_agent_performance}/${period}${employeeId ? `/${employeeId}` : ''}`)
             if (period === 'monthly' && queryString?.year_month) url.searchParams.append('year_month', queryString.year_month)
             if (period === 'yearly' && queryString?.year) url.searchParams.append('year', queryString.year)
+            // csd (default) or collection: the staff of that department
+            if (queryString?.department) url.searchParams.append('department', queryString.department)
 
             const response = await fetch(url, {
                 method: 'GET',

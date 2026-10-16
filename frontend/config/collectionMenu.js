@@ -1,59 +1,81 @@
+// The side menu of the Collection department. It works like the CSD menu (config/csdMenu.js): the same pages (pages/csd, opened
+// under /collection with an alias), the same rules per role / position level, and the same rules guard the pages
+// (middleware/department-menu-access.global.js).
+//   level 1, 2, 3          -> 'Performance Evaluation': only their own performance, no team performance
+//   level 7, 8, 9          -> 'Agent Performance' and 'Team Performance' (the Collection assistant manager: everybody, a team leader: the team)
+//   admin / poweruser      -> everything (poweruser: no feedback, no admin panel)
+// The Quality Analyst belongs to CSD: she does not have the Collection menu.
+
 export const collectionMenu = [
 
-            // { name: "Dashboard", route: '/collection/dashboard', icon: ['fas', 'tachometer-alt']},
             { name: 'Leaderboard', route: '/collection', icon: ['fas', 'list'] },
 
-
-           { 
-              name: 'Agent Performance', 
-              route: null, 
+            {
+              name: 'Performance Evaluation',
+              route: null,
               icon: ['fas', 'cog'],
+              allowedLevels: [1, 2, 3],
+              excludedRoles: ['admin', 'poweruser'],
+              // their own performance (the details pages), the list pages are for the managers
+              subMenu: [
+                { name: 'Agent_Monthly', route: '/collection/agent_performance/month', icon: ['fas', 'user'] },
+                { name: 'Agent_Yearly', route: '/collection/agent_performance/year', icon: ['fas', 'user'] },
+              ]
+            },
+            {
+              name: 'Agent Performance',
+              route: null,
+              icon: ['fas', 'cog'],
+              allowedRoles: ['admin', 'poweruser'],
+              allowedLevels: [10, 9, 8, 7],
               subMenu: [
                 { name: 'Agent_Monthly', route: '/collection/agent_performance/monthly', icon: ['fas', 'user'] },
                 { name: 'Agent_Yearly', route: '/collection/agent_performance/yearly', icon: ['fas', 'user'] },
-              
+                // hidden: not in the menu, the details pages opened from the list (the page guard uses them)
+                { name: 'Agent_Monthly_Details', route: '/collection/agent_performance/month', hidden: true },
+                { name: 'Agent_Yearly_Details', route: '/collection/agent_performance/year', hidden: true },
               ]
             },
-            { 
-              name: 'Team Performance', 
-              route: null, 
+            {
+              name: 'Team Performance',
+              route: null,
               icon: ['fas', 'cog'],
+              allowedRoles: ['admin', 'poweruser'],
+              allowedLevels: [10, 9, 8, 7],
               subMenu: [
-              { name: 'Team_Monthly', route: '/collection/team_performance/monthly', icon: ['fas', 'users'] },
-              { name: 'Team_Yearly', route: '/collection/team_performance/yearly', icon: ['fas', 'users'] },
+                { name: 'Team_Monthly', route: '/collection/team_performance/monthly', icon: ['fas', 'users'] },
+                { name: 'Team_Yearly', route: '/collection/team_performance/yearly', icon: ['fas', 'users'] },
+                // hidden: the details pages opened from the list
+                { name: 'Team_Monthly_Details', route: '/collection/team_performance/month', hidden: true },
+                { name: 'Team_Yearly_Details', route: '/collection/team_performance/year', hidden: true },
               ]
             },
 
-            { 
-              name: 'Reports', 
-              route: null, 
-              icon: ['fas', 'cog'],
-              subMenu: [
-              { name: 'Monthly_Target', route: '/collection/target/monthly', icon: ['fas', 'users'] },
-             
-               { name: 'custom_search', route: '/collection/target/custom_search/target', icon: ['fas', 'fa-search'] },
-              
-              ]
-            },
-
-
-            // { name: 'Reports', route: '/reports', icon: ['fas', 'file-alt'] },
-
-            { 
-              name: 'Feedback', 
+            {
+              name: 'Feedback',
               route: null, icon: ['fas', 'poll'],
-              subMenu:[
+              subMenu: [
                 // admin only
-                { name: 'FEEDBACK ADMIN', route: '/collection/feedback/feedback_by_admin', icon: ['fas', 'users'], allowedRoles: ['admin'] },
+                { name: 'FEEDBACK ADMIN', route: '/collection/feedback_by_admin', icon: ['fas', 'users'], allowedRoles: ['admin'] },
 
                 // staff items, by position level (admin and poweruser never see them: they only view a feedback through its link)
-                // head rates the members: level 10, 9, 8
-                { name: 'FEEDBACK MEMBERS', route: '/collection/feedback/feedback_by_members', icon: ['fas', 'users'], allowedLevels: [10, 9, 8], excludedRoles: ['admin', 'poweruser'] },
-                // members rate the head: level 9, 8, 3, 1
-                { name: 'FEEDBACK HEAD', route: '/collection/feedback/feedback_by_head', icon: ['fas', 'user-tie'], allowedLevels: [9, 8, 3, 1], excludedRoles: ['admin', 'poweruser'] },
-
+                // head rates the members (questionnaire)
+                { name: 'FEEDBACK MEMBERS', route: '/feedback/feedback_by_nonesales?feedback_type=by_head', icon: ['fas', 'users'], allowedLevels: [10, 9, 8], excludedRoles: ['admin', 'poweruser'] },
+                // members rate the head
+                { name: 'FEEDBACK HEAD', route: '/feedback/feedback_by_nonesales?feedback_type=by_member', icon: ['fas', 'user-tie'], allowedLevels: [9, 8, 3, 2, 1], excludedRoles: ['admin', 'poweruser'] },
               ]
+            },
 
+            // Leadership Individual Performance: the Collection assistant manager (level 9) evaluates the Collection team leaders.
+            // The page is shared with CSD (/leadership/leadership_evaluation).
+            {
+              name: 'Leadership Performance',
+              route: null,
+              icon: ['fas', 'poll'],
+              allowedLevels: [9],
+              subMenu: [
+                { name: 'EVALUATE TEAM LEADERS', route: '/leadership/leadership_evaluation', icon: ['fas', 'users'], allowedLevels: [9] },
+              ]
             },
 
             {
@@ -62,23 +84,18 @@ export const collectionMenu = [
               icon: ['fas', 'cog'],
               allowedRoles: ['admin'],
               subMenu: [
-              
-           
-                { name: 'collection Evaluation', route: '/collection/sales_evaluation', icon: ['fas', 'user-tie'] },
-                { name: 'Upload collection Metrics Data', route: '/collection/upload_sales_evaluation_data', icon: ['fas', 'fa-upload'] },
+                { name: 'Collection Evaluation', route: '/collection/collection_evaluation', icon: ['fas', 'user-tie'] },
                 { name: 'Teams', route: '/collection/manage_teams', icon: ['fas', 'user-tie'] },
-                // { name: 'export', route: '/admin/export_to_excel', icon: ['fas', 'fa-file-excel'] },
-
-
-               { name: 'Collection Employees Management', route: '/collection/collection_employees_management', icon: ['fas', 'user-tie'] },
-
+                { name: 'Collection Employees Management', route: '/collection/collection_employees_management', icon: ['fas', 'user-tie'] },
               ]
             },
 
             {
               name: 'Switch Department',
               route: '/select_department',
-              icon: ['fas', 'layer-group']
+              icon: ['fas', 'layer-group'],
+              allowedRoles: ['admin'],
+              allowedLevels: [10]
             },
 
 ]

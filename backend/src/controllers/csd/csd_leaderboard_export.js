@@ -1,5 +1,6 @@
 const ExcelJS = require('exceljs')
 const { buildCsdLeaderboard } = require('./csd_leaderboard_controller')
+const { readDepartment, badDepartment, DEPARTMENT_LABELS } = require('./csd_department')
 const { getDataBorder, getHeaderBorder, getHeaderStyle } = require('../helper_scripts/global_variables_and_functions')
 
 // Excel export of the CSD leaderboard (table view of the page), same look as the sales leaderboard export.
@@ -8,8 +9,8 @@ const { getDataBorder, getHeaderBorder, getHeaderStyle } = require('../helper_sc
 // while the evaluation of somebody in the list is not submitted yet.
 
 const SCOPE_TITLES = {
-    agent: 'CSD LEADERBOARD - AGENTS (MONTHLY PERFORMANCE)',
-    team_leader: 'CSD LEADERBOARD - TEAM LEADERS (MONTHLY PERFORMANCE)',
+    agent: 'LEADERBOARD - AGENTS (MONTHLY PERFORMANCE)',
+    team_leader: 'LEADERBOARD - TEAM LEADERS (MONTHLY PERFORMANCE)',
 }
 
 const COLUMN_GROUPS = [
@@ -137,9 +138,12 @@ exports.csdLeaderboardExportToExcel = async (req, res, next) => {
         return res.status(400).json({ message: `Only ${Object.keys(SCOPE_TITLES).join(' and ')} can be exported` })
     }
 
+    const department = readDepartment(req)
+    if (!department) return badDepartment(res)
+
     try {
         const yearMonth = req.query.year_month || `${new Date().getFullYear()}-${String(new Date().getMonth() + 1).padStart(2, '0')}`
-        const { data, error } = await buildCsdLeaderboard(req.user, scope, yearMonth, null)
+        const { data, error } = await buildCsdLeaderboard(req.user, scope, yearMonth, null, department)
 
         if (error) return res.status(error.status).json({ message: error.message })
         if (data.length === 0) return res.status(404).json({ message: 'No data to export' })
@@ -151,9 +155,9 @@ exports.csdLeaderboardExportToExcel = async (req, res, next) => {
 
         const workbook = new ExcelJS.Workbook()
         const worksheet = workbook.addWorksheet(`${data[0].month}-${data[0].year}-SCORE`)
-        writeTable(data, worksheet, SCOPE_TITLES[scope])
+        writeTable(data, worksheet, `${DEPARTMENT_LABELS[department]} ${SCOPE_TITLES[scope]}`)
 
-        res.setHeader('Content-Disposition', `attachment; filename="csd-${scope}-leaderboard-${yearMonth}.xlsx"`)
+        res.setHeader('Content-Disposition', `attachment; filename="${department}-${scope}-leaderboard-${yearMonth}.xlsx"`)
         res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
 
         await workbook.xlsx.write(res)
