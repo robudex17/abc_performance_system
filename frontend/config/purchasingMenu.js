@@ -70,15 +70,15 @@ export const purchasingMenu = [
               ]
             },
 
-            // Leadership Individual Performance: the Purchasing Manager (level 10) evaluates the Purchasing Team Leader (level 9) and the
-            // Purchasing Team Leader evaluates the Assistant Purchasing Team Leader. The page is shared (/leadership/leadership_evaluation).
+            // Leadership Individual Performance: the Purchasing Manager (level 10) evaluates the Purchasing Team Leaders and the
+            // Purchasing Team Leader (level 8) evaluates the Assistant Purchasing Team Leader (level 7). The page is shared (/leadership/leadership_evaluation).
             {
               name: 'Leadership Performance',
               route: null,
               icon: ['fas', 'poll'],
-              allowedLevels: [10, 9],
+              allowedLevels: [10, 9, 8],
               subMenu: [
-                { name: 'EVALUATE TEAM LEADERS', route: '/leadership/leadership_evaluation', icon: ['fas', 'users'], allowedLevels: [10, 9] },
+                { name: 'EVALUATE TEAM LEADERS', route: '/leadership/leadership_evaluation', icon: ['fas', 'users'], allowedLevels: [10, 9, 8] },
               ]
             },
 

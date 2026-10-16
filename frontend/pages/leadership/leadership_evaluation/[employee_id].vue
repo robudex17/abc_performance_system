@@ -161,7 +161,7 @@ const updateImageLink = (imageLink) => {
 const backToList = () => router.push({ path: '/leadership/leadership_evaluation', query: { year_month: yearMonth.value } })
 
 const load = async () => {
-  if (store.state.tasks.length === 0) await store.fetchTasks()
+  await store.fetchTasks(employeeId, yearMonth.value)
   await store.fetchEmployees(yearMonth.value)
   await store.fetchEvaluation(employeeId, yearMonth.value)
   fillAnswers()

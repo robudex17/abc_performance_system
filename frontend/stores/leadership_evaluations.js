@@ -57,8 +57,9 @@ export const useLeadershipStore = defineStore('leadershipStore', () => {
         }
     }
 
-    const fetchTasks = () => run(async () => {
-        const result = await request('/tasks')
+    // the form of the position level of the employee
+    const fetchTasks = (employeeId, yearMonth) => run(async () => {
+        const result = await request(`/tasks?employee_id=${employeeId}&year_month=${yearMonth}`)
         state.tasks = result.tasks
         state.scores = result.scores
     })

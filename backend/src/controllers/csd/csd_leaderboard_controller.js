@@ -14,7 +14,8 @@ const { readDepartment, badDepartment } = require('./csd_department')
 // The managers (level 10 and 9, the Quality Analyst too) are not in the leaderboard for now.
 
 const AGENT_LEVELS = [1, 2, 3]
-const TEAM_LEADER_LEVELS = [8]
+// the team leaders (level 8) and the assistant team leaders (level 7) are on the Team Leader board; the assistant managers (9) are not ranked
+const TEAM_LEADER_LEVELS = [7, 8]
 const RANKED_LEVELS = [...AGENT_LEVELS, ...TEAM_LEADER_LEVELS]
 const SCOPES = ['agent', 'team_leader', 'team']
 const INCOMPLETE = 'INCOMPLETE RATING'
@@ -176,7 +177,7 @@ const canSeeDetails = (user, row, ownTeamId) => {
     const level = Number(user?.position_level)
     if (level === 10 || level === 9) return true
     if (Number(row.id) === Number(user?.login_id)) return true
-    return level === 8 && row.team_id != null && ownTeamId != null && Number(row.team_id) === Number(ownTeamId)
+    return (level === 8 || level === 7) && row.team_id != null && ownTeamId != null && Number(row.team_id) === Number(ownTeamId)
 }
 
 const limitDetails = (user, row, ownTeamId) => {

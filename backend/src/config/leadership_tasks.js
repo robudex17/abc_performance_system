@@ -4,9 +4,9 @@
 // The result is the average of the scores (1 - 5).
 //
 // The page loads the tasks from the backend (GET /leadership_evaluations/tasks) and the backend checks that every task is
-// answered, so this is the only place to change. The answers are saved with the name of the task: when a task is renamed, added
+// answered (with the list of the position level of the evaluated employee), so this is the only place to change. The answers are saved with the name of the task: when a task is renamed, added
 // or removed, the evaluations that were saved before have to be answered again.
-exports.LEADERSHIP_TASKS = [
+const DEFAULT_TASKS = [
     {
         task: 'Operation Support',
         indicators: 'Smooth daily operations, minimal disruptions. Efficiency in handling escalations and workflow.',
@@ -68,6 +68,16 @@ exports.LEADERSHIP_TASKS = [
         indicators: 'Ability to represent the team professionally in meetings and escalations. With observed influence and professionalism',
     },
 ]
+
+// The form of every position level that is evaluated. A level without its own list uses DEFAULT_TASKS (the 15 tasks above).
+// To give a position its own questions, put the list here: { task, indicators } like the ones above, for example
+//   7: [ { task: '...', indicators: '...' }, ... ],
+// (7 = assistant team leader, 8 = team leader, 9 = assistant manager, 10 = manager)
+const TASKS_BY_LEVEL = {
+}
+
+exports.DEFAULT_TASKS = DEFAULT_TASKS
+exports.tasksForLevel = (level) => TASKS_BY_LEVEL[Number(level)] ?? DEFAULT_TASKS
 
 // the SCORE drop down (the highest is the best), the names are the ones of the Performance Appraisal Rating of the form
 exports.LEADERSHIP_SCORES = [

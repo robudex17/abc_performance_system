@@ -1,6 +1,6 @@
 const pool = require('../../config/db')
 const { FROM_SNAPSHOT, snapshotParams } = require('./csd_month_snapshot')
-const { LEADERSHIP_TASKS, LEADERSHIP_SCORES, EVALUATED_LEVELS, MANAGER_LEVEL, GOM_LEVEL } = require('../../config/leadership_tasks')
+const { tasksForLevel, LEADERSHIP_SCORES, EVALUATED_LEVELS, MANAGER_LEVEL, GOM_LEVEL } = require('../../config/leadership_tasks')
 
 // Leadership Individual Performance (table leadership_evaluations), for the position level 7, 8, 9 and 10.
 // It is a form (TASK | KEY PERFORMANCE INDICATORS | SCORE | COMMENTS) answered by the HEAD of the evaluated employee:
@@ -71,14 +71,14 @@ const lockOf = (employee) => {
 }
 
 // reads and checks the answers of the form. Returns { responses, total, score, percentage } or { error }
-const readResponses = (body) => {
+const readResponses = (body, tasks) => {
     const given = Array.isArray(body?.responses) ? body.responses : null
     if (!given) return { error: 'responses must be a list of { task, score, comment }' }
 
     const validScores = LEADERSHIP_SCORES.map(item => item.score)
     const responses = []
 
-    for (const task of LEADERSHIP_TASKS) {
+    for (const task of tasks) {
         const answer = given.find(item => item?.task === task.task)
         if (!answer) return { error: `The task "${task.task}" is not answered` }
 
@@ -126,15 +126,29 @@ const readChange = async (req, { needsBody }) => {
 
     let answers
     if (needsBody) {
-        answers = readResponses(req.body)
+        answers = readResponses(req.body, tasksForLevel(employee.position_level))
         if (answers.error) return { error: { status: 400, message: answers.error } }
     }
 
     return { employee, yearMonth: when.yearMonth, answers }
 }
 
-exports.fetchTasks = (req, res) => {
-    res.json({ tasks: LEADERSHIP_TASKS, scores: LEADERSHIP_SCORES })
+// the form of the position level of the employee (?employee_id=), without it the default form
+exports.fetchTasks = async (req, res) => {
+    try {
+        let level = null
+        if (req.query.employee_id !== undefined) {
+            const employeeId = Number(req.query.employee_id)
+            const when = readYearMonth(req.query.year_month)
+            const [employee] = Number.isInteger(employeeId) && !when.error ? await getEvaluatees(req.user, when.yearMonth, employeeId) : []
+            if (!employee) return res.status(403).json({ message: 'You are not allowed to evaluate this employee' })
+            level = employee.position_level
+        }
+        res.json({ tasks: tasksForLevel(level), scores: LEADERSHIP_SCORES })
+    } catch (error) {
+        console.error('Error fetching the leadership tasks:', error)
+        res.status(500).json({ message: 'Internal Server Error' })
+    }
 }
 
 // the employees I evaluate and my result of the month
