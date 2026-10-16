@@ -9,6 +9,7 @@ import { isInsideArea } from '~/config/departments'
 const DEPARTMENT_LAYOUTS = {
   csd: 'csd',
   collection: 'collection',
+  purchasing: 'purchasing',
 }
 
 export default defineNuxtRouteMiddleware((to) => {

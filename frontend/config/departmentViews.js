@@ -4,6 +4,7 @@
 // The pages are the files of pages/csd, Collection opens them with an alias (definePageMeta({ alias })) under /collection.
 import { csdMenu } from './csdMenu'
 import { collectionMenu } from './collectionMenu'
+import { purchasingMenu } from './purchasingMenu'
 import { isInsideArea } from './departments'
 
 export const DEPARTMENT_VIEWS = {
@@ -26,9 +27,20 @@ export const DEPARTMENT_VIEWS = {
     evaluationTitle: 'Collection Performance Evaluation',
     qaMaxLevel: 3,
   },
+  purchasing: {
+    code: 'purchasing',
+    base: '/purchasing',
+    label: 'Purchasing',
+    layout: 'purchasing',
+    menu: purchasingMenu,
+    evaluationTitle: 'Purchasing Performance Evaluation',
+    // the Quality Analyst is the QA of CSD and Collection only: nobody of Purchasing has the QA feedback
+    qaMaxLevel: 0,
+  },
 }
 
-// the department view of a path: '/collection/...' is Collection, anything else is CSD
-export const departmentOfPath = (path) => (isInsideArea(String(path || ''), '/collection') ? 'collection' : 'csd')
+// the department view of a path: '/collection/...' is Collection, '/purchasing/...' is Purchasing, anything else is CSD
+export const departmentOfPath = (path) =>
+  Object.values(DEPARTMENT_VIEWS).find(view => isInsideArea(String(path || ''), view.base))?.code ?? 'csd'
 
 export const departmentViewOfPath = (path) => DEPARTMENT_VIEWS[departmentOfPath(path)]

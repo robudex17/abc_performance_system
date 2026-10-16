@@ -64,7 +64,8 @@ const buildList = (expected, given, month, year) => {
 
 // Adds the three feedback (and their lists) to every employee of the evaluation. The evaluation still loads when
 // the feedback can not be read: the fields are null / empty then.
-exports.attachReceivedFeedback = async (employees, yearMonth) => {
+// excludedIds: staff that is not in the evaluation (the Purchasing Manager): he does not give the immediate head feedback
+exports.attachReceivedFeedback = async (employees, yearMonth, excludedIds = new Set()) => {
     const [year, month] = yearMonth.split('-').map(Number)
     const monthName = MONTH_NAMES[month - 1]
 
@@ -155,7 +156,7 @@ exports.attachReceivedFeedback = async (employees, yearMonth) => {
         ]
 
         // the immediate head of the employee (none for the top manager)
-        const hasHead = employee.manager_id && Number(employee.manager_id) !== id
+        const hasHead = employee.manager_id && Number(employee.manager_id) !== id && !excludedIds.has(Number(employee.manager_id))
         const head = hasHead
             ? [{ id: employee.manager_id, db_name: employee.manager_dbname, image_link: employeesById.get(Number(employee.manager_id))?.image_link }]
             : []

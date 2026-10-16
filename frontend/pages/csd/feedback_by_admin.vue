@@ -147,7 +147,7 @@ definePageMeta({
   layout: 'csd',
   middleware: ['auth', 'admin-only', 'department-layout'],
   // the feedback by admin of Collection is this page too (the layout and the staff follow the url)
-  alias: ['/collection/feedback_by_admin'],
+  alias: ['/collection/feedback_by_admin', '/purchasing/feedback_by_admin'],
 })
 
 import { ref, computed, watch, onMounted } from 'vue'

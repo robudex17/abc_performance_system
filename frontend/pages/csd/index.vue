@@ -341,7 +341,7 @@ definePageMeta({
   middleware: ['auth', 'department-layout'],
   layout: 'csd',
   // the leaderboard of Collection is this page too (the layout and the staff follow the url)
-  alias: ['/collection'],
+  alias: ['/collection', '/purchasing'],
 })
 
 const route = useRoute()

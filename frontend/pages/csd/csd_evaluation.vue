@@ -215,7 +215,7 @@
                                      
                     <!-- Actions: Submit / Submitted + Review. The row of the CSD & Collection Manager (position level 10) is the Submit All -->
                     <td class="py-0.5 px-4 text-center border" >
-                      <div class="flex justify-center space-x-2" v-if="agent.position_level == topLevel">
+                      <div class="flex justify-center space-x-2" v-if="agent.id == submitAllId">
 
                         <!-- Submit All: only when every row (his own too) is ready -->
                         <button
@@ -435,7 +435,7 @@
     middleware: ['auth', 'adminmanager', 'department-layout'],
     layout: 'csd',
     // the evaluation of Collection is this page too (the layout and the staff follow the url)
-    alias: ['/collection/collection_evaluation'],
+    alias: ['/collection/collection_evaluation', '/purchasing/purchasing_evaluation'],
   })
   
   import { ref, computed } from 'vue';
@@ -761,7 +761,8 @@
   //  QA: the staff of position level 8 and below, immediate head: everybody but the top level 10, members: level 8 and up
   // the Quality Analyst gives the QA feedback to level 8 and below in CSD, to level 3 and below in Collection
   const receivesQaFeedback = (agent) => Number(agent.position_level) <= view.value.qaMaxLevel
-  const receivesImmediateHeadFeedback = (agent) => Number(agent.position_level) < 10
+  // no immediate head to give it (the Purchasing Manager of Japan only evaluates the leadership): nothing is expected, '-'
+  const receivesImmediateHeadFeedback = (agent) => Number(agent.position_level) < 10 && (agent.feedback_by_immediate_head_list || []).length > 0
   const receivesMembersFeedback = (agent) => Number(agent.position_level) >= 8
 
   // the images are served by the backend by filename; older rows still have a '/images/' path in front of it
@@ -828,8 +829,10 @@ const openModal = ( data, title = 'Feedback', emptyMessage = 'No Feedback Yet') 
 
  const agents = computed(() => csdStoreInstance.state.csdEvaluation);
 
-  // the highest position level of the list: its row has the Submit All button (CSD: level 10, Collection: level 9)
+  // the row with the Submit All button: the first row of the highest position level of the list (the list is sorted by level)
+  // CSD: the CSD & Collection Manager, Collection: the assistant manager, Purchasing: the first team leader
   const topLevel = computed(() => Math.max(0, ...agents.value.map(agent => Number(agent.position_level))))
+  const submitAllId = computed(() => agents.value.find(agent => Number(agent.position_level) === topLevel.value)?.id)
 
  
 

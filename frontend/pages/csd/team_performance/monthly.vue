@@ -89,7 +89,7 @@ definePageMeta({
   middleware: ['auth', 'department-layout'],
   layout: 'csd',
   // Collection uses this page too (the layout and the staff follow the url)
-  alias: ['/collection/team_performance/monthly'],
+  alias: ['/collection/team_performance/monthly', '/purchasing/team_performance/monthly'],
 })
 
 const route = useRoute()

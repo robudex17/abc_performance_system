@@ -18,9 +18,11 @@ export const DEPARTMENT_HOME = {
 // the url prefix that belongs to a department (sales has none: it owns the pages without a prefix)
 export const DEPARTMENT_PREFIXES = ['/csd', '/collection', '/purchasing', '/hr', '/it', '/uploading']
 
-// admin and the top managers choose the department they work on (/select_department)
+// admin and the top managers of CSD (the CSD & Collection Manager) choose the department they work on (/select_department).
+// The manager of another department (the Purchasing Manager) works in his/her own department only.
 export const canSwitchDepartment = (user) =>
-  user?.role === 'admin' || (user?.role === 'manager' && Number(user?.position_level) >= 10)
+  user?.role === 'admin' ||
+  (user?.role === 'manager' && Number(user?.position_level) >= 10 && String(user?.department_code || '').toLowerCase() === 'csd')
 
 // home page of the user's own department, or null (sales agents, standard users, unknown department)
 export const getDepartmentHome = (user) => {

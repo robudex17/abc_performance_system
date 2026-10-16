@@ -12,6 +12,8 @@
             department_code="collection"
             @passAddEmployee="addEmployee"
             @passUpdateEmployee="updateEmployee"
+            @passAddEmployeeLogin="addEmployeeLogin"
+            @passUpdateEmployeeLogin="updateEmployeeLogin"
         />
     </div>
 </template>
@@ -29,6 +31,7 @@
     const router = useRouter()
     const route = useRoute()
     const employee_status = ref('Hired') // default status
+    const employee_type = ref('none_sales') // the login of the employees of the none-sales departments (employee_register)
 
     //computured propery here 
     const employees = computed(() => employeesStore.state.employees)
@@ -55,6 +58,7 @@
     const teamsAgentStore =   useTeamStore2()
     const employeesStore = useManageEmployeesStore()
     const positionsRolesStore = usePositionsRolesStore()
+    const authStore = useAuthStore()
 
 
  
@@ -123,6 +127,35 @@
     };
 
 
+
+    // the Login button of an employee: add and update the login access (the same as the CSD employees page)
+    const addEmployeeLogin = async(loginData) => {
+        try {
+            await authStore.register(loginData, employee_type.value);
+            fethEmployees()
+            fetchTeams()
+            fetchMangers()
+            fetchPositionsRoles('positions')
+            fetchPositionsRoles('roles')
+
+        }catch(error){
+            console.error('Error in adding new employee login', error)
+        }
+    };
+
+    const updateEmployeeLogin = async(loginData) => {
+        try {
+            await authStore.updateLogin(loginData, employee_type.value);
+            fethEmployees()
+            fetchTeams()
+            fetchMangers()
+            fetchPositionsRoles('positions')
+            fetchPositionsRoles('roles')
+
+        }catch(error){
+            console.error('Error in updating employee login', error)
+        }
+    };
 
     onMounted(() => {
       fethEmployees()

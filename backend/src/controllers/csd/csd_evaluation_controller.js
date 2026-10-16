@@ -5,7 +5,7 @@ const { parseYearMonth } = require('../helper_scripts/global_variables_and_funct
 const { attachReceivedFeedback } = require('./csd_received_feedback')
 const { applyComputedPerformance } = require('./csd_manager_performance')
 const { attachLeadership } = require('./csd_leadership')
-const { readDepartment, badDepartment } = require('./csd_department')
+const { readDepartment, badDepartment, isExcludedFromEvaluation } = require('./csd_department')
 
 const { fetch_eval_queries, delete_eval_queries, update_eval_queries, add_eval_queries }  = require(`./csd_metrics_queries`)
 
@@ -534,7 +534,10 @@ exports.generateCsdEvaluation  = async (year_month, scope, department_code,  met
     //     return {...agent, ... matching_agent}
     //  })
 
-     let employee_to_evaluate  =  csdEvaluationResults.sort((a, b) => {
+     // the staff that is not in the evaluation of the department (the Purchasing Manager of Japan), see csd_department.js
+     const excludedIds = new Set(csdEvaluationResults.filter(row => isExcludedFromEvaluation(department_code, row)).map(row => Number(row.id)))
+
+     let employee_to_evaluate  =  csdEvaluationResults.filter(row => !excludedIds.has(Number(row.id))).sort((a, b) => {
 
             // remove the level 10 agent
 
@@ -562,7 +565,7 @@ exports.generateCsdEvaluation  = async (year_month, scope, department_code,  met
      await attachLeadership(employee_to_evaluate, year_month)
 
      // the feedback of the QA, the immediate head and the members (view only on the CSD Evaluation page)
-     await attachReceivedFeedback(employee_to_evaluate, year_month)
+     await attachReceivedFeedback(employee_to_evaluate, year_month, excludedIds)
 
      // submit status: ready when Performance is not 0 and at least one of the four feedback has a value
      for (const agent of employee_to_evaluate) {
