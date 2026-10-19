@@ -1378,8 +1378,8 @@
         return
       }
 
-      if ( ![10, 9, 8].includes(Number(currentEmployeeLogin.value.position_level)) && currentEmployeeLogin.value.role == 'manager'){
-          alert('Cannot Set manager if agent position level is not 10, 9 or 8', currentEmployeeLogin.value.position_level)
+      if ( ![15, 10, 9, 8, 7].includes(Number(currentEmployeeLogin.value.position_level)) && currentEmployeeLogin.value.role == 'manager'){
+          alert('Cannot Set manager if agent position level is not 15, 10, 9, 8 or 7', currentEmployeeLogin.value.position_level)
         return
       }
 
@@ -1400,8 +1400,8 @@
         return
       }
 
-      if (![10, 9, 8].includes(Number(currentEmployeeLogin.value.position_level)) && currentEmployeeLogin.value.role == 'manager'){
-        alert('Cannot Set manager if agent position level is not 10, 9 or 8', currentEmployeeLogin.value.position_level)
+      if (![15, 10, 9, 8, 7].includes(Number(currentEmployeeLogin.value.position_level)) && currentEmployeeLogin.value.role == 'manager'){
+        alert('Cannot Set manager if agent position level is not 15, 10, 9, 8 or 7', currentEmployeeLogin.value.position_level)
         return
       }
       try{

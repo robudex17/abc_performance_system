@@ -74,7 +74,7 @@
         <!-- IMAGE (WHITE AREA) -->
         <div class="relative z-10 h-56 bg-white rounded-t-2xl flex items-center justify-center p-4">
           <img
-            :src="dept.image ? dept.image : 'https://source.unsplash.com/400x400/?office'"
+            :src="departmentImage(dept.image)"
             class="w-full h-full object-contain"
           />
         </div>
@@ -103,7 +103,7 @@
 <script setup>
 definePageMeta({
   layout: 'custom',
-  middleware: ['auth', 'adminmanager']
+  middleware: ['auth', 'select-department']
 })
 
 import { useRouter } from 'vue-router'
@@ -133,6 +133,13 @@ const currentUser = authStore.state.user
 
 const config = useRuntimeConfig()
 const apiUrl = config.public.apiUrl
+
+// The department image is the file name in the MinIO server, like the employee images (a full url is still accepted)
+const departmentImage = (image) => {
+  if (!image) return 'https://source.unsplash.com/400x400/?office'
+  if (image.startsWith('data:image') || /^https?:\/\//.test(image)) return image
+  return `${config.public.imageBaseUrl}${image.split('/').pop()}`
+}
 
 
 // The home of each department is in config/departments.js (sales is '/' until the sales pages move to '/sales').

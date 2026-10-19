@@ -1,7 +1,7 @@
 <template>
   <div class="p-4 mt-20">
     <div class="flex items-center justify-between mb-4">
-      <button class="px-3 py-1 bg-gray-200 hover:bg-gray-300 rounded font-semibold" @click="backToList">&larr; Back to the list</button>
+      <button class="px-3 py-1 bg-gray-200 hover:bg-gray-300 rounded font-semibold" @click="backToList">&larr; {{ isViewer ? 'Back' : 'Back to the list' }}</button>
       <h1 class="text-2xl font-extrabold text-gray-800 text-center">LEADERSHIP INDIVIDUAL PERFORMANCE</h1>
       <span class="w-32"></span>
     </div>
@@ -24,8 +24,14 @@
           <p class="text-3xl font-extrabold text-blue-700">{{ average }}</p>
         </div>
       </div>
-      <p v-else class="text-red-600 font-semibold mb-4">You are not allowed to evaluate this employee, or the employee is not found for {{ monthLabel }}.</p>
+      <p v-else class="text-red-600 font-semibold mb-4">{{ isViewer ? 'The employee is not found for ' + monthLabel + '.' : 'You are not allowed to evaluate this employee, or the employee is not found for ' + monthLabel + '.' }}</p>
 
+      <p v-if="isViewer && employee" class="text-gray-700 font-semibold mb-4">
+        You are viewing the evaluation given by {{ store.state.evaluation ? store.state.evaluation.evaluator_dbname : 'the head' }}. It can not be changed.
+      </p>
+      <p v-if="isViewer && employee && !store.state.evaluation" class="text-red-600 font-semibold mb-4">
+        No leadership evaluation was given for {{ monthLabel }}.
+      </p>
       <p v-if="isFutureMonth" class="text-red-600 font-semibold mb-4">The evaluation of a future month is not allowed.</p>
       <p v-if="employee && employee.locked" class="text-yellow-700 font-semibold mb-4">
         {{ employee.locked_reason === 'Resigned'
@@ -118,6 +124,12 @@ const store = useLeadershipStore()
 
 const employeeId = route.params.employee_id
 
+// admin / poweruser only VIEW the evaluation that ?evaluator_id gave (the middleware leadership-access, the backend too)
+const authStore = useAuthStore()
+authStore.fetchTokenFromLocalStore()
+const isViewer = ['admin', 'poweruser'].includes(authStore.state.user?.role)
+const evaluatorId = route.query.evaluator_id
+
 const today = new Date()
 const currentYearMonth = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}`
 const yearMonth = computed(() => route.query.year_month || currentYearMonth)
@@ -131,7 +143,9 @@ const tasks = computed(() => store.state.tasks)
 const scores = computed(() => store.state.scores)
 
 // the evaluated leader (from the list of the leaders of the head)
-const employee = computed(() => store.state.employees.find(item => String(item.id) === String(employeeId)) ?? null)
+const employee = computed(() => isViewer
+  ? store.state.viewedEmployee
+  : store.state.employees.find(item => String(item.id) === String(employeeId)) ?? null)
 
 // the answers: { 'Task name': { score, comment } }
 const answers = reactive({})
@@ -145,7 +159,7 @@ const fillAnswers = () => {
 
 // a future month can not be evaluated
 // a future month, a resigned employee and a submitted month can only be viewed (the backend refuses the changes too)
-const readOnly = computed(() => isFutureMonth.value || Boolean(employee.value?.locked))
+const readOnly = computed(() => isViewer || isFutureMonth.value || Boolean(employee.value?.locked))
 
 const average = computed(() => {
   const given = Object.values(answers).map(item => Number(item.score)).filter(score => score > 0)
@@ -158,12 +172,18 @@ const updateImageLink = (imageLink) => {
   return `${config.public.imageBaseUrl}${imageLink.split('/').pop()}`
 }
 
-const backToList = () => router.push({ path: '/leadership/leadership_evaluation', query: { year_month: yearMonth.value } })
+const backToList = () => isViewer
+  ? router.back()
+  : router.push({ path: '/leadership/leadership_evaluation', query: { year_month: yearMonth.value } })
 
 const load = async () => {
   await store.fetchTasks(employeeId, yearMonth.value)
-  await store.fetchEmployees(yearMonth.value)
-  await store.fetchEvaluation(employeeId, yearMonth.value)
+  if (isViewer) {
+    await store.viewEvaluation(employeeId, yearMonth.value, evaluatorId)
+  } else {
+    await store.fetchEmployees(yearMonth.value)
+    await store.fetchEvaluation(employeeId, yearMonth.value)
+  }
   fillAnswers()
 }
 

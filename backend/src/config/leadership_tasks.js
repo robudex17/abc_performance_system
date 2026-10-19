@@ -1,3 +1,5 @@
+const { isQaStaff } = require('../middleware/qa_access')
+
 // The form of the Leadership Individual Performance (TASK | KEY PERFORMANCE INDICATORS | SCORE | COMMENTS), the
 // "II. LEADERSHIP INDIVIDUAL PERFORMANCE" section of the SBT Performance Evaluation Form.
 // The evaluator gives a SCORE (a drop down, LEADERSHIP_SCORES) and a COMMENT (explain the reason for giving the score) to every task.
@@ -69,15 +71,57 @@ const DEFAULT_TASKS = [
     },
 ]
 
-// The form of every position level that is evaluated. A level without its own list uses DEFAULT_TASKS (the 15 tasks above).
-// To give a position its own questions, put the list here: { task, indicators } like the ones above, for example
-//   7: [ { task: '...', indicators: '...' }, ... ],
-// (7 = assistant team leader, 8 = team leader, 9 = assistant manager, 10 = manager)
-const TASKS_BY_LEVEL = {
+// The forms. The tasks above (DEFAULT_TASKS) are the form of the team leaders, the assistant team leaders and the assistant managers
+// (answered by their head). The other forms are made from them:
+//   STANDARD  levels 7, 8, 9  the 15 tasks above
+//   MANAGER   level 10        the same tasks plus 'Staff Scheduling & Time Management' (answered by the GOM)
+//   PURCHASING_LEADER  the Purchasing team leaders (answered by the Purchasing Manager): the MANAGER form with two indicators worded differently
+//   PURCHASING_ASSISTANT  the Purchasing assistant team leader (answered by the Purchasing Team Leader): 15 tasks, 'Coaching, Training and
+//             Performance Discussion', 'Adaptability' instead of 'Talent Development' and 'Strategic Thinking', and the Staff Scheduling task
+//   QA        the Quality Analyst (answered by the CSD & Collection Manager): its own 8 tasks
+const STAFF_SCHEDULING = {
+    task: 'Staff Scheduling & Time Management',
+    indicators: 'Demonstrates effective staff scheduling and time management, ensuring timely task completion and controlled overtime costs.',
 }
+const STANDARD_TASKS = DEFAULT_TASKS
+const MANAGER_TASKS = DEFAULT_TASKS.flatMap(item => item.task === 'Leadership Presence' ? [STAFF_SCHEDULING, item] : [item])
+const PURCHASING_LEADER_TASKS = MANAGER_TASKS.map(item => {
+    if (item.task === 'Coaching, Meeting and Performance Discussion') {
+        return { ...item, indicators: "Effectiveness of training and coaching on agent's performance and support team development." }
+    }
+    if (item.task === STAFF_SCHEDULING.task) {
+        return { ...item, indicators: 'Completes tasks on time and minimizes overtime through effective staff scheduling.' }
+    }
+    return item
+})
+const PURCHASING_ASSISTANT_TASKS = PURCHASING_LEADER_TASKS
+    .filter(item => !['Talent Development', 'Strategic Thinking'].includes(item.task))
+    .flatMap(item => {
+        if (item.task === 'Coaching, Meeting and Performance Discussion') return [{ ...item, task: 'Coaching, Training and Performance Discussion' }]
+        if (item.task === 'Accountability') {
+            return [{ task: 'Adaptability', indicators: 'Responsiveness to changes in systems/procedures. Flexibility and proactive communication.' }, item]
+        }
+        return [item]
+    })
+const QA_TASKS = [
+    { task: 'Calls and Emails evaluation and calibration', indicators: "Compliance with standard procedure, agent's call and email quality" },
+    { task: 'Report and Feedback', indicators: 'Promptness and Accuracy of report' },
+    { task: 'Identify issue and provide solutions', indicators: 'Timeliness and effectiveness of solution provided' },
+    { task: 'Training and Coaching', indicators: "Effectiveness of training on agent's performance and new hires readiness" },
+    { task: 'Analytical Skills', indicators: 'Ability to interpret QA data and trends' },
+    { task: 'Agent Engagement', indicators: 'Ability to motivate, engage and build trust with agents' },
+    { task: 'Documentation Quality', indicators: 'Accuracy, Availability and completeness of QA records' },
+    { task: 'Innovation and Initiative', indicators: 'Proposed and suggested ideas for efficiency that has been implemented' },
+]
 
-exports.DEFAULT_TASKS = DEFAULT_TASKS
-exports.tasksForLevel = (level) => TASKS_BY_LEVEL[Number(level)] ?? DEFAULT_TASKS
+// the form of an evaluated employee { position_level, position_name }; the form is chosen here, never by the browser
+exports.tasksFor = (employee) => {
+    if (isQaStaff(employee)) return QA_TASKS
+    if (Number(employee?.position_level) === 10) return MANAGER_TASKS
+    if (employee?.department_code === 'purchasing' && Number(employee?.position_level) === 7) return PURCHASING_ASSISTANT_TASKS
+    if (employee?.department_code === 'purchasing' && [8, 9].includes(Number(employee?.position_level))) return PURCHASING_LEADER_TASKS
+    return STANDARD_TASKS
+}
 
 // the SCORE drop down (the highest is the best), the names are the ones of the Performance Appraisal Rating of the form
 exports.LEADERSHIP_SCORES = [

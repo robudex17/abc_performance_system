@@ -1,5 +1,5 @@
 const { generateCsdEvaluation } = require('./csd_evaluation_controller')
-const { readDepartment, badDepartment } = require('./csd_department')
+const { readDepartment, badDepartment, isFullViewer } = require('./csd_department')
 const { scoring } = require('./csd_leaderboard_controller')
 
 // Agent Monthly / Agent Yearly performance of the CSD staff (the "Agent Performance" and "Performance Evaluation" menus).
@@ -36,7 +36,7 @@ const currentYearMonth = () => {
 // ownTeamId: the team of the user in that month. It is NOT read from the login token: the employee login reads the team
 // from the sales table, so the team of the token can be empty or another team. It is the team of his/her own row.
 const canSee = (user, row, ownTeamId) => {
-    if (['admin', 'poweruser'].includes(user?.role)) return true
+    if (isFullViewer(user)) return true
 
     const level = Number(user?.position_level)
     if (Number(row.id) === Number(user?.login_id)) return true       // always him/herself

@@ -152,10 +152,9 @@ export const csdMenu = [
               name: 'Leadership Performance',
               route: null,
               icon: ['fas', 'poll'],
-              allowedLevels: [15, 10, 9],
+              allowedLevels: [10, 9],
               excludedPositionNames: [QA_POSITION_NAME],
               subMenu: [
-                { name: 'EVALUATE MANAGER', route: '/leadership/leadership_evaluation', icon: ['fas', 'user-tie'], allowedLevels: [15] },
                 { name: 'EVALUATE ASSISTANT MANAGERS', route: '/leadership/leadership_evaluation', icon: ['fas', 'users'], allowedLevels: [10] },
                 { name: 'EVALUATE TEAM LEADERS', route: '/leadership/leadership_evaluation', icon: ['fas', 'users'], allowedLevels: [9] },
               ]
@@ -186,7 +185,7 @@ export const csdMenu = [
               route: '/select_department',
               icon: ['fas', 'layer-group'],
               allowedRoles: ['admin'],
-              allowedLevels: [10]
+              allowedLevels: [15, 10]
             },
 
 ]

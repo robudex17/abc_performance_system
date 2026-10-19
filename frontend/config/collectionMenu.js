@@ -95,7 +95,7 @@ export const collectionMenu = [
               route: '/select_department',
               icon: ['fas', 'layer-group'],
               allowedRoles: ['admin'],
-              allowedLevels: [10]
+              allowedLevels: [15, 10]
             },
 
 ]

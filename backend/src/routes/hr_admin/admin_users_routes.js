@@ -5,18 +5,18 @@ const adminUserController = require ('../../controllers/hr_admin/admin_users_con
 const { validateNewAndUpdateStandardUser } = require('../../middleware/validator')
 // const uploadImage = require('../middleware/fileupload')
 const { upload } = require('../../middleware/fileupload_to_minio')  // updated import
-const { authenticateToken, authorizeRoles} = require('../../middleware/auth')
+const { authenticateToken, authorizeRoles, allowedAdmins } = require('../../middleware/auth')
 
 
 // router.get('/standardusers/:user_id', authenticateToken,salesAgensController.fetchSalesAgent)
 router.get('/admin_users', adminUserController.fetchAdminUsers)
 
 
-router.post('/admin_users', authenticateToken, authorizeRoles('admin'), upload.single('image'),  validateNewAndUpdateStandardUser, adminUserController.addNewAdminUser  )
+router.post('/admin_users', authenticateToken, authorizeRoles('admin'), allowedAdmins, upload.single('image'),  validateNewAndUpdateStandardUser, adminUserController.addNewAdminUser  )
 
-router.delete('/admin_users/:user_id', authenticateToken, authorizeRoles('admin'), adminUserController.deleteAdminUser)
+router.delete('/admin_users/:user_id', authenticateToken, authorizeRoles('admin'), allowedAdmins, adminUserController.deleteAdminUser)
 
-router.put('/admin_users/:user_id', authenticateToken, authorizeRoles('admin'), upload.single('image'),  validateNewAndUpdateStandardUser, adminUserController.updateAdminUser)
+router.put('/admin_users/:user_id', authenticateToken, authorizeRoles('admin'), allowedAdmins, upload.single('image'),  validateNewAndUpdateStandardUser, adminUserController.updateAdminUser)
 
 
 

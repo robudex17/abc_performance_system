@@ -121,13 +121,19 @@
 
                   <!-- Leadership Performance: VIEW ONLY, the result (1 - 5) of the leadership evaluation that the head of the leader
                        answered in the menu Leadership Performance. Only the leaders (position level 7 - 10) have it, 0 = not answered
-                       yet (the leader can not be submitted). Never a popup: the answers are confidential. -->
+                       yet (the leader can not be submitted). The answers are confidential: only admin and poweruser can open the evaluations
+                       (view only), by clicking the score. -->
                   <td class="py-0.5 px-4 text-center text-lg border font-medium">
                     <span v-if="!agent.leadership_required" class="text-gray-400">-</span>
+                    <button
+                      v-else-if="canViewLeadership && agent.leadership_score > 0"
+                      class="text-blue-700 underline font-medium"
+                      title="View the leadership evaluation"
+                      @click="leadershipViewAgent = agent"
+                    >{{ Number(agent.leadership_score).toFixed(2) }}</button>
                     <span
                       v-else
                       :class="agent.leadership_score > 0 ? 'text-gray-700' : 'text-red-500 font-bold'"
-                      :title="(agent.leadership_by || []).map(item => item.evaluator_dbname + ': ' + item.leadership_score).join('  |  ')"
                     >{{ agent.leadership_score > 0 ? Number(agent.leadership_score).toFixed(2) : 0 }}</span>
                   </td>
                   
@@ -297,6 +303,36 @@
       @passDeleteDataAgent="deleteDataAgent"
     />
 
+      <!-- Leadership Performance (admin / poweruser, view only): who evaluated the leader, with the link to the evaluation -->
+      <div v-if="leadershipViewAgent" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+        <div class="bg-white rounded-2xl shadow-2xl w-11/12 md:w-1/2 overflow-hidden">
+          <div class="bg-blue-600 text-white px-6 py-4 flex justify-between items-center">
+            <h2 class="text-lg font-bold">Leadership Performance - {{ leadershipViewAgent.db_name }}</h2>
+            <button @click="leadershipViewAgent = null" class="text-white hover:text-gray-200 transition">✕</button>
+          </div>
+          <div class="bg-gray-50 p-6">
+            <table class="min-w-full border-collapse">
+              <thead>
+                <tr class="bg-gray-200 text-gray-700">
+                  <th class="px-4 py-2 text-left font-semibold">Evaluated By</th>
+                  <th class="px-4 py-2 text-center font-semibold">Score</th>
+                  <th class="px-4 py-2 text-center font-semibold"></th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr v-for="item in leadershipViewAgent.leadership_by || []" :key="item.evaluator_id" class="border-b">
+                  <td class="px-4 py-3">{{ item.evaluator_dbname }}</td>
+                  <td class="px-4 py-3 text-center font-semibold">{{ Number(item.leadership_score).toFixed(2) }}</td>
+                  <td class="px-4 py-3 text-center">
+                    <button class="px-3 py-1 bg-blue-600 hover:bg-blue-700 text-white rounded" @click="openLeadershipEvaluation(item)">View</button>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
       <!-- Modal -->
       <div 
         v-if="showModal" 
@@ -461,6 +497,18 @@
     const currentUser = authStore.state.user 
 
     const showModal = ref(false)
+
+    // Leadership Performance: admin and poweruser view the evaluation that the head gave (the backend checks the role too)
+    const canViewLeadership = ['admin', 'poweruser'].includes(currentUser.role)
+    const leadershipViewAgent = ref(null)
+    const openLeadershipEvaluation = (item) => {
+      const agent = leadershipViewAgent.value
+      leadershipViewAgent.value = null
+      navigateTo({
+        path: `/leadership/leadership_evaluation/${agent.id}`,
+        query: { year_month: agent.year_month, evaluator_id: item.evaluator_id, department_code: view.value.code },
+      })
+    }
 
     const showModalEvalType = ref(false);
     const modalEvalType = ref('add');

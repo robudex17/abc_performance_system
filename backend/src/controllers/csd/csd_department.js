@@ -2,7 +2,7 @@
 // Collection and Purchasing work exactly like the ones of CSD (the same tables, the same scores), only the staff of the list is the staff of the
 // department. The page sends ?department=collection or purchasing (CSD is the default, so the CSD pages do not send anything).
 //
-// WHO may use a department: admin and poweruser use all of them. The others only use THEIR department: the one of their
+// WHO may use a department: admin, poweruser and the GOM (view only) use all of them. The others only use THEIR department: the one of their
 // assignment (the login token), or the one(s) named in their position: the "CSD & Collection Manager" and the "CSD & Collections
 // Quality Analyst" belong to CSD and also work for Collection. A Purchasing manager (position level 10) does not see the CSD staff,
 // and an assistant manager of Collection does not see the CSD staff, whatever the position level rules say.
@@ -11,9 +11,13 @@ const DEFAULT_DEPARTMENT = 'csd'
 
 const normalize = (text) => String(text ?? '').replace(/\s+/g, ' ').trim().toLowerCase()
 
+// The GOM (position level 15) has the view-only access of the poweruser: every department, every list, no changes.
+const GOM_LEVEL = 15
+const isFullViewer = (user) => ['admin', 'poweruser'].includes(user?.role) || Number(user?.position_level) === GOM_LEVEL
+
 // may the user use the department?
 const mayUseDepartment = (user, code) => {
-    if (['admin', 'poweruser'].includes(user?.role)) return true
+    if (isFullViewer(user)) return true
     if (normalize(user?.department_code) === code) return true
     return normalize(user?.position_name).includes(code)
 }
@@ -32,6 +36,7 @@ exports.readDepartment = (req) => {
 }
 
 exports.mayUseDepartment = mayUseDepartment
+exports.isFullViewer = isFullViewer
 exports.DEPARTMENTS = DEPARTMENTS
 exports.DEFAULT_DEPARTMENT = DEFAULT_DEPARTMENT
 

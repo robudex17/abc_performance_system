@@ -6,7 +6,7 @@ const { EVALUATED_LEVELS } = require('../../config/leadership_tasks')
 // Every leader of the list gets:
 //   leadership_required   true (the leader can not be submitted without it)
 //   leadership_score      the score of the questionnaire, 1 - 5 (the average when more than one head evaluated), 0 = not answered yet
-//   leadership_by         who evaluated: [{ evaluator_dbname, leadership_score }]
+//   leadership_by         who evaluated: [{ evaluator_id, evaluator_dbname, leadership_score }]
 // The score is the LEADERSHIP part of the Performance, see scoreEmployee() in csd_leaderboard_controller.js.
 exports.attachLeadership = async (rows, yearMonth) => {
     const leaders = rows.filter(row => EVALUATED_LEVELS.includes(Number(row.position_level)))
@@ -15,7 +15,7 @@ exports.attachLeadership = async (rows, yearMonth) => {
     let evaluations = []
     try {
         const [found] = await pool.query(
-            'SELECT employee_id, evaluator_dbname, leadership_score FROM leadership_evaluations WHERE `year_month` = ? AND employee_id IN (?)',
+            'SELECT employee_id, evaluator_id, evaluator_dbname, leadership_score FROM leadership_evaluations WHERE `year_month` = ? AND employee_id IN (?)',
             [yearMonth, leaders.map(leader => Number(leader.id))]
         )
         evaluations = found
@@ -31,6 +31,7 @@ exports.attachLeadership = async (rows, yearMonth) => {
         leader.leadership_required = true
         leader.leadership_score = Number(average.toFixed(4))
         leader.leadership_by = mine.map(evaluation => ({
+            evaluator_id: Number(evaluation.evaluator_id),
             evaluator_dbname: evaluation.evaluator_dbname,
             leadership_score: Number(evaluation.leadership_score),
         }))

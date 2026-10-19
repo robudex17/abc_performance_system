@@ -1,6 +1,6 @@
 const { scoring } = require('./csd_leaderboard_controller')
 const { shared } = require('./csd_agent_performance_controller')
-const { readDepartment, badDepartment } = require('./csd_department')
+const { readDepartment, badDepartment, isFullViewer } = require('./csd_department')
 
 // Team Monthly / Team Yearly performance of the CSD teams (the "Team Performance" menu), same idea as the sales team pages.
 // A team is the staff with the same team_id. The team rating is the average of the final ratings of its members:
@@ -23,7 +23,7 @@ const { canSee, buildMonth, buildYear, yearAverage, readYear, currentYearMonth }
 const TEAM_LEVELS = [10, 9, 8, 7]
 
 const canViewTeams = (user) =>
-    ['admin', 'poweruser'].includes(user?.role) || TEAM_LEVELS.includes(Number(user?.position_level))
+    isFullViewer(user) || TEAM_LEVELS.includes(Number(user?.position_level))
 
 const byLevelThenName = (a, b) => Number(b.position_level) - Number(a.position_level) || String(a.db_name).localeCompare(String(b.db_name))
 const byRatingDesc = (a, b) => parseFloat(b.final_ratings) - parseFloat(a.final_ratings)

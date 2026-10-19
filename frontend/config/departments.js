@@ -10,18 +10,24 @@ export const DEPARTMENT_HOME = {
   csd: '/csd',
   collection: '/collection',
   purchasing: '/purchasing',
+  gom: '/gom',
   hradmin: '/hr',
   it: '/it',
   uploading: '/uploading',
 }
 
 // the url prefix that belongs to a department (sales has none: it owns the pages without a prefix)
-export const DEPARTMENT_PREFIXES = ['/csd', '/collection', '/purchasing', '/hr', '/it', '/uploading']
+export const DEPARTMENT_PREFIXES = ['/csd', '/collection', '/purchasing', '/gom', '/hr', '/it', '/uploading']
 
-// admin and the top managers of CSD (the CSD & Collection Manager) choose the department they work on (/select_department).
+// The GOM (position level 15, the head of the managers) has the view-only access of the poweruser to every department and evaluates the managers.
+export const GOM_LEVEL = 15
+export const isGom = (user) => Number(user?.position_level) === GOM_LEVEL
+
+// admin, the GOM and the top managers of CSD (the CSD & Collection Manager) choose the department they work on (/select_department).
 // The manager of another department (the Purchasing Manager) works in his/her own department only.
 export const canSwitchDepartment = (user) =>
   user?.role === 'admin' ||
+  isGom(user) ||
   (user?.role === 'manager' && Number(user?.position_level) >= 10 && String(user?.department_code || '').toLowerCase() === 'csd')
 
 // home page of the user's own department, or null (sales agents, standard users, unknown department)

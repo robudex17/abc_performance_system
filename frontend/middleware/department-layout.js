@@ -10,6 +10,7 @@ const DEPARTMENT_LAYOUTS = {
   csd: 'csd',
   collection: 'collection',
   purchasing: 'purchasing',
+  gom: 'gom',
 }
 
 export default defineNuxtRouteMiddleware((to) => {
@@ -19,8 +20,10 @@ export default defineNuxtRouteMiddleware((to) => {
   authStore.fetchTokenFromLocalStore()
 
   const departmentOfThePath = Object.keys(DEPARTMENT_LAYOUTS).find(code => isInsideArea(to.path, `/${code}`))
+  // the GOM's pages outside his area (the leadership evaluation) keep his own layout
+  const isGom = Number(authStore.state.user?.position_level) === 15
   const departmentCode = departmentOfThePath
-    || String(to.query.department_code || authStore.state.user?.department_code || '').toLowerCase()
+    || String(to.query.department_code || (isGom ? 'gom' : authStore.state.user?.department_code) || '').toLowerCase()
   const layout = DEPARTMENT_LAYOUTS[departmentCode]
 
   if (layout) {

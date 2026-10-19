@@ -17,6 +17,7 @@ export const useLeadershipStore = defineStore('leadershipStore', () => {
         scores: [],
         employees: [],
         evaluation: null,
+        viewedEmployee: null,    // admin / poweruser view: the evaluated employee
         loading: false,
         error: null,
     })
@@ -72,6 +73,13 @@ export const useLeadershipStore = defineStore('leadershipStore', () => {
         state.evaluation = await request(`/${employeeId}`, { query: { year_month: yearMonth } })
     })
 
+    // admin / poweruser: VIEW the evaluation that the evaluator gave (the evaluation is null when it was not given)
+    const viewEvaluation = (employeeId, yearMonth, evaluatorId) => run(async () => {
+        const result = await request(`/${employeeId}/view`, { query: { year_month: yearMonth, evaluator_id: evaluatorId } })
+        state.viewedEmployee = result.employee
+        state.evaluation = result.evaluation
+    })
+
     // returns true when it worked, the message of the backend is in state.error when it did not
     const saveEvaluation = async (employeeId, yearMonth, responses, method) => {
         const result = await run(() => request(`/${employeeId}`, { method, body: { responses }, query: { year_month: yearMonth } }))
@@ -83,5 +91,5 @@ export const useLeadershipStore = defineStore('leadershipStore', () => {
         return result !== undefined
     }
 
-    return { state, fetchTasks, fetchEmployees, fetchEvaluation, saveEvaluation, deleteEvaluation }
+    return { state, fetchTasks, fetchEmployees, fetchEvaluation, viewEvaluation, saveEvaluation, deleteEvaluation }
 })

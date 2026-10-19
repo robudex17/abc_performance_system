@@ -98,8 +98,9 @@ export const purchasingMenu = [
               name: 'Switch Department',
               route: '/select_department',
               icon: ['fas', 'layer-group'],
-              // the Purchasing Manager works in Purchasing only
-              allowedRoles: ['admin']
+              // the Purchasing Manager works in Purchasing only; the GOM picks any department
+              allowedRoles: ['admin'],
+              allowedLevels: [15]
             },
 
 ]

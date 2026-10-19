@@ -1,6 +1,7 @@
 const pool = require('../../config/db')
+const { isViewer } = require('../../middleware/leadership_access')
 const { FROM_SNAPSHOT, snapshotParams } = require('./csd_month_snapshot')
-const { tasksForLevel, LEADERSHIP_SCORES, EVALUATED_LEVELS, MANAGER_LEVEL, GOM_LEVEL } = require('../../config/leadership_tasks')
+const { tasksFor, LEADERSHIP_SCORES, EVALUATED_LEVELS, MANAGER_LEVEL, GOM_LEVEL } = require('../../config/leadership_tasks')
 
 // Leadership Individual Performance (table leadership_evaluations), for the position level 7, 8, 9 and 10.
 // It is a form (TASK | KEY PERFORMANCE INDICATORS | SCORE | COMMENTS) answered by the HEAD of the evaluated employee:
@@ -17,14 +18,14 @@ const { tasksForLevel, LEADERSHIP_SCORES, EVALUATED_LEVELS, MANAGER_LEVEL, GOM_L
 //
 //   GET    /leadership_evaluations/tasks                          the form (tasks, indicators and the scores of the drop down)
 //   GET    /leadership_evaluations?year_month=YYYY-MM             the employees I evaluate, with my result of the month
-//   GET    /leadership_evaluations/:employee_id?year_month=...    my evaluation of the employee (admin / poweruser: ?evaluator_id=)
+//   GET    /leadership_evaluations/:employee_id?year_month=...    my evaluation of the employee
 //   POST   /leadership_evaluations/:employee_id?year_month=...    body { responses: [{ task, score, comment }] }
 //   PUT    /leadership_evaluations/:employee_id?year_month=...    the same body
 //   DELETE /leadership_evaluations/:employee_id?year_month=...
+//   GET    /leadership_evaluations/:employee_id/view?year_month=...&evaluator_id=   admin / poweruser only: the evaluation that the head gave
 
 const YEAR_MONTH_FORMAT = /^\d{4}-(0[1-9]|1[0-2])$/
 const MAX_COMMENT_LENGTH = 1000
-const VIEWER_ROLES = ['admin', 'poweruser']
 
 const currentYearMonth = () => {
     const today = new Date()
@@ -38,9 +39,11 @@ const readYearMonth = (value) => {
 
 // the employees of the month (any department) that the user evaluates: the direct reports of level 7 - 10,
 // or the CSD & Collection Manager when the user is the GOM. employeeId: only that employee.
+// The admin and the poweruser (viewers) get every leader of the levels 7 - 10, whoever the head is.
 const getEvaluatees = async (user, yearMonth, employeeId = null) => {
     const myId = Number(user.login_id)
     const isGom = Number(user.position_level) === GOM_LEVEL
+    const anyHead = isViewer(user)
 
     const [rows] = await pool.execute(
         `SELECT e.id, e.db_name, e.image_link, d.code AS department_code, p.level AS position_level, p.position_name,
@@ -51,10 +54,10 @@ const getEvaluatees = async (user, yearMonth, employeeId = null) => {
          LEFT JOIN csd_evaluation_status cs ON cs.employee_id = e.id AND cs.\`year_month\` = ?
          LEFT JOIN employees mgr ON ea.manager_id = mgr.id
          WHERE p.level IN (${EVALUATED_LEVELS.map(() => '?').join(',')})
-           AND ((ea.manager_id = ? AND e.id <> ?) OR (? AND p.level = ?))
+           ${anyHead ? '' : 'AND ((ea.manager_id = ? AND e.id <> ?) OR (? AND p.level = ?))'}
            ${employeeId ? 'AND e.id = ?' : ''}
          ORDER BY p.level DESC, e.db_name`,
-        [...snapshotParams(yearMonth), yearMonth, ...EVALUATED_LEVELS, myId, myId, isGom ? 1 : 0, MANAGER_LEVEL, ...(employeeId ? [employeeId] : [])]
+        [...snapshotParams(yearMonth), yearMonth, ...EVALUATED_LEVELS, ...(anyHead ? [] : [myId, myId, isGom ? 1 : 0, MANAGER_LEVEL]), ...(employeeId ? [employeeId] : [])]
     )
     return rows
 }
@@ -126,7 +129,7 @@ const readChange = async (req, { needsBody }) => {
 
     let answers
     if (needsBody) {
-        answers = readResponses(req.body, tasksForLevel(employee.position_level))
+        answers = readResponses(req.body, tasksFor(employee))
         if (answers.error) return { error: { status: 400, message: answers.error } }
     }
 
@@ -136,15 +139,14 @@ const readChange = async (req, { needsBody }) => {
 // the form of the position level of the employee (?employee_id=), without it the default form
 exports.fetchTasks = async (req, res) => {
     try {
-        let level = null
+        let employee = null
         if (req.query.employee_id !== undefined) {
             const employeeId = Number(req.query.employee_id)
             const when = readYearMonth(req.query.year_month)
-            const [employee] = Number.isInteger(employeeId) && !when.error ? await getEvaluatees(req.user, when.yearMonth, employeeId) : []
+            ;[employee] = Number.isInteger(employeeId) && !when.error ? await getEvaluatees(req.user, when.yearMonth, employeeId) : []
             if (!employee) return res.status(403).json({ message: 'You are not allowed to evaluate this employee' })
-            level = employee.position_level
         }
-        res.json({ tasks: tasksForLevel(level), scores: LEADERSHIP_SCORES })
+        res.json({ tasks: tasksFor(employee), scores: LEADERSHIP_SCORES })
     } catch (error) {
         console.error('Error fetching the leadership tasks:', error)
         res.status(500).json({ message: 'Internal Server Error' })
@@ -194,12 +196,8 @@ exports.fetchEvaluation = async (req, res) => {
     if (!Number.isInteger(employeeId) || employeeId < 1) return res.status(400).json({ error: 'employee_id must be a positive integer' })
     if (when.error) return res.status(400).json({ error: when.error })
 
-    // the evaluator: me, or (admin / poweruser, view only) the one chosen in ?evaluator_id
-    const isViewer = VIEWER_ROLES.includes(req.user.role)
-    const evaluatorId = isViewer && req.query.evaluator_id ? Number(req.query.evaluator_id) : Number(req.user.login_id)
-    if (!isViewer && evaluatorId !== Number(req.user.login_id)) {
-        return res.status(403).json({ error: 'You are not allowed to view the leadership evaluation of other users' })
-    }
+    // my evaluation (the admin and the poweruser view the others' with /view, onlyEvaluators protects this route)
+    const evaluatorId = Number(req.user.login_id)
 
     try {
         const [rows] = await pool.execute(
@@ -214,6 +212,35 @@ exports.fetchEvaluation = async (req, res) => {
         res.json({ ...row, responses: typeof row.responses === 'string' ? JSON.parse(row.responses) : row.responses })
     } catch (error) {
         console.error('Error fetching the leadership evaluation', error)
+        res.status(500).json({ error: 'Database Error, Cannot fetch the leadership evaluation' })
+    }
+}
+
+// admin / poweruser (onlyViewers): the evaluation that ?evaluator_id gave to the employee, with the employee. evaluation: null = not given
+exports.viewEvaluation = async (req, res) => {
+    const employeeId = Number(req.params.employee_id)
+    const evaluatorId = Number(req.query.evaluator_id)
+    const when = readYearMonth(req.query.year_month)
+    if (!Number.isInteger(employeeId) || employeeId < 1) return res.status(400).json({ error: 'employee_id must be a positive integer' })
+    if (!Number.isInteger(evaluatorId) || evaluatorId < 1) return res.status(400).json({ error: 'evaluator_id must be a positive integer' })
+    if (when.error) return res.status(400).json({ error: when.error })
+
+    try {
+        const [employee] = await getEvaluatees(req.user, when.yearMonth, employeeId)
+        if (!employee) return res.status(404).json({ error: 'The employee is not found for the month' })
+
+        const [rows] = await pool.execute(
+            'SELECT evaluator_id, evaluator_dbname, employee_id, employee_dbname, responses, leadership_score, total_score, percentage, `year_month` ' +
+            'FROM leadership_evaluations WHERE evaluator_id = ? AND employee_id = ? AND `year_month` = ?',
+            [evaluatorId, employeeId, when.yearMonth]
+        )
+        const row = rows[0]
+        res.json({
+            employee,
+            evaluation: row ? { ...row, responses: typeof row.responses === 'string' ? JSON.parse(row.responses) : row.responses } : null,
+        })
+    } catch (error) {
+        console.error('Error viewing the leadership evaluation', error)
         res.status(500).json({ error: 'Database Error, Cannot fetch the leadership evaluation' })
     }
 }

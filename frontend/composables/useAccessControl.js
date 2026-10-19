@@ -12,7 +12,11 @@ export const useAccessControl = () => {
   const normalize = (text) => String(text ?? '').replace(/\s+/g, ' ').trim().toLowerCase()
   const isOneOfThePositionNames = (user, names) => names.some(name => normalize(name) === normalize(user.position_name))
 
-  const canAccess = (user, item) => {
+  // the GOM (position level 15) is a view-only user: the menus treat him like the poweruser (no feedback, no admin panel)
+  const effectiveUser = (user) => Number(user?.position_level) === 15 ? { ...user, role: 'poweruser' } : user
+
+  const canAccess = (rawUser, item) => {
+    const user = effectiveUser(rawUser)
     if (item.excludedRoles && item.excludedRoles.includes(user.role)) return false
     if (item.excludedPositionNames && isOneOfThePositionNames(user, item.excludedPositionNames)) return false
 

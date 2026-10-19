@@ -72,6 +72,8 @@ import { computed, onMounted, watch } from 'vue'
 
 definePageMeta({
   middleware: ['auth', 'department-layout', 'leadership-access'],
+  // the home of the GOM (/gom) is the list of his managers
+  alias: ['/gom'],
 })
 
 const authStore = useAuthStore()

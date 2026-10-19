@@ -199,7 +199,7 @@
                // the Give Feedback form page needs who gives / receives the feedback after the date is changed
                // (the page middleware denies the form when who_give_feedback_id is not the logged in user)
                ...Object.fromEntries(
-                 ['who_give_feedback_id', 'who_give_feedback_db_name', 'who_receive_feedback_id', 'who_receive_feedback_db_name']
+                 ['who_give_feedback_id', 'who_give_feedback_db_name', 'who_receive_feedback_id', 'who_receive_feedback_db_name', 'evaluator_id']
                    .filter(key => currentRoute.query[key] !== undefined)
                    .map(key => [key, currentRoute.query[key]])
                ),

@@ -1,6 +1,6 @@
 const pool = require('../../config/db')
 const { generateCsdEvaluation } = require('./csd_evaluation_controller')
-const { readDepartment, badDepartment } = require('./csd_department')
+const { readDepartment, badDepartment, isFullViewer } = require('./csd_department')
 
 // CSD leaderboard, built like the sales leaderboard but on the CSD evaluation (not on csd_performance_metrics):
 //   - the rows are the ones of the CSD Evaluation page: Performance (typed by the admin), Absences, Tardiness, Memo and
@@ -173,7 +173,7 @@ const DETAIL_FIELDS = [
 
 // ownTeamId: the team of the user, read from his/her own row of the evaluation (the team of the login token is not reliable)
 const canSeeDetails = (user, row, ownTeamId) => {
-    if (['admin', 'poweruser'].includes(user?.role)) return true
+    if (isFullViewer(user)) return true
     const level = Number(user?.position_level)
     if (level === 10 || level === 9) return true
     if (Number(row.id) === Number(user?.login_id)) return true
