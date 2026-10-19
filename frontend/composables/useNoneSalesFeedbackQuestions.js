@@ -1,10 +1,10 @@
 import { computed } from 'vue'
 
-// Feedback questions for the none-sales departments (csd, collection, purchasing).
+// Feedback questions for the none-sales departments (csd, collection, purchasing, hradmin). HR & Admin uses the questions of CSD / Collection.
 // Same direction names as useFeedbackQuestions (sales):
 //   agent_by_lm  -> immediate head rates the member   (agentType 1)
 //   lm_by_agent  -> member rates the immediate head   (agentType 0)
-const NONE_SALES_DEPARTMENTS = ['csd', 'collection', 'purchasing']
+const NONE_SALES_DEPARTMENTS = ['csd', 'collection', 'purchasing', 'hradmin']
 
 export function useNoneSalesFeedbackQuestions(agentType, direction, department) {
 

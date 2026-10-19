@@ -6,6 +6,7 @@ import { csdMenu } from './csdMenu'
 import { collectionMenu } from './collectionMenu'
 import { purchasingMenu } from './purchasingMenu'
 import { gomMenu } from './gomMenu'
+import { hrMenu } from './hrMenu'
 import { isInsideArea } from './departments'
 
 export const DEPARTMENT_VIEWS = {
@@ -36,6 +37,16 @@ export const DEPARTMENT_VIEWS = {
     menu: purchasingMenu,
     evaluationTitle: 'Purchasing Performance Evaluation',
     // the Quality Analyst is the QA of CSD and Collection only: nobody of Purchasing has the QA feedback
+    qaMaxLevel: 0,
+  },
+  // HR & Admin: the department code is hradmin, its pages are under /hr (config/departments.js)
+  hradmin: {
+    code: 'hradmin',
+    base: '/hr',
+    label: 'HR & Admin',
+    layout: 'hradmin',
+    menu: hrMenu,
+    evaluationTitle: 'HR & Admin Performance Evaluation',
     qaMaxLevel: 0,
   },
   // the GOM's own place: no evaluation, the menu is the leadership evaluation of the managers and the department switch

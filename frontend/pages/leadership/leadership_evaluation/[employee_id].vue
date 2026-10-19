@@ -127,7 +127,7 @@ const employeeId = route.params.employee_id
 // admin / poweruser only VIEW the evaluation that ?evaluator_id gave (the middleware leadership-access, the backend too)
 const authStore = useAuthStore()
 authStore.fetchTokenFromLocalStore()
-const isViewer = ['admin', 'poweruser'].includes(authStore.state.user?.role)
+const isViewer = ['admin', 'poweruser'].includes(authStore.state.user?.role) && Number(authStore.state.user?.position_level) !== 15
 const evaluatorId = route.query.evaluator_id
 
 const today = new Date()

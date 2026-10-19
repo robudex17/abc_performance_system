@@ -1,4 +1,4 @@
-// The department of the CSD / Collection / Purchasing pages. The evaluation, the leaderboard, the Agent and Team Performance of
+// The department of the CSD / Collection / Purchasing / HR & Admin (code hradmin, NOT the hr_admin folder of the system admin) pages. The evaluation, the leaderboard, the Agent and Team Performance of
 // Collection and Purchasing work exactly like the ones of CSD (the same tables, the same scores), only the staff of the list is the staff of the
 // department. The page sends ?department=collection or purchasing (CSD is the default, so the CSD pages do not send anything).
 //
@@ -6,7 +6,7 @@
 // assignment (the login token), or the one(s) named in their position: the "CSD & Collection Manager" and the "CSD & Collections
 // Quality Analyst" belong to CSD and also work for Collection. A Purchasing manager (position level 10) does not see the CSD staff,
 // and an assistant manager of Collection does not see the CSD staff, whatever the position level rules say.
-const DEPARTMENTS = ['csd', 'collection', 'purchasing']
+const DEPARTMENTS = ['csd', 'collection', 'purchasing', 'hradmin']
 const DEFAULT_DEPARTMENT = 'csd'
 
 const normalize = (text) => String(text ?? '').replace(/\s+/g, ' ').trim().toLowerCase()
@@ -52,7 +52,7 @@ exports.isExcludedFromEvaluation = (department, row) =>
     (EXCLUDED_POSITIONS[department] ?? []).some(name => normalize(name) === normalize(row?.position_name))
 
 // for the titles of the Excel files
-exports.DEPARTMENT_LABELS = { csd: 'CSD', collection: 'COLLECTION', purchasing: 'PURCHASING' }
+exports.DEPARTMENT_LABELS = { csd: 'CSD', collection: 'COLLECTION', purchasing: 'PURCHASING', hradmin: 'HR & ADMIN' }
 
 // the answer of the routes for a department that does not exist, or that the user may not use
 exports.badDepartment = (res) => {

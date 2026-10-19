@@ -471,7 +471,7 @@
     middleware: ['auth', 'adminmanager', 'department-layout'],
     layout: 'csd',
     // the evaluation of Collection is this page too (the layout and the staff follow the url)
-    alias: ['/collection/collection_evaluation', '/purchasing/purchasing_evaluation'],
+    alias: ['/collection/collection_evaluation', '/purchasing/purchasing_evaluation', '/hr/hr_evaluation'],
   })
   
   import { ref, computed } from 'vue';
@@ -499,7 +499,7 @@
     const showModal = ref(false)
 
     // Leadership Performance: admin and poweruser view the evaluation that the head gave (the backend checks the role too)
-    const canViewLeadership = ['admin', 'poweruser'].includes(currentUser.role)
+    const canViewLeadership = ['admin', 'poweruser'].includes(currentUser.role) && Number(currentUser.position_level) !== 15
     const leadershipViewAgent = ref(null)
     const openLeadershipEvaluation = (item) => {
       const agent = leadershipViewAgent.value

@@ -11,7 +11,11 @@ const DEPARTMENT_LAYOUTS = {
   collection: 'collection',
   purchasing: 'purchasing',
   gom: 'gom',
+  hradmin: 'hradmin',
 }
+
+// the url prefix of a department when it is not '/<code>' (HR & Admin: code hradmin, pages under /hr)
+const PREFIX_OF = { hradmin: '/hr' }
 
 export default defineNuxtRouteMiddleware((to) => {
   if (import.meta.env.SSR) return
@@ -19,7 +23,7 @@ export default defineNuxtRouteMiddleware((to) => {
   const authStore = useAuthStore()
   authStore.fetchTokenFromLocalStore()
 
-  const departmentOfThePath = Object.keys(DEPARTMENT_LAYOUTS).find(code => isInsideArea(to.path, `/${code}`))
+  const departmentOfThePath = Object.keys(DEPARTMENT_LAYOUTS).find(code => isInsideArea(to.path, PREFIX_OF[code] ?? `/${code}`))
   // the GOM's pages outside his area (the leadership evaluation) keep his own layout
   const isGom = Number(authStore.state.user?.position_level) === 15
   const departmentCode = departmentOfThePath

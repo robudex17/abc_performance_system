@@ -316,8 +316,10 @@
 
 <script setup>
 
+// also opened under /hr (the Admin Panel of HR & Admin): department-layout gives it the HR & Admin layout
 definePageMeta({
-    middleware: ['auth' ,'admin'] 
+    middleware: ['auth', 'department-layout', 'admin'],
+    alias: ['/hr/manage_standard_users'],
 })
 
 

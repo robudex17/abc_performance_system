@@ -10,7 +10,8 @@ const { GOM_LEVEL, MANAGER_LEVEL } = require('../config/leadership_tasks')
 const VIEWER_ROLES = ['admin', 'poweruser']
 const EVALUATOR_LEVELS = [GOM_LEVEL, MANAGER_LEVEL, 9, 8]
 
-const isViewer = (user) => VIEWER_ROLES.includes(user?.role)
+// The GOM (level 15) evaluates, whatever his login role is (he may have the poweruser role to view the sales pages): he is never a viewer.
+const isViewer = (user) => VIEWER_ROLES.includes(user?.role) && Number(user?.position_level) !== GOM_LEVEL
 const isEvaluator = (user) => !isViewer(user) && !isQaStaff(user) && EVALUATOR_LEVELS.includes(Number(user?.position_level))
 
 const denied = (res, message) => res.status(403).json({ message: `Access Denied: ${message}` })

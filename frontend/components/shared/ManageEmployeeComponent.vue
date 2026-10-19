@@ -885,15 +885,22 @@
    
    //computed properties 
 
+    // The GOM (position level 15) is in the list of every department (backend: managers_controller.js): he is the head of the managers.
+    // The managers of the department itself are the others.
+    const GOM_LEVEL = 15
+    const gomManagers = computed(() => props.managers.filter(m => Number(m.level) === GOM_LEVEL))
+    const departmentManagers = computed(() => props.managers.filter(m => Number(m.level) !== GOM_LEVEL))
+
     const filteredManagers = computed(() => {
-      // Case 1: no managers exist → first Senior Manager (self-manage)
-      if (props.managers.length === 0 ) {
+      // Case 1: no manager in the department → the first employee is his/her own manager (self-manage), or the GOM when there is one
+      if (departmentManagers.value.length === 0 ) {
         return [
           {
             manager_id: currentEmployee.value.id,
             manager_name: currentEmployee.value.db_name,
-            
-          }
+
+          },
+          ...gomManagers.value.filter(m => Number(m.manager_id) !== Number(currentEmployee.value.id)),
         ]
       }
 
@@ -911,8 +918,8 @@
    const filterPositions = computed(() => {
       // if Manger is empty → only  the position  equal to  level 5 
     
-      if(props.managers.length === 0){
-     
+      if(departmentManagers.value.length === 0){
+
         return props.positions.filter(p => p.level == props.highest_level) //return the position with level 5 which is the lowest position for senior manager
          
       }

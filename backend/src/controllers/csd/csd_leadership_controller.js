@@ -1,7 +1,7 @@
 const pool = require('../../config/db')
 const { isViewer } = require('../../middleware/leadership_access')
 const { FROM_SNAPSHOT, snapshotParams } = require('./csd_month_snapshot')
-const { tasksFor, LEADERSHIP_SCORES, EVALUATED_LEVELS, MANAGER_LEVEL, GOM_LEVEL } = require('../../config/leadership_tasks')
+const { tasksFor, LEADERSHIP_SCORES, EVALUATED_LEVELS } = require('../../config/leadership_tasks')
 
 // Leadership Individual Performance (table leadership_evaluations), for the position level 7, 8, 9 and 10.
 // It is a form (TASK | KEY PERFORMANCE INDICATORS | SCORE | COMMENTS) answered by the HEAD of the evaluated employee:
@@ -37,12 +37,12 @@ const readYearMonth = (value) => {
     return YEAR_MONTH_FORMAT.test(yearMonth) ? { yearMonth } : { error: 'year_month must be in YYYY-MM format' }
 }
 
-// the employees of the month (any department) that the user evaluates: the direct reports of level 7 - 10,
-// or the CSD & Collection Manager when the user is the GOM. employeeId: only that employee.
+// the employees of the month (any department) that the user evaluates: his/her direct reports (the immediate head of the month) of
+// level 7 - 10. It is the same rule for every head, the GOM included (the managers report to him): who evaluates a manager is decided by
+// the immediate head of the manager (employee assignment). employeeId: only that employee.
 // The admin and the poweruser (viewers) get every leader of the levels 7 - 10, whoever the head is.
 const getEvaluatees = async (user, yearMonth, employeeId = null) => {
     const myId = Number(user.login_id)
-    const isGom = Number(user.position_level) === GOM_LEVEL
     const anyHead = isViewer(user)
 
     const [rows] = await pool.execute(
@@ -54,10 +54,10 @@ const getEvaluatees = async (user, yearMonth, employeeId = null) => {
          LEFT JOIN csd_evaluation_status cs ON cs.employee_id = e.id AND cs.\`year_month\` = ?
          LEFT JOIN employees mgr ON ea.manager_id = mgr.id
          WHERE p.level IN (${EVALUATED_LEVELS.map(() => '?').join(',')})
-           ${anyHead ? '' : 'AND ((ea.manager_id = ? AND e.id <> ?) OR (? AND p.level = ?))'}
+           ${anyHead ? '' : 'AND ea.manager_id = ? AND e.id <> ?'}
            ${employeeId ? 'AND e.id = ?' : ''}
          ORDER BY p.level DESC, e.db_name`,
-        [...snapshotParams(yearMonth), yearMonth, ...EVALUATED_LEVELS, ...(anyHead ? [] : [myId, myId, isGom ? 1 : 0, MANAGER_LEVEL]), ...(employeeId ? [employeeId] : [])]
+        [...snapshotParams(yearMonth), yearMonth, ...EVALUATED_LEVELS, ...(anyHead ? [] : [myId, myId]), ...(employeeId ? [employeeId] : [])]
     )
     return rows
 }

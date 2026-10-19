@@ -149,7 +149,7 @@
               route: null,
               icon: ['fas', 'cog'],
               subMenu: [
-                { name: 'Manage Standard Users', route: '/admin/manage_standard_users', icon: ['fas', 'user'] },
+                // (Manage Standard Users moved to the Admin Panel of HR & Admin: /hr/manage_standard_users)
                 // { name: 'Manage Sales Agents', route: '/admin/agent/manage_sales_agents', icon: ['fas', 'user-tie'] },
                 // { name: 'Upload Target/Shipok Sales Data', route: '/admin/upload_target_shipok_data', icon: ['fas', 'fa-upload'] },
                 // { name: 'Upload New Deposit Sales Data', route: '/admin/upload_new_deposit_data', icon: ['fas', 'fa-upload'] },

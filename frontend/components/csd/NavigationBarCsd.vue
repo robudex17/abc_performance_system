@@ -50,7 +50,7 @@
                     class="border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-300"
                   />
 
-                <select v-if="route.path == view.base"
+                <select v-if="showScope"
                   class="p-2 border rounded bg-gray-50 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500"
                   v-model="scope"
                 >
@@ -138,6 +138,8 @@
 
     const employementStatus = ref('Hired')
     const scope = ref(route.query.scope || 'agent')
+    // the leaderboard scope (AGENT / TEAM LEADER / TEAM) is on the home of the departments; the home of the GOM is the leadership list
+    const showScope = computed(() => route.path == view.base && view.code !== 'gom')
 
     // the yearly pages of the CSD Agent / Team Performance: the list (yearly) and the details of one employee / team (year)
     const isYearPage = computed(() => [
@@ -193,7 +195,7 @@
              path: currentRoute.path,
              query: {
                year_month : yearMonth.value,
-               scope:  scope.value,
+               ...(showScope.value ? { scope: scope.value } : {}),
                // the none-sales feedback list page needs its feedback_type after the date is changed
                ...(currentRoute.query.feedback_type ? { feedback_type: currentRoute.query.feedback_type } : {}),
                // the Give Feedback form page needs who gives / receives the feedback after the date is changed

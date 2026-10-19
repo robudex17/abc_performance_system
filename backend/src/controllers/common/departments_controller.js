@@ -26,7 +26,7 @@ exports.fetchDepartments = async (req, res, next) => {
 
       if (Number(req.user.position_level) === 15) {
          // the GOM: his own department and the none-sales departments (view only)
-         return res.json(result.filter(d => ['gom', 'csd', 'collection', 'purchasing'].includes(d.code)))
+         return res.json(result.filter(d => ['gom', 'sales', 'csd', 'collection', 'purchasing', 'hradmin'].includes(d.code)))
       }
 
       if(req.user.position_level &&  req.user.position_level == 10  && req.user.department_code == 'csd'){
@@ -44,7 +44,7 @@ exports.fetchDepartments = async (req, res, next) => {
 
    if (Number(req.user.position_level) === 15) {
          // the GOM: his own department and the none-sales departments (view only)
-         return res.json(result.filter(d => ['gom', 'csd', 'collection', 'purchasing'].includes(d.code)))
+         return res.json(result.filter(d => ['gom', 'sales', 'csd', 'collection', 'purchasing', 'hradmin'].includes(d.code)))
       }
 
       if(req.user.position_level &&  req.user.position_level == 10  && req.user.department_code == 'csd'){

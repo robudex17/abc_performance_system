@@ -1,5 +1,5 @@
 // The side menu of the GOM (position level 15): his own place. He evaluates the managers (Leadership Individual Performance) and picks a
-// department to view (CSD, Collection, Purchasing: read only, like the poweruser). The managers are his direct reports: the CSD & Collection
+// department to view (Sales, CSD, Collection, Purchasing, HR & Admin: read only, like the poweruser). The managers are his direct reports: the CSD & Collection
 // Manager, the Purchasing Manager, the HR Manager ... (the list of the page is built from the head of each employee).
 export const gomMenu = [
 

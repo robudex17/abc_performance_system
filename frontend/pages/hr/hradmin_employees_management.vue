@@ -1,0 +1,195 @@
+<template>
+    <div class="p4 mt-20" >
+       
+        <ManageEmployeeComponent 
+            :employees="employees" 
+            :teams="teams" 
+            :managers="managers" 
+            :positions="positions"
+            :roles="roles"
+            :employee_status="employee_status"
+            :highest_level= 10
+            department_code="hradmin"
+            @passAddEmployee="addEmployee"
+            @passUpdateEmployee="updateEmployee"
+            @passAddEmployeeLogin="addEmployeeLogin"
+            @passUpdateEmployeeLogin="updateEmployeeLogin"
+        />
+    </div>
+</template>
+
+<script setup>
+   definePageMeta({
+    layout: 'hradmin', // This tells Nuxt to use the 'hradmin' layout for this page
+    middleware: ['auth'] // This applies the 'auth' middleware to this page
+    })
+
+    import ManageEmployeeComponent from '~/components/shared/ManageEmployeeComponent.vue';
+
+   
+
+    const router = useRouter()
+    const route = useRoute()
+    const employee_status = ref('Hired') // default status
+    const employee_type = ref('none_sales') // the login of the employees of the none-sales departments (employee_register)
+
+    //computured propery here 
+    const employees = computed(() => employeesStore.state.employees)
+    const teams = computed(() => teamsAgentStore.state.teams)
+    const managers = computed(() => managerStore.state.managers)
+    // const positions = computed(() => positionsRolesStore.state.positions)
+
+    const positions = computed(() => {
+        const allPositions = positionsRolesStore.state.positions;
+    
+        // Guard clause: if data isn't loaded yet, return an empty array
+        if (!allPositions) return [];
+
+        return allPositions.filter(item => 
+            item.position_name && 
+            /\bhr\b/i.test(item.position_name)
+        );
+    });
+
+    const roles = computed(() => positionsRolesStore.state.roles)
+   
+    //  pinia store state management
+    const managerStore = useManagerStore2()
+    const teamsAgentStore =   useTeamStore2()
+    const employeesStore = useManageEmployeesStore()
+    const positionsRolesStore = usePositionsRolesStore()
+    const authStore = useAuthStore()
+
+
+ 
+
+    //method here 
+    const fethEmployees =  () => {
+       employeesStore.fetchEmployees(route.query, 'hradmin')
+    }
+
+
+    const fetchTeams = () => {
+        teamsAgentStore.fetchTeams(null, 'hradmin', {team_status: 1} )
+        
+    };
+
+    const fetchMangers = () => {
+        managerStore.fetchManagers('hradmin')
+    }
+
+    const fetchPositionsRoles = (type) => {
+        positionsRolesStore.fetchPositionsRoles(null, type,{type:type})
+    }
+
+
+    const addEmployee = async(employeeData) => {
+         try {
+            employeeData.department_code = 'hradmin'
+            console.log('data from the child component', employeeData)
+            
+
+            await employeesStore.addEmployee(employeeData, 'hradmin', route.query);
+
+            fethEmployees()
+            fetchMangers()
+            fetchTeams()
+            fetchPositionsRoles('positions')
+             fetchPositionsRoles('roles')
+
+        }catch(error){
+            console.error('Error in adding new sales agent', error)
+        }
+        
+      
+    };
+
+
+    const updateEmployee = async(employeeData) => {
+        try {
+            employeeData.department_code = 'hradmin'
+            console.log('data from the child component for update', employeeData)
+            
+           
+            await employeesStore.updateEmployee(employeeData, 'hradmin', route.query);
+
+             fethEmployees()
+             fetchMangers()
+             fetchTeams()
+             fetchPositionsRoles('positions')
+             fetchPositionsRoles('roles')
+
+        }catch(error){
+            console.error('Error in updating  employee', error)
+        }
+        
+      
+    };
+
+
+
+    // the Login button of an employee: add and update the login access (the same as the CSD employees page)
+    const addEmployeeLogin = async(loginData) => {
+        try {
+            await authStore.register(loginData, employee_type.value);
+            fethEmployees()
+            fetchTeams()
+            fetchMangers()
+            fetchPositionsRoles('positions')
+            fetchPositionsRoles('roles')
+
+        }catch(error){
+            console.error('Error in adding new employee login', error)
+        }
+    };
+
+    const updateEmployeeLogin = async(loginData) => {
+        try {
+            await authStore.updateLogin(loginData, employee_type.value);
+            fethEmployees()
+            fetchTeams()
+            fetchMangers()
+            fetchPositionsRoles('positions')
+            fetchPositionsRoles('roles')
+
+        }catch(error){
+            console.error('Error in updating employee login', error)
+        }
+    };
+
+    onMounted(() => {
+      fethEmployees()
+      fetchTeams()
+      fetchMangers()
+      fetchPositionsRoles('positions')
+      fetchPositionsRoles('roles')
+     })
+
+
+
+
+    watch(route, (newRoute) => {
+        console.log('The route is change. we should react to the change..')
+        
+        
+        fethEmployees()
+        fetchTeams()
+        fetchMangers()
+        
+        employee_status.value = newRoute.query.employee_status
+
+        fethEmployees(newRoute.query)
+        fetchTeams()
+        fetchMangers()
+        
+     
+
+        
+        },  { immediate: true, deep: true }
+
+    )
+
+
+
+
+</script>

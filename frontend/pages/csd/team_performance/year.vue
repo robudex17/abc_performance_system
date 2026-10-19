@@ -78,7 +78,7 @@ definePageMeta({
   middleware: ['auth', 'department-layout'],
   layout: 'csd',
   // Collection uses this page too (the layout and the staff follow the url)
-  alias: ['/collection/team_performance/year', '/purchasing/team_performance/year'],
+  alias: ['/collection/team_performance/year', '/purchasing/team_performance/year', '/hr/team_performance/year'],
 })
 
 const authStore = useAuthStore()

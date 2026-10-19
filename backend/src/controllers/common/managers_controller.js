@@ -78,12 +78,16 @@ exports.fetchManager = async (req, res, next) => {
                 )
             JOIN positions p ON ea.position_id = p.id
             JOIN departments d ON ea.department_id = d.id
-            WHERE 
-                LOWER(p.position_name) REGEXP 'manager|leader|trainer'
-                AND (
-                    d.code = ? 
-                    OR LOWER(p.position_name) LIKE CONCAT('%', LOWER(?), '%')
-                );
+            WHERE
+                (
+                    LOWER(p.position_name) REGEXP 'manager|leader|trainer'
+                    AND (
+                        d.code = ?
+                        OR LOWER(p.position_name) LIKE CONCAT('%', LOWER(?), '%')
+                    )
+                )
+                -- the GOM (position level 15) is the head of the managers of every department
+                OR p.level = 15;
             `, 
             [departmentCode, departmentCode]
         );

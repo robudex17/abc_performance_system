@@ -4,7 +4,7 @@
 // Admin and poweruser only VIEW one evaluation (the page with ?evaluator_id), they do not evaluate.
 // The Quality Analyst (level 9) has no subordinates: nothing to evaluate. Admin and poweruser do not evaluate.
 // NOTE: this only guards the page; the backend checks who can evaluate whom (the head of the employee, or the GOM for the manager).
-import { isQaStaff } from '~/config/departments'
+import { isQaStaff, isGom } from '~/config/departments'
 
 const EVALUATOR_LEVELS = [15, 10, 9, 8]
 const VIEWER_ROLES = ['admin', 'poweruser']
@@ -21,7 +21,8 @@ export default defineNuxtRouteMiddleware((to) => {
 
   if (!user) return navigateTo('/unauthorized')
 
-  if (VIEWER_ROLES.includes(user.role)) {
+  // the GOM evaluates, whatever his login role is (poweruser to view the sales pages): he is not a viewer
+  if (VIEWER_ROLES.includes(user.role) && !isGom(user)) {
     const isListPage = to.path.replace(/\/+$/, '') === LIST_PATH
     if (isListPage || !to.query.evaluator_id) return navigateTo('/unauthorized')
     return
