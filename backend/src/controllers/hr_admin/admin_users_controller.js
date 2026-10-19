@@ -1,10 +1,23 @@
 const pool = require('../../config/db')
 const { validationResult } = require('express-validator')
-const fs = require('fs')
-const path = require('path')
 
-// Change this import at the top
-const {  uploadToMinio } = require('../../middleware/fileupload_to_minio')  // updated import
+// The image of a standard user is saved like the image of an employee: only the FILE NAME of the MinIO bucket (the pages build the
+// url with the image base url). A full url or an old '/images/...' path is reduced to its file name.
+const { uploadToMinio, removeFromMinio } = require('../../middleware/fileupload_to_minio')
+
+const DEFAULT_IMAGE = 'sbtlogo.png'
+const fileNameOf = (imageLink) => String(imageLink ?? '').split('/').pop().trim()
+
+// removes the file from MinIO unless another standard user or employee still uses it (the default image is never removed)
+const removeImageIfUnused = async (imageLink) => {
+    const name = fileNameOf(imageLink)
+    if (!name || name === DEFAULT_IMAGE) return
+
+    const like = '%' + name
+    const [users] = await pool.execute('SELECT id FROM standard_users WHERE image_link LIKE ? LIMIT 1', [like])
+    const [employees] = await pool.execute('SELECT id FROM employees WHERE image_link LIKE ? LIMIT 1', [like])
+    if (users.length === 0 && employees.length === 0) await removeFromMinio(name)
+}
 
 exports.fetchAdminUsers = async (req,res, next ) => {
     try{
@@ -64,13 +77,15 @@ exports.addNewAdminUser = async( req, res, next) => {
     //   imageLink = `/images/${req.file.filename}`;
     // }
 
-    if (!req.file) {
-        // default image — also served from MinIO
-        imageLink = `http://${process.env.S3_ENDPOINT}:${process.env.S3_PORT}/${process.env.S3_BUCKET}/sbtlogo.png`
-    } else {
-        // upload to MinIO and get back the filename
-        const filename = await uploadToMinio(req.file)
-        imageLink = `http://${process.env.S3_ENDPOINT}:${process.env.S3_PORT}/${process.env.S3_BUCKET}/${filename}`
+    // the default image, or the uploaded one (MinIO): the file name is saved
+    imageLink = DEFAULT_IMAGE
+    if (req.file) {
+        try {
+            imageLink = await uploadToMinio(req.file)
+        } catch (error) {
+            console.error('Error uploading the standard user image to MinIO', error)
+            return res.status(500).json({ error: 'Failed to upload the image. Please try again later.' })
+        }
     }
 
     try {
@@ -115,21 +130,27 @@ exports.updateAdminUser= async( req, res, next) => {
     const agentFirstname = req.body.firstname 
     const agentLastname = req.body.lastname 
     const agentDbname = req.body.db_name 
-    let imageLink = req.body.image_link
-
-   
-    if (req.file) {
-        // imageLink = `${req.protocol}://${req.get('host')}/images/${req.file.filename}`;
-        // imageLink = `/images/${req.file.filename}`;
-        // upload to MinIO and get back the filename
-        const filename = await uploadToMinio(req.file)
-        imageLink = `http://${process.env.S3_ENDPOINT}:${process.env.S3_PORT}/${process.env.S3_BUCKET}/${filename}`
-    }
+    // the image stays as it is (its file name), a new image goes to MinIO and the old one is removed when nobody uses it
+    let imageLink = fileNameOf(req.body.image_link) || DEFAULT_IMAGE
+    let oldImageLink = null
 
     try {
+        if (req.file) {
+            try {
+                imageLink = await uploadToMinio(req.file)
+            } catch (error) {
+                console.error('Error uploading the standard user image to MinIO', error)
+                return res.status(500).json({ error: 'Failed to upload the image. Please try again later.' })
+            }
+            const [current] = await pool.execute('SELECT image_link FROM standard_users WHERE id=?', [userId])
+            oldImageLink = current[0]?.image_link
+        }
+
         const query = "UPDATE  standard_users SET  firstname=?, lastname=?, db_name=?, image_link=? WHERE id=?"
         
         const [result]  = await pool.execute(query, [agentFirstname,agentLastname,agentDbname,imageLink,userId])
+
+        if (oldImageLink && fileNameOf(oldImageLink) !== imageLink) await removeImageIfUnused(oldImageLink)
 
         res.status(201).json({
             message: `Standard User Info is updated`
@@ -150,30 +171,17 @@ exports.deleteAdminUser = async (req, res, next) => {
 
     try {
         const [fetchStandUserImageLink] = await pool.execute("SELECT image_link FROM standard_users WHERE id=?",[user_id])
-        const [ standardUserImageLink ] = fetchStandUserImageLink
-        
-        const image_link = standardUserImageLink.image_link
-        if(image_link != null || image_link != ""){
-            // const filePath = new URL(image_link).pathname.substring(1)
+        const imageLink = fetchStandUserImageLink[0]?.image_link
 
-            const filePath = image_link.startsWith('/') ? image_link.substring(1) : image_link;
-            
-            //Construct absolute path
-            const absolutePath = path.join(__dirname, '../', filePath)
-
-            //Delet the agent Image file
-
-            fs.unlink(absolutePath, (error) => {
-                console.log(`File ${filePath} deleted successfully`)
-            })
-        }
-        
         const query = "DELETE FROM standard_users WHERE id=?"
         const [result] = await pool.execute(query, [user_id])
 
         if (result.affectedRows === 0){
-            return res.status(400).json({message: 'Standard User not ound'})
+            return res.status(400).json({message: 'Standard User not found'})
         }
+
+        // remove the image from MinIO unless another user or employee uses the same file
+        await removeImageIfUnused(imageLink)
 
         res.status(204).send({ message: 'Standard User deleted successfully' })
     }

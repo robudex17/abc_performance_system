@@ -26,7 +26,7 @@
         <div class="flex items-center gap-2 bg-white/10 px-3 py-1.5 rounded-lg backdrop-blur-md">
           <div class="w-8 h-8 rounded-full bg-blue-500 flex items-center justify-center text-sm font-bold">
                   <img 
-                    :src="currentUser.image_link" 
+                    :src="userImage(currentUser.image_link)" 
                     alt="User Profile" 
                     class="w-10 h-10 rounded-full border-2 border-gray-300"
                 />
@@ -107,7 +107,7 @@ definePageMeta({
 })
 
 import { useRouter } from 'vue-router'
-import { DEPARTMENT_HOME } from '~/config/departments'
+import { DEPARTMENT_HOME, rememberSalesChoice } from '~/config/departments'
 
 const router = useRouter()
 
@@ -135,6 +135,13 @@ const config = useRuntimeConfig()
 const apiUrl = config.public.apiUrl
 
 // The department image is the file name in the MinIO server, like the employee images (a full url is still accepted)
+// the image of the logged in user: the file name in MinIO (a full url is used as it is)
+const userImage = (image) => {
+  if (!image) return ''
+  if (image.startsWith('data:image') || /^https?:\/\//.test(image)) return image
+  return `${config.public.imageBaseUrl}${image.split('/').pop()}`
+}
+
 const departmentImage = (image) => {
   if (!image) return 'https://source.unsplash.com/400x400/?office'
   if (image.startsWith('data:image') || /^https?:\/\//.test(image)) return image
@@ -145,6 +152,8 @@ const departmentImage = (image) => {
 // The home of each department is in config/departments.js (sales is '/' until the sales pages move to '/sales').
 // A department that is not in the config follows the convention '/<code>'.
 const selectDepartment = (dept) => {
+  // a reload of the sales page stays in sales (middleware/department-home.global.js)
+  rememberSalesChoice(dept.code === 'sales')
   router.push(DEPARTMENT_HOME[dept.code] ?? `/${dept.code}`)
 }
 
@@ -162,6 +171,7 @@ const selectDepartment = (dept) => {
       }
 
 onMounted(() => {
+  rememberSalesChoice(false)
   fetchDepartments()
 })
 

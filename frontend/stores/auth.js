@@ -26,7 +26,7 @@ export const useAuthStore = defineStore('auth', () => {
         let registerType 
 
         if (register_type == 'admin'){
-            registerType = 'admin_register'
+            registerType = 'admin_users_register'
         }
 
         if (register_type == 'sales'){
@@ -102,7 +102,7 @@ export const useAuthStore = defineStore('auth', () => {
        }
 
        if (login_type == 'admin'){
-        updateLoginType = "admin_update_login"
+        updateLoginType = "admin_users_update_login"
        }
 
 

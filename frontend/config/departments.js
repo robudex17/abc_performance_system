@@ -30,6 +30,20 @@ export const canSwitchDepartment = (user) =>
   isGom(user) ||
   (user?.role === 'manager' && Number(user?.position_level) >= 10 && String(user?.department_code || '').toLowerCase() === 'csd')
 
+// The people who pick a department (canSwitchDepartment) land on the picker when they open the address of the system directly. When they
+// picked the Sales department in this browser tab, a reload (F5) of the sales page must stay in sales: the choice is remembered for the
+// tab (sessionStorage), the picker clears it.
+const SALES_CHOICE_KEY = 'picked_sales_department'
+export const rememberSalesChoice = (picked) => {
+  try {
+    if (picked) sessionStorage.setItem(SALES_CHOICE_KEY, '1')
+    else sessionStorage.removeItem(SALES_CHOICE_KEY)
+  } catch (error) { /* no storage: the reload goes to the picker */ }
+}
+export const pickedSalesDepartment = () => {
+  try { return sessionStorage.getItem(SALES_CHOICE_KEY) === '1' } catch (error) { return false }
+}
+
 // home page of the user's own department, or null (sales agents, standard users, unknown department)
 export const getDepartmentHome = (user) => {
   const code = String(user?.department_code || '').toLowerCase()

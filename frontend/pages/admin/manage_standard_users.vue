@@ -334,8 +334,9 @@ const config = useRuntimeConfig()
           return imageLink
         }
 
-        // ✅ Otherwise, assume it's a server path
-        return  imageLink 
+        // a full url is used as it is, else it is the file name of the MinIO bucket (like the employee images)
+        if (/^https?:\/\//.test(imageLink)) return imageLink
+        return `${config.public.imageBaseUrl}${imageLink.split('/').pop()}`
   }
 //get the current user
 const authStore = useAuthStore()

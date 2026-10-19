@@ -118,7 +118,7 @@ export const useManageStandardUsersStore = defineStore('standardUserss', () => {
             }
            
         
-            const response = await fetch(API.standardUsers, {
+            const response = await fetch(API.admin_users, {
                 method: 'POST',
                 body: formData, // No need for 'Content-Type' header; it's automatically set
                 headers: {

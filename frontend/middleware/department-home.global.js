@@ -4,7 +4,8 @@
 //    The same for every department that has a home page (collection, purchasing, ...).
 //  - A department employee who opens the area of another department (/collection while in csd) goes back home.
 //  - A sales agent who opens a department area goes back to the sales root.
-//  - Admin and the top managers (canSwitchDepartment) are free: they pick the department in /select_department.
+//  - Admin, the GOM and the top managers (canSwitchDepartment) are free: they pick the department in /select_department, and the
+//    address of the system opened directly lands on that page.
 //
 // NOTE: this only guides the browser; the backend routes still have to check who can read / change the data.
 //
@@ -12,7 +13,7 @@
 // imports utils/api.js, which calls useRuntimeConfig() at the top of the file, and that crashes the whole app
 // (white screen) when it runs before the Nuxt app exists. The token is read from the local storage instead.
 import { jwtDecode } from 'jwt-decode'
-import { canSwitchDepartment, getDepartmentHome, DEPARTMENT_PREFIXES, isInsideArea } from '~/config/departments'
+import { canSwitchDepartment, getDepartmentHome, DEPARTMENT_PREFIXES, isInsideArea, pickedSalesDepartment } from '~/config/departments'
 
 // same token the auth store keeps (localStorage 'jwt'); null when not logged in or the token is not readable
 const readUserFromToken = () => {
@@ -24,12 +25,19 @@ const readUserFromToken = () => {
   }
 }
 
-export default defineNuxtRouteMiddleware((to) => {
+export default defineNuxtRouteMiddleware((to, from) => {
   if (import.meta.env.SSR) return
 
   const user = readUserFromToken()
   if (!user) return                       // not logged in: the 'auth' middleware of the page sends them to /login
-  if (canSwitchDepartment(user)) return
+  if (canSwitchDepartment(user)) {
+    // the address of the system (the sales root) opened directly in the browser: the people who pick a department (admin, the GOM, the
+    // managers) land on the department picker, not on the sales leaderboard. Going to the sales root from inside the app (the Sales card,
+    // the sales menu) is not affected: only the first page load is redirected (the first navigation has the same path as its from), and not when the
+    // user picked the Sales department in this tab (a reload of the sales page stays in sales).
+    if (to.path === '/' && from.path === to.path && !pickedSalesDepartment()) return navigateTo('/select_department', { replace: true })
+    return
+  }
 
   const home = getDepartmentHome(user)
 
