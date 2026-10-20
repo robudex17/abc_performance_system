@@ -419,7 +419,7 @@ const selectedAgentMetrics = computed(() => {
     ...(isLeaderWithLeadership(agent)
       ? [
           { name: '↳ Individual Performance (%)', result: `${agent.performance}%`, score: agent.team_performance_score, rating: '' },
-          { name: '↳ Leadership Performance (score)', result: '', score: Number(agent.leadership_score).toFixed(2), rating: '' },
+          { name: '↳ Leadership Performance (score)', result: '', score: Number(Number(agent.leadership_score).toFixed(5)), rating: '' },
         ]
       : []),
     { name: 'ABSENCES (5%)', noData, result: agent.absences, score: agent.absence_score, rating: agent.absence_rating },

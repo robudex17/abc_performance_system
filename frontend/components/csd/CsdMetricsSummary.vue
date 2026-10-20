@@ -35,8 +35,20 @@ defineProps({
   fullyear: { type: Boolean, default: false },
 })
 
+// up to 5 decimals (the averages have 5)
+const five = (value) => Number(Number(value).toFixed(5))
+
+// a leader (position level 7 - 10) whose leadership evaluation is answered: INDIV PERF, LEAD PERF and the AVESCORE (the average of the two scores)
+const hasLeadership = (agent) => Boolean(agent.leadership_required) && Number(agent.leadership_score) > 0
+
 const metricsOf = (agent) => [
-  { name: 'Performance (%)', count: agent.performance, score: agent.performance_score },
+  { name: 'Indiv Perf (%)', count: agent.performance, score: five(hasLeadership(agent) ? agent.team_performance_score : agent.performance_score) },
+  ...(hasLeadership(agent)
+    ? [
+        { name: 'Lead Perf (Score)', count: '-', score: five(agent.leadership_score) },
+        { name: 'AveScore (Performance 80%)', count: '-', score: five(agent.performance_score) },
+      ]
+    : []),
   { name: 'Absences', count: agent.absences, score: agent.absence_score },
   { name: 'Tardiness', count: agent.tardiness, score: agent.tardiness_score },
   { name: 'Memo', count: agent.memo, score: agent.memo_score },

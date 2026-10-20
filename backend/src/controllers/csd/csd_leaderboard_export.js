@@ -17,14 +17,14 @@ const COLUMN_GROUPS = [
     { label: 'EMPLOYEE EMPLOYMENTS AND ASSIGNMENTS', subHeaders: ['YEAR', 'MONTH', 'EMPLOYEE NAME', 'EMPLOYEE STATUS', 'POSITION', 'IMMEDIATE HEAD', 'TEAM'] },
     // the leaders (position level 7 - 10) have the leadership performance: AVESCORE is the average of the individual performance score and the
     // leadership score ('-' for the others, their AVESCORE is the individual performance score)
-    { label: 'PERFORMANCE (80%)', subHeaders: ['INDIVIDUAL PERFORMANCE (%)', 'INDIVIDUAL PERFORMANCE (SCORE)', 'LEADERSHIP PERFORMANCE (SCORE)', 'AVESCORE', 'TOTAL'] },
+    { label: 'PERFORMANCE (80%)', subHeaders: ['INDIV PERF (%)', 'INDIV PERF (SCORE)', 'LEAD PERF (SCORE)', 'AVESCORE', 'TOTAL'] },
     { label: 'ATTENDANCE (10%)', subHeaders: ['ABSENCES', 'TARDINESS', 'TOTAL'] },
     { label: 'MEMO AND FEEDBACK (10%)', subHeaders: ['MEMO', 'FEEDBACK', 'TOTAL'] },
     { label: 'GRAND TOTAL', subHeaders: [] },
     { label: 'RATING', subHeaders: [] },
 ]
 
-const COLUMN_WIDTHS = [10, 12, 20, 18, 30, 20, 20, 16, 18, 18, 10, 10, 12, 12, 10, 10, 12, 10, 14, 24]
+const COLUMN_WIDTHS = [10, 12, 20, 18, 30, 20, 20, 14, 16, 16, 12, 10, 12, 12, 10, 10, 12, 10, 14, 24]
 
 const capitalize = (word) => (word ? word.charAt(0).toUpperCase() + word.slice(1).toLowerCase() : '')
 const toNumber = (value) => (Number.isFinite(Number(value)) ? Number(value) : 0)

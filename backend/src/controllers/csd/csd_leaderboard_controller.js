@@ -115,8 +115,9 @@ const scoreEmployee = (agent, tables) => {
     // A leader without a leadership evaluation (a month submitted before the questionnaire existed) keeps the team score only.
     const teamPerformanceScore = toNumber(performanceRow?.score)
     const leadership = toNumber(agent.leadership_score)
+    // (the average has 5 decimals, rounded up when necessary)
     const performanceScore = agent.leadership_required && leadership > 0
-        ? (teamPerformanceScore + leadership) / 2
+        ? Number(((teamPerformanceScore + leadership) / 2).toFixed(5))
         : teamPerformanceScore
     if (agent.leadership_required && leadership > 0) {
         const combinedRow = tables.performance.find(row => toNumber(row.score) === Math.round(performanceScore))

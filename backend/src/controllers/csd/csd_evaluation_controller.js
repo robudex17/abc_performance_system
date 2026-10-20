@@ -3,7 +3,7 @@ const { validationResult, body } = require('express-validator')
 
 const { parseYearMonth } = require('../helper_scripts/global_variables_and_functions')
 const { attachReceivedFeedback } = require('./csd_received_feedback')
-const { applyComputedPerformance } = require('./csd_manager_performance')
+const { applyComputedPerformance, applySubmitDependencies, getSubmitBlockers, getReviewBlockers } = require('./csd_manager_performance')
 const { attachLeadership } = require('./csd_leadership')
 const { readDepartment, badDepartment, isExcludedFromEvaluation } = require('./csd_department')
 
@@ -573,6 +573,9 @@ exports.generateCsdEvaluation  = async (year_month, scope, department_code,  met
         agent['ready_to_submit'] = isReadyToSubmit(agent)
      }
 
+     // the submit order of the computed Performance: submit_waiting_for (the subordinates to submit first) and review_locked_by (the submitted head)
+     await applySubmitDependencies(employee_to_evaluate, year_month)
+
 
 
       //GET THE EQUIVALENT POINTS  TABLES
@@ -691,6 +694,12 @@ exports.submitCsdEvaluation = async (req, res, next) => {
             return res.status(400).json({ message: `Not ready to submit: ${notReady.map(agent => agent.db_name).join(', ')}. Performance must not be 0 and at least one Feedback must have a value` })
         }
 
+        // a computed Performance (e.g. the CSD & Collection Manager) is submitted after all his/her subordinates, of any department
+        const blockers = await getSubmitBlockers(targets.map(agent => agent.id), yearMonth)
+        if (blockers.length > 0) {
+            return res.status(409).json({ message: `Submit first: ${blockers.map(blocker => `${blocker.employee} needs ${blocker.waiting.join(', ')} to be submitted`).join('; ')}` })
+        }
+
         connection = await pool.getConnection()
         await connection.beginTransaction()
         for (const agent of targets) {
@@ -726,10 +735,17 @@ exports.reviewCsdEvaluation = async (req, res, next) => {
             // only the employees of THIS department: the status table is shared by CSD and Collection
             const evaluation = await exports.generateCsdEvaluation(yearMonth, 'all', department, 'all', 'all', null, req.user)
             const ids = evaluation.map(agent => agent.id)
+            const lockedAll = await getReviewBlockers(ids, yearMonth)
+            if (lockedAll.length > 0) return res.status(409).json({ message: `Review ${[...new Set(lockedAll.map(blocker => blocker.head))].join(', ')} first: ${lockedAll.map(blocker => blocker.employee).join(', ')} can not be reviewed while the evaluation of the head is submitted` })
             if (ids.length > 0) {
                 await pool.query('DELETE FROM csd_evaluation_status WHERE `year_month` = ? AND employee_id IN (?)', [yearMonth, ids])
             }
             return res.status(200).json({ message: `${department.toUpperCase()} evaluation of ${yearMonth} is marked for review` })
+        }
+
+        const locked = await getReviewBlockers([employeeId], yearMonth)
+        if (locked.length > 0) {
+            return res.status(409).json({ message: `Review ${locked[0].head} first: ${locked[0].employee} can not be reviewed while the evaluation of ${locked[0].head} is submitted (the Performance of ${locked[0].head} is made of ${locked[0].employee})` })
         }
 
         const [result] = await pool.execute('DELETE FROM csd_evaluation_status WHERE employee_id = ? AND `year_month` = ?', [employeeId, yearMonth])

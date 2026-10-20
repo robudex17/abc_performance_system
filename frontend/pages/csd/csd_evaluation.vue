@@ -28,7 +28,7 @@
                     <th class="py-0.5 px-4 text-center text-xs font-bold text-green-900 border">Team</th>
                     <th class="py-0.5 px-4 text-center text-xs font-bold text-green-900 border">Month</th>
                     <th class="py-0.5 px-4 text-center text-xs font-bold text-green-900 border">Year</th>
-                    <th class="py-0.5 px-4 text-center text-xs font-bold text-green-900 border"  >Performance</th>
+                    <th class="py-0.5 px-4 text-center text-xs font-bold text-green-900 border"  >Performance (%)</th>
                     <th class="py-0.5 px-4 text-center text-xs font-bold text-green-900 border">Leadership Performance</th>
                     <th class="py-0.5 px-4 text-center text-xs font-bold text-green-900 border">Absences</th>
                     <th class="py-0.5 px-4 text-center text-xs font-bold text-green-900 border ">Tardiness</th>
@@ -60,7 +60,7 @@
                         <div class="flex items-center space-x-2">
                             <img
                             v-if="agent && agent.image_link"
-                            :src="agent.image_link"
+                            :src="updateImageLink(agent.image_link)"
                             alt="Agent Image"
                             class="w-9 h-9 rounded-full object-cover shadow"
                             />
@@ -179,7 +179,7 @@
                          They are given by the Quality Analyst, the immediate head and the members, the admin can not change them.
                          Like the sales evaluation: the number is a button that opens the list of the people who should give the
                          feedback; the ones who did not give yet are marked "No Feedback Yet". -->
-                    <td class="py-0.5 px-4 text-center text-lg border font-medium">
+                    <CSDTooltipCell :title="agent.db_name">
                       <span v-if="!receivesQaFeedback(agent)" class="text-gray-400">-</span>
                       <!-- the average, or 0 when nobody gave it yet. Clickable: the list shows who gave it and who did not yet -->
                       <button
@@ -190,9 +190,9 @@
                       >
                         {{ agent.feedback_by_qa ?? 0 }}
                       </button>
-                    </td>
+                    </CSDTooltipCell>
 
-                    <td class="py-0.5 px-4 text-center text-lg border font-medium">
+                    <CSDTooltipCell :title="agent.db_name">
                       <span v-if="!receivesImmediateHeadFeedback(agent)" class="text-gray-400">-</span>
                       <!-- the average, or 0 when nobody gave it yet. Clickable: the list shows who gave it and who did not yet -->
                       <button
@@ -203,9 +203,9 @@
                       >
                         {{ agent.feedback_by_immediate_head ?? 0 }}
                       </button>
-                    </td>
+                    </CSDTooltipCell>
 
-                    <td class="py-0.5 px-4 text-center text-lg border font-medium">
+                    <CSDTooltipCell :title="agent.db_name">
                       <span v-if="!receivesMembersFeedback(agent)" class="text-gray-400">-</span>
                       <!-- the average, or 0 when nobody gave it yet. Clickable: the list shows who gave it and who did not yet -->
                       <button
@@ -216,11 +216,11 @@
                       >
                         {{ agent.feedback_by_members ?? 0 }}
                       </button>
-                    </td>
+                    </CSDTooltipCell>
 
                                      
                     <!-- Actions: Submit / Submitted + Review. The row of the CSD & Collection Manager (position level 10) is the Submit All -->
-                    <td class="py-0.5 px-4 text-center border" >
+                    <CSDTooltipCell :title="agent.db_name">
                       <div class="flex justify-center space-x-2" v-if="agent.id == submitAllId">
 
                         <!-- Submit All: only when every row (his own too) is ready -->
@@ -228,6 +228,7 @@
                           v-if="!submittedAll"
                           @click="submitAllEvaluation"
                           :disabled="!canSubmitAll"
+                          :title="submitAllWaitingText"
                           :class="[
                             'py-0.5 px-3 rounded-lg flex items-center gap-2 text-sm',
                             canSubmitAll
@@ -251,7 +252,9 @@
                         <button
                           v-if="submittedAll"
                           @click="reviewAllEvaluation"
-                          class="bg-purple-500 text-white py-0.5 px-3 rounded-lg hover:bg-purple-600 text-sm"
+                          :disabled="reviewAllLockedText !== ''"
+                          :title="reviewAllLockedText"
+                          :class="reviewAllLockedText !== '' ? 'bg-gray-400 text-white cursor-not-allowed py-0.5 px-3 rounded-lg text-sm' : 'bg-purple-500 text-white py-0.5 px-3 rounded-lg hover:bg-purple-600 text-sm'"
                         >
                           Review
                         </button>
@@ -262,10 +265,11 @@
                         <!-- Submit / Submitted: green only when Performance is not 0 and at least one Feedback has a value -->
                         <button
                           @click="submitEvaluation(agent)"
-                          :disabled="agent.submitted == 1 || !agent.ready_to_submit"
+                          :disabled="agent.submitted == 1 || !agent.ready_to_submit || waitingFor(agent).length > 0"
+                          :title="waitingFor(agent).length > 0 ? waitingText(waitingFor(agent)) : ''"
                           :class="[
                             'py-0.5 px-3 rounded-lg flex items-center gap-2 text-sm',
-                            agent.submitted != 1 && agent.ready_to_submit
+                            agent.submitted != 1 && agent.ready_to_submit && waitingFor(agent).length === 0
                               ? 'bg-green-500 text-white hover:bg-green-600'
                               : 'bg-gray-400 text-white cursor-not-allowed'
                           ]"
@@ -277,12 +281,14 @@
                         <button
                           v-if="agent.submitted == 1"
                           @click="reviewEvaluation(agent)"
-                          class="bg-purple-500 text-white py-0.5 px-3 rounded-lg hover:bg-purple-600 text-sm"
+                          :disabled="Boolean(agent.review_locked_by)"
+                          :title="agent.review_locked_by ? 'Review ' + agent.review_locked_by + ' first: the Performance of ' + agent.review_locked_by + ' is made of this evaluation' : ''"
+                          :class="agent.review_locked_by ? 'bg-gray-400 text-white cursor-not-allowed py-0.5 px-3 rounded-lg text-sm' : 'bg-purple-500 text-white py-0.5 px-3 rounded-lg hover:bg-purple-600 text-sm'"
                         >
                           Review
                         </button>
                       </div>
-                    </td>
+                    </CSDTooltipCell>
 
                 </tr>
                 </tbody>     
@@ -436,6 +442,7 @@
             v-if="!submittedAll"
             @click="submitAllEvaluation"
             :disabled="!canSubmitAll"
+            :title="submitAllWaitingText"
             :class="[
               'py-2 px-6 rounded-lg text-lg font-semibold transition-colors',
               canSubmitAll ? 'bg-green-500 text-white hover:bg-green-600' : 'bg-gray-400 text-white cursor-not-allowed'
@@ -455,7 +462,9 @@
           <button
             v-if="submittedAll"
             @click="reviewAllEvaluation"
-            class="py-2 px-6 rounded-lg text-lg font-semibold bg-purple-600 text-white hover:bg-purple-700 transition-colors"
+            :disabled="reviewAllLockedText !== ''"
+            :title="reviewAllLockedText"
+            :class="reviewAllLockedText !== '' ? 'py-2 px-6 rounded-lg text-lg font-semibold bg-gray-400 text-white cursor-not-allowed' : 'py-2 px-6 rounded-lg text-lg font-semibold bg-purple-600 text-white hover:bg-purple-700 transition-colors'"
           >
             Review All
           </button>
@@ -895,9 +904,26 @@ const openModal = ( data, title = 'Feedback', emptyMessage = 'No Feedback Yet') 
   });
 
 // Submit All is enabled only when every row is ready (the manager's own row too) and nothing is submitted yet
+  // and every computed Performance has its subordinates submitted (the ones of the same list are submitted in the same request)
+  const waitingFor = (agent) => agent.submit_waiting_for || []
+  const waitingText = (list) => 'Submit first: ' + list.map(item => item.db_name + ' (' + item.department_code + ')').join(', ')
+  const waitingOutside = (agent) => waitingFor(agent).filter(item => !agents.value.some(other => Number(other.id) === Number(item.id)))
+
   const canSubmitAll = computed(() =>
-    agents.value.length > 0 && agents.value.every(agent => agent.ready_to_submit) && !submittedAll.value
+    agents.value.length > 0 && agents.value.every(agent => agent.ready_to_submit && waitingOutside(agent).length === 0) && !submittedAll.value
   );
+
+  // why Submit All is waiting: the subordinates of other departments (aben of Collection for the CSD & Collection Manager) must be submitted first
+  const submitAllWaitingText = computed(() => {
+    const waiting = agents.value.flatMap(agent => waitingOutside(agent))
+    return waiting.length > 0 ? waitingText(waiting) : ''
+  })
+
+  // Review All is locked when somebody of the list is made of by a submitted head outside the list (e.g. Collection: Mark of CSD is submitted)
+  const reviewAllLockedText = computed(() => {
+    const locked = agents.value.filter(agent => agent.review_locked_by && !agents.value.some(other => other.db_name === agent.review_locked_by))
+    return locked.length > 0 ? 'Review ' + [...new Set(locked.map(agent => agent.review_locked_by))].join(', ') + ' first' : ''
+  })
 
   // every row is submitted
   const submittedAll = computed(() =>

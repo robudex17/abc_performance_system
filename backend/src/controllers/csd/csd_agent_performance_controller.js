@@ -26,6 +26,8 @@ const AVERAGE_KEYS = [
     'performance_rating', 'absence_rating', 'tardiness_rating', 'memo_rating', 'feedback_rating', 'final_ratings',
 ]
 const SUM_KEYS = ['absences', 'tardiness', 'memo']
+// the averages of the Performance have 5 decimals (rounded up when necessary), the others 4
+const FIVE_DECIMALS_KEYS = ['performance', 'performance_score', 'team_performance_score', 'leadership_score']
 
 const currentYearMonth = () => {
     const today = new Date()
@@ -96,7 +98,8 @@ const yearAverage = (records, allRecords, tables, year) => {
 
     AVERAGE_KEYS.forEach(key => {
         const sum = records.reduce((total, record) => total + toNumber(record[key]), 0)
-        result[key] = records.length ? round4(sum / records.length) : '0.0000'
+        const decimals = FIVE_DECIMALS_KEYS.includes(key) ? 5 : 4
+        result[key] = records.length ? (sum / records.length).toFixed(decimals) : (0).toFixed(decimals)
     })
     SUM_KEYS.forEach(key => {
         result[key] = records.reduce((total, record) => total + toNumber(record[key]), 0)

@@ -7,7 +7,7 @@
         <thead>
           <tr class="bg-green-600 text-white">
             <th colspan="7" class="border border-gray-300 px-1 py-0.5">Employee Employments And Assignments</th>
-            <th colspan="3" class="border border-gray-300 px-2 py-0.5 text-xs text-center">Performance (80%)</th>
+            <th colspan="5" class="border border-gray-300 px-2 py-0.5 text-xs text-center">Performance (80%)</th>
             <th colspan="3" class="border border-gray-300 px-2 py-0.5">Attendance (10%)</th>
             <th colspan="3" class="border border-gray-300 px-2 py-0.5">Memo and Feedback (10%)</th>
             <th colspan="2" class="px-1 py-0.5"></th>
@@ -20,8 +20,10 @@
             <th class="border border-gray-300 px-1 py-0.5 text-center text-xs font-bold">Position</th>
             <th class="border border-gray-300 px-1 py-0.5 text-center text-xs font-bold">Immediate Head</th>
             <th class="border border-gray-300 px-1 py-0.5 text-center text-xs font-bold">Team</th>
-            <th class="border border-gray-300 px-1 py-0.5 text-center text-xs font-bold">Result (%)</th>
-            <th class="border border-gray-300 px-1 py-0.5 text-center text-xs font-bold">Score</th>
+            <th class="border border-gray-300 px-1 py-0.5 text-center text-xs font-bold">Indiv Perf (%)</th>
+            <th class="border border-gray-300 px-1 py-0.5 text-center text-xs font-bold">Indiv Perf (Score)</th>
+            <th class="border border-gray-300 px-1 py-0.5 text-center text-xs font-bold">Lead Perf (Score)</th>
+            <th class="border border-gray-300 px-1 py-0.5 text-center text-xs font-bold">AveScore</th>
             <th class="border border-gray-300 px-1 py-0.5 text-center text-xs font-bold">Total</th>
             <th class="border border-gray-300 px-1 py-0.5 text-center text-xs font-bold">Absences-score</th>
             <th class="border border-gray-300 px-1 py-0.5 text-center text-xs font-bold">Tardiness-score</th>
@@ -47,6 +49,8 @@
             <td class="border border-gray-300 px-2 py-0.5 capitalize text-xs text-center">{{ agent.manager_dbname }}</td>
             <td class="border border-gray-300 px-2 py-0.5 capitalize text-xs text-center">{{ agent.team_name }}</td>
             <td class="border border-gray-300 px-2 py-0.5 text-xs text-center">{{ agent.performance }}</td>
+            <td class="border border-gray-300 px-2 py-0.5 text-xs text-center">{{ individualScore(agent) }}</td>
+            <td class="border border-gray-300 px-2 py-0.5 text-xs text-center">{{ leadershipScore(agent) }}</td>
             <td class="border border-gray-300 px-2 py-0.5 text-xs text-center">{{ agent.performance_score }}</td>
             <td class="border border-gray-300 px-2 py-0.5 text-xs text-center">{{ agent.performance_rating }}</td>
             <td class="border border-gray-300 px-2 py-0.5 text-xs text-center">{{ agent.absence_score }}</td>
@@ -72,6 +76,12 @@ const props = defineProps({
     default: () => [],
   },
 })
+
+// a leader (position level 7 - 10) whose leadership evaluation is answered has the leadership score; the AveScore is the average of the
+// individual performance score and the leadership score. The others: '-' and their AveScore is the individual performance score.
+const hasLeadership = (agent) => Boolean(agent.leadership_required) && Number(agent.leadership_score) > 0
+const leadershipScore = (agent) => (hasLeadership(agent) ? Number(Number(agent.leadership_score).toFixed(5)) : '-')
+const individualScore = (agent) => (hasLeadership(agent) ? agent.team_performance_score : agent.performance_score)
 
 const totalTheRating = (rating1, rating2) => {
   const total = Number(rating1) + Number(rating2)

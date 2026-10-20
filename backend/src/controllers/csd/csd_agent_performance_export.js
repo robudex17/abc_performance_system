@@ -59,11 +59,12 @@ const writeMetricsSummary = (worksheet, startRow, title, metrics, withMonth) => 
 
 // the metrics of one employee (a month, or the average of the year)
 const metricsOf = (row, month) => [
-    // the Performance (%) is the individual performance; a leader also has the leadership performance (the average of the two scores is
-    // the AVESCORE of the table)
-    { name: 'Individual Performance (%)', count: toNumber(row.performance), month, year: row.year, score: individualScoreOf(row) },
+    // the Performance of the table: INDIV PERF (the individual performance and its score); a leader also has LEAD PERF (the leadership
+    // score) and the AVESCORE (the average of the two scores, 5 decimals)
+    { name: 'Indiv Perf (%)', count: toNumber(row.performance), month, year: row.year, score: individualScoreOf(row) },
     ...(leadershipOf(row) === '-' ? [] : [
-        { name: 'Leadership Performance (score)', count: '-', month, year: row.year, score: toNumber(row.leadership_score) },
+        { name: 'Lead Perf (Score)', count: '-', month, year: row.year, score: toNumber(row.leadership_score) },
+        { name: 'AveScore (Performance 80%)', count: '-', month, year: row.year, score: toNumber(row.performance_score) },
     ]),
     { name: 'Absences', count: toNumber(row.absences), month, year: row.year, score: toNumber(row.absence_score) },
     { name: 'Tardiness', count: toNumber(row.tardiness), month, year: row.year, score: toNumber(row.tardiness_score) },

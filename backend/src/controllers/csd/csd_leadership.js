@@ -15,7 +15,7 @@ exports.attachLeadership = async (rows, yearMonth) => {
     let evaluations = []
     try {
         const [found] = await pool.query(
-            'SELECT employee_id, evaluator_id, evaluator_dbname, leadership_score FROM leadership_evaluations WHERE `year_month` = ? AND employee_id IN (?)',
+            'SELECT employee_id, evaluator_id, evaluator_dbname, leadership_score, total_score, JSON_LENGTH(responses) AS task_count FROM leadership_evaluations WHERE `year_month` = ? AND employee_id IN (?)',
             [yearMonth, leaders.map(leader => Number(leader.id))]
         )
         evaluations = found
@@ -24,16 +24,19 @@ exports.attachLeadership = async (rows, yearMonth) => {
         console.error('Error fetching the leadership evaluations', error)
     }
 
+    // the score of an evaluation with 5 decimals: total of the scores / number of tasks (the stored score is rounded to 4 decimals)
+    const scoreOf = (evaluation) => (Number(evaluation.task_count) > 0 ? Number(evaluation.total_score) / Number(evaluation.task_count) : Number(evaluation.leadership_score))
+
     for (const leader of leaders) {
         const mine = evaluations.filter(evaluation => Number(evaluation.employee_id) === Number(leader.id))
-        const average = mine.length ? mine.reduce((sum, evaluation) => sum + Number(evaluation.leadership_score), 0) / mine.length : 0
+        const average = mine.length ? mine.reduce((sum, evaluation) => sum + scoreOf(evaluation), 0) / mine.length : 0
 
         leader.leadership_required = true
-        leader.leadership_score = Number(average.toFixed(4))
+        leader.leadership_score = Number(average.toFixed(5))
         leader.leadership_by = mine.map(evaluation => ({
             evaluator_id: Number(evaluation.evaluator_id),
             evaluator_dbname: evaluation.evaluator_dbname,
-            leadership_score: Number(evaluation.leadership_score),
+            leadership_score: Number(scoreOf(evaluation).toFixed(5)),
         }))
     }
 }
