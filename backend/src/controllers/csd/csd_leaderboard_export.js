@@ -15,14 +15,16 @@ const SCOPE_TITLES = {
 
 const COLUMN_GROUPS = [
     { label: 'EMPLOYEE EMPLOYMENTS AND ASSIGNMENTS', subHeaders: ['YEAR', 'MONTH', 'EMPLOYEE NAME', 'EMPLOYEE STATUS', 'POSITION', 'IMMEDIATE HEAD', 'TEAM'] },
-    { label: 'PERFORMANCE (80%)', subHeaders: ['RESULT (%)', 'SCORE', 'TOTAL'] },
+    // the leaders (position level 7 - 10) have the leadership performance: AVESCORE is the average of the individual performance score and the
+    // leadership score ('-' for the others, their AVESCORE is the individual performance score)
+    { label: 'PERFORMANCE (80%)', subHeaders: ['INDIVIDUAL PERFORMANCE (%)', 'INDIVIDUAL PERFORMANCE (SCORE)', 'LEADERSHIP PERFORMANCE (SCORE)', 'AVESCORE', 'TOTAL'] },
     { label: 'ATTENDANCE (10%)', subHeaders: ['ABSENCES', 'TARDINESS', 'TOTAL'] },
     { label: 'MEMO AND FEEDBACK (10%)', subHeaders: ['MEMO', 'FEEDBACK', 'TOTAL'] },
     { label: 'GRAND TOTAL', subHeaders: [] },
     { label: 'RATING', subHeaders: [] },
 ]
 
-const COLUMN_WIDTHS = [10, 12, 20, 18, 30, 20, 20, 14, 10, 10, 12, 12, 10, 10, 12, 10, 14, 24]
+const COLUMN_WIDTHS = [10, 12, 20, 18, 30, 20, 20, 16, 18, 18, 10, 10, 12, 12, 10, 10, 12, 10, 14, 24]
 
 const capitalize = (word) => (word ? word.charAt(0).toUpperCase() + word.slice(1).toLowerCase() : '')
 const toNumber = (value) => (Number.isFinite(Number(value)) ? Number(value) : 0)
@@ -35,6 +37,12 @@ const RATING_COLORS = {
     'POOR': { fill: 'DB211A', font: '000000' },
     'INCOMPLETE RATING': { fill: 'DBC414', font: 'FFFFFF' },
 }
+
+// the leadership performance (score) of a leader whose leadership evaluation is answered, '-' for the others
+const leadershipOf = (row) => (row.leadership_required && toNumber(row.leadership_score) > 0 ? toNumber(row.leadership_score) : '-')
+
+// the score of the individual performance (%): for a leader it is one part of the AVESCORE, for the others it is the performance score
+const individualScoreOf = (row) => toNumber(leadershipOf(row) === '-' ? row.performance_score : row.team_performance_score)
 
 const writeTable = (rows, worksheet, title) => {
     const totalCols = COLUMN_GROUPS.reduce((sum, group) => sum + Math.max(group.subHeaders.length, 1), 0)
@@ -86,6 +94,8 @@ const writeTable = (rows, worksheet, title) => {
             row.manager_dbname || '',
             (row.team_name || '').toUpperCase(),
             toNumber(row.performance),
+            individualScoreOf(row),
+            leadershipOf(row),
             toNumber(row.performance_score),
             toNumber(row.performance_rating),
             toNumber(row.absence_score),
@@ -109,7 +119,7 @@ const writeTable = (rows, worksheet, title) => {
             }
 
             // GRAND TOTAL
-            if (colNumber === 17) {
+            if (colNumber === 19) {
                 let fontColor = 'DB211A'
                 if (cell.value >= 5) fontColor = '7414DB'
                 else if (cell.value >= 4) fontColor = '0069DB'
@@ -119,7 +129,7 @@ const writeTable = (rows, worksheet, title) => {
             }
 
             // RATING
-            if (colNumber === 18) {
+            if (colNumber === 20) {
                 const colors = RATING_COLORS[cell.value] || { fill: 'FFFFFF', font: '000000' }
                 cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: colors.fill } }
                 cell.font = { bold: true, color: { argb: colors.font } }
@@ -129,7 +139,7 @@ const writeTable = (rows, worksheet, title) => {
 }
 
 // shared with the agent performance export (csd_agent_performance_export.js)
-exports.excel = { writeTable, RATING_COLORS, capitalize, toNumber, COLUMN_GROUPS }
+exports.excel = { writeTable, RATING_COLORS, capitalize, toNumber, COLUMN_GROUPS, leadershipOf, individualScoreOf }
 
 exports.csdLeaderboardExportToExcel = async (req, res, next) => {
     const scope = req.params.scope

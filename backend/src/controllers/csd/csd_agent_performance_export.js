@@ -12,7 +12,7 @@ const { getDataBorder, getHeaderBorder, getHeaderStyle } = require('../helper_sc
 //   GET /csd_agent_performance_export/yearly/:employee_id?year=          one employee: the submitted months + the year summary
 // Like the pages: the monthly exports need the evaluation to be submitted.
 
-const { writeTable, capitalize, toNumber, RATING_COLORS } = excel
+const { writeTable, capitalize, toNumber, RATING_COLORS, leadershipOf, individualScoreOf } = excel
 
 const currentYearMonth = () => {
     const today = new Date()
@@ -59,7 +59,12 @@ const writeMetricsSummary = (worksheet, startRow, title, metrics, withMonth) => 
 
 // the metrics of one employee (a month, or the average of the year)
 const metricsOf = (row, month) => [
-    { name: 'Performance (%)', count: toNumber(row.performance), month, year: row.year, score: toNumber(row.performance_score) },
+    // the Performance (%) is the individual performance; a leader also has the leadership performance (the average of the two scores is
+    // the AVESCORE of the table)
+    { name: 'Individual Performance (%)', count: toNumber(row.performance), month, year: row.year, score: individualScoreOf(row) },
+    ...(leadershipOf(row) === '-' ? [] : [
+        { name: 'Leadership Performance (score)', count: '-', month, year: row.year, score: toNumber(row.leadership_score) },
+    ]),
     { name: 'Absences', count: toNumber(row.absences), month, year: row.year, score: toNumber(row.absence_score) },
     { name: 'Tardiness', count: toNumber(row.tardiness), month, year: row.year, score: toNumber(row.tardiness_score) },
     { name: 'Memo', count: toNumber(row.memo), month, year: row.year, score: toNumber(row.memo_score) },
@@ -105,8 +110,8 @@ exports.exportMonthly = async (req, res) => {
 
 // the yearly list: one row per employee (like the sales yearly list: year, name, status, rating, rating name)
 const writeYearlyList = (rows, worksheet, title) => {
-    const headers = ['YEAR', 'EMPLOYEE NAME', 'EMPLOYEE STATUS', 'POSITION', 'TEAM', 'MONTHS SUBMITTED', 'PERFORMANCE (%)', 'RATING', 'RATING NAME']
-    const widths = [10, 20, 18, 30, 20, 18, 16, 12, 24]
+    const headers = ['YEAR', 'EMPLOYEE NAME', 'EMPLOYEE STATUS', 'POSITION', 'TEAM', 'MONTHS SUBMITTED', 'PERFORMANCE (%)', 'LEADERSHIP (SCORE)', 'RATING', 'RATING NAME']
+    const widths = [10, 20, 18, 30, 20, 18, 16, 20, 12, 24]
 
     worksheet.mergeCells(1, 1, 1, headers.length)
     const titleCell = worksheet.getCell(1, 1)
@@ -128,13 +133,13 @@ const writeYearlyList = (rows, worksheet, title) => {
         const excelRow = worksheet.getRow(3 + index)
         excelRow.values = [
             row.year, capitalize(row.db_name), row.employee_status || '', row.position_name || '', (row.team_name || '').toUpperCase(),
-            row.months_submitted, toNumber(row.performance), toNumber(row.final_ratings), row.ratings_name || '',
+            row.months_submitted, toNumber(row.performance), leadershipOf(row), toNumber(row.final_ratings), row.ratings_name || '',
         ]
         excelRow.eachCell((cell, colNumber) => {
             cell.border = getDataBorder()
             cell.alignment = { horizontal: 'center', vertical: 'middle' }
             if (colNumber === 3) cell.font = { bold: true, color: { argb: cell.value === 'Resigned' ? 'DB211A' : '14DB3C' } }
-            if (colNumber === 9) {
+            if (colNumber === 10) {
                 const colors = RATING_COLORS[cell.value] || { fill: 'FFFFFF', font: '000000' }
                 cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: colors.fill } }
                 cell.font = { bold: true, color: { argb: colors.font } }

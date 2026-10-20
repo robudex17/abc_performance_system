@@ -59,6 +59,7 @@
             <!-- <option value="standarduser">Power User</option> -->
             <option value="sales">Sales</option>
             <option value="none_sales">None Sales</option>
+            <option value="gom">GOM</option>
              
           </select>
         </div>

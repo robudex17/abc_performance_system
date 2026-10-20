@@ -88,6 +88,8 @@ const yearAverage = (records, allRecords, tables, year) => {
         team_name: latest.team_name,
         year: Number(year),
         months_submitted: records.length,
+        // a leader (position level 7 - 10): the leadership performance is part of the Performance
+        leadership_required: records.some(record => record.leadership_required),
         // a month between the first and the last submitted month that is not submitted (it is not counted)
         hasIncomplete: hasGap(allRecords),
     }

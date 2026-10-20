@@ -75,7 +75,10 @@
                     {{ metric.result }}
                     <span v-if="metric.description" class="block" :class="csdRatingClass(metric.description)">{{ metric.description }}</span>
                   </td>
-                  <td class="px-4 py-2 font-semibold border bg-gray-900 text-gray-100 text-center">{{ metric.score }}</td>
+                  <td class="px-4 py-2 font-semibold border bg-gray-900 text-gray-100 text-center">
+                    {{ metric.score }}
+                    <span v-if="metric.scoreDescription" class="block" :class="csdRatingClass(metric.scoreDescription)">{{ metric.scoreDescription }}</span>
+                  </td>
                   <td class="px-4 py-2 font-semibold border bg-gray-900 text-gray-100 text-center">{{ metric.rating }}</td>
                 </template>
               </tr>
@@ -120,15 +123,21 @@ const imageUrl = (imageLink) => {
   return `${config.public.imageBaseUrl}${imageLink.split('/').pop()}`
 }
 
+// a leader whose leadership evaluation is answered: the Performance is the individual performance and the leadership performance
+const isLeaderWithLeadership = (agent) => Boolean(agent.leadership_required) && Number(agent.leadership_score) > 0
+
 const metrics = computed(() => {
   const agent = props.agent
   const noData = !props.fullyear && agent.submitted != 1
   return [
-    { name: 'PERFORMANCE (80%)', result: `${agent.performance}%`, description: agent.performance_description, score: agent.performance_score, rating: agent.performance_rating },
-    // the leaders (position level 7 - 10): the Performance score is the average of the team score and the leadership score
-    ...(agent.leadership_required && Number(agent.leadership_score) > 0
+    isLeaderWithLeadership(agent)
+      ? { name: 'PERFORMANCE (80%)', result: '', scoreDescription: agent.performance_description, score: agent.performance_score, rating: agent.performance_rating }
+      : { name: 'PERFORMANCE (80%)', result: `${agent.performance}%`, description: agent.performance_description, score: agent.performance_score, rating: agent.performance_rating },
+    // the leaders (position level 7 - 10): the Performance score is the average of the individual performance score and the leadership score.
+    // The PERFORMANCE row shows only the score and the rating, the two parts are the rows under it.
+    ...(isLeaderWithLeadership(agent)
       ? [
-          { name: '↳ Team Performance (score)', result: `${agent.performance}%`, score: agent.team_performance_score, rating: '' },
+          { name: '↳ Individual Performance (%)', result: `${agent.performance}%`, score: agent.team_performance_score, rating: '' },
           { name: '↳ Leadership Performance (score)', result: '', score: Number(agent.leadership_score).toFixed(2), rating: '' },
         ]
       : []),

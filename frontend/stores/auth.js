@@ -167,6 +167,10 @@ export const useAuthStore = defineStore('auth', () => {
         if (loginas == 'none_sales'){
             loginType = 'employee_login'
         }
+        // the GOM is an employee: the same employees login, the server accepts it for position level 15 only
+        if (loginas == 'gom'){
+            loginType = 'employee_login'
+        }
        
         try {
             const response = await fetch(`${API[loginType]}`, {

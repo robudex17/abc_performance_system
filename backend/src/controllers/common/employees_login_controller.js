@@ -240,6 +240,16 @@ exports.loginUser = async(req,res, next) => {
        console.log('the user is ', user[0])
 
 
+       // 'Login As GOM' is only for the GOM (position level 15), and the GOM logs in only as GOM (the same employees login, so the
+       // GOM is not confused with the other choices)
+       const isGomUser = Number(user[0].position_level) === 15
+       if (loginas === 'gom' && !isGomUser){
+         return res.status(401).json({message: 'Only the GOM can login as GOM'})
+       }
+       if (loginas !== 'gom' && isGomUser){
+         return res.status(401).json({message: 'Please login as GOM'})
+       }
+
        user[0].login_type = 'employee'
 
 
