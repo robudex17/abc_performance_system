@@ -72,6 +72,9 @@ const isComputedEmployee = (employee, childrenOf, yearMonth) =>
     !isQaStaff(employee) &&
     (childrenOf.get(Number(employee.id)) ?? []).length > 0
 
+// for the tests: the rules of the departments and which levels are computed in a month
+exports._internals = { RULES, computedLevelsOf }
+
 // the Performance of an employee: typed, or the average of the subordinates (computed from the bottom up)
 const buildResolver = ({ byId, childrenOf, yearMonth }) => {
     const cache = new Map()
