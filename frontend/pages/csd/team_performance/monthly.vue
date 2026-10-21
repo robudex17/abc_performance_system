@@ -96,7 +96,7 @@ const route = useRoute()
 // csd or collection (from the url): the backend answers with the staff of that department
 const { code: departmentCode, base, label: departmentLabel } = useDepartmentView()
 const config = useRuntimeConfig()
-const store = useCsdTeamPerformanceStore()
+const store = useEvaluationTeamPerformanceStore()
 
 const today = new Date()
 const currentYearMonth = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}`

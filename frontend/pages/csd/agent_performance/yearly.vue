@@ -125,7 +125,7 @@ const route = useRoute()
 // csd or collection (from the url): the backend answers with the staff of that department
 const { code: departmentCode, base, label: departmentLabel } = useDepartmentView()
 const config = useRuntimeConfig()
-const store = useCsdAgentPerformanceStore()
+const store = useEvaluationAgentPerformanceStore()
 
 const isAdmin = ['admin', 'poweruser'].includes(currentUser?.role)
 

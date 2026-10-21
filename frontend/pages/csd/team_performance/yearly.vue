@@ -95,7 +95,7 @@ const route = useRoute()
 // csd or collection (from the url): the backend answers with the staff of that department
 const { code: departmentCode, base, label: departmentLabel } = useDepartmentView()
 const config = useRuntimeConfig()
-const store = useCsdTeamPerformanceStore()
+const store = useEvaluationTeamPerformanceStore()
 
 const year = computed(() => route.query.year || String(new Date().getFullYear()))
 

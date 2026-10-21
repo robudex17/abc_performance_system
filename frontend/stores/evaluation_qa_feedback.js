@@ -5,7 +5,7 @@ import API from '~/utils/api'
 
 // QA feedback of the CSD staff (/csd_qa_feedback): the Quality Analyst gives one score per employee and month.
 // The actions throw an Error with the message of the server, the page shows it.
-export const useCsdQaFeedbackStore = defineStore('csd_qa_feedback', () => {
+export const useEvaluationQaFeedbackStore = defineStore('evaluationQaFeedbackStore', () => {
     const authStore = useAuthStore()
 
     const state = reactive({

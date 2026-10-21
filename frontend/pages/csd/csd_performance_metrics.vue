@@ -137,11 +137,11 @@
                     <td class="py-0.5 px-4 text-left text-xs font-medium text-gray-700 border">
                     {{ agent.year }}
                     </td>
-                    <CSDTooltipCell :title="agent.db_name" class="text-blue-700">
+                    <TooltipCell :title="agent.db_name" class="text-blue-700">
                         <button  @click="openMetricsTypeModal({ year_month: agent.year_month,employee_status: agent.employee_status, submitted: agent.submitted, employee_id: agent.id, agent_dbname:agent.db_name, month: agent.month, year: agent.year, position_id: agent.position_id, position_name: agent.position_name, team_id:agent.team_id, avg_response_minutes: agent.avg_response_minutes,image_link: agent.image_link,metrics_type: 'email_response_time' })" >
                         {{ typeof agent.avg_response_minutes === 'number' ? agent.avg_response_minutes : 'no-data' }}
                       </button>
-                    </CSDTooltipCell>
+                    </TooltipCell>
                     <td class="py-0.5 px-4 text-left text-lg font-medium text-gray-700 border">
                         {{ agent.aert_equivalent_points }} 
                        
@@ -152,11 +152,11 @@
                        
                    </td>
 
-                   <CSDTooltipCell :title="agent.db_name" class="text-blue-700">
+                   <TooltipCell :title="agent.db_name" class="text-blue-700">
                       <button  @click="openMetricsTypeModal({ year_month: agent.year_month,employee_status: agent.employee_status, submitted: agent.submitted, employee_id: agent.id, agent_dbname:agent.db_name, month: agent.month, year: agent.year, position_id: agent.position_id, position_name: agent.position_name, team_id:agent.team_id, response_count: agent.response_count, resolved_tickets: agent.resolved_tickets,image_link: agent.image_link,metrics_type: 'email_response_count' })" >
                         {{ agent.resolved_tickets_percentage }} 
                       </button>
-                   </CSDTooltipCell> 
+                   </TooltipCell> 
 
                    <td class="py-0.5 px-4 text-left text-lg font-medium text-gray-700 border">
                         {{ agent.erc_equivalent_points}} 
@@ -167,14 +167,14 @@
                        
                    </td>
 
-                   <CSDTooltipCell :title="agent.db_name" class="text-blue-700">
+                   <TooltipCell :title="agent.db_name" class="text-blue-700">
                       
                      <!-- <span v-if="agent.agent_type ==2"> {{ agent.target }} </span> -->
                       <button  @click="openMetricsTypeModal({ year_month: agent.year_month,employee_status: agent.employee_status, submitted: agent.submitted, employee_id: agent.id, agent_dbname:agent.db_name, month: agent.month, year: agent.year, position_id: agent.position_id, position_name: agent.position_name, team_id:agent.team_id, csr_total_feedback: agent.csr_total_feedback, resolved_tickets: agent.resolved_tickets, customer_not_good: agent.customer_not_good, 
                         customer_just_ok: agent.customer_just_ok, customer_awesome: agent.customer_awesome, image_link: agent.image_link,metrics_type: 'customer_satisfaction_report' })" >
                         {{ agent.csr_result_csr }} 
                       </button>
-                  </CSDTooltipCell> 
+                  </TooltipCell> 
 
                    <td class="py-0.5 px-4 text-left text-lg font-medium text-gray-700 border">
                         {{ agent.csr_result_csr_equivalent_points}} 
@@ -196,11 +196,11 @@
                        
                    </td>                    
 
-                  <CSDTooltipCell :title="agent.db_name" class="text-blue-700">
+                  <TooltipCell :title="agent.db_name" class="text-blue-700">
                      <button  @click="openMetricsTypeModal({ year_month: agent.year_month,employee_status: agent.employee_status, submitted: agent.submitted, employee_id: agent.id, agent_dbname:agent.db_name, month: agent.month, year: agent.year, position_id: agent.position_id, position_name: agent.position_name, team_id:agent.team_id, initial_result: agent.initial_result, error_count: agent.error_count,image_link: agent.image_link,metrics_type: 'error_report' })" >
                         {{ agent.error_final_result }}
                     </button>
-                   </CSDTooltipCell>
+                   </TooltipCell>
 
                   <td class="py-0.5 px-4 text-left text-lg font-medium text-gray-700 border">
                         {{ agent.er_equivalent_points}} 
@@ -213,14 +213,14 @@
                    </td>
 
                    
-                  <CSDTooltipCell :title="agent.db_name" class="text-blue-700">
+                  <TooltipCell :title="agent.db_name" class="text-blue-700">
                     
                       <button  @click="openMetricsTypeModal({ year_month: agent.year_month,employee_status: agent.employee_status, submitted: agent.submitted, employee_id: agent.id, agent_dbname:agent.db_name, month: agent.month, year: agent.year, position_id: agent.position_id, position_name: agent.position_name, team_id:agent.team_id, 
                         calibration_not_good: agent.calibration_not_good,calibration_just_ok: agent.calibration_just_ok, calibration_awesome: agent.calibration_awesome,
                         image_link: agent.image_link,metrics_type: 'call_email_calibration' })" >
                           {{ agent.call_email_calibration_result }}
                       </button>
-                  </CSDTooltipCell> 
+                  </TooltipCell> 
                     
                     <td class="py-0.5 px-4 text-left text-lg font-medium text-gray-700 border">
                         {{ agent.call_email_calibration_equivalent_points}} 
@@ -232,14 +232,14 @@
                        
                    </td>
 
-                   <CSDTooltipCell :title="agent.db_name" class="text-blue-700">
+                   <TooltipCell :title="agent.db_name" class="text-blue-700">
                     
                       <button  @click="openMetricsTypeModal({ year_month: agent.year_month, employee_status: agent.employee_status, submitted: agent.submitted, employee_id: agent.id, agent_dbname:agent.db_name, month: agent.month, year: agent.year, position_id: agent.position_id, position_name: agent.position_name, team_id:agent.team_id, 
                         inbound_calls: agent.inbound_calls, total_inbound_calls: agent.total_inbound_calls, 
                         image_link: agent.image_link,metrics_type: 'inboundcalls' })" >
                           {{ agent.agent_inbound_result }}
                       </button>
-                    </CSDTooltipCell>  
+                    </TooltipCell>  
 
                   <td class="py-0.5 px-4 text-left text-lg font-medium text-gray-700 border">
                       {{ agent.ioc_equivalent_points}} 
@@ -251,13 +251,13 @@
                        
                    </td>
 
-                    <CSDTooltipCell :title="agent.db_name" class="text-blue-700">
+                    <TooltipCell :title="agent.db_name" class="text-blue-700">
                       <button  @click="openMetricsTypeModal({ year_month: agent.year_month, employee_status: agent.employee_status, submitted: agent.submitted, employee_id: agent.id, agent_dbname:agent.db_name, month: agent.month, year: agent.year, position_id: agent.position_id, position_name: agent.position_name, team_id:agent.team_id, 
                          outbound_calls: agent.outbound_calls,  total_outbound_calls: agent.total_outbound_calls, 
                         image_link: agent.image_link,metrics_type: 'outboundcalls' })" >
                           {{ agent.agent_outbound_result }}
                       </button>
-                    </CSDTooltipCell>  
+                    </TooltipCell>  
 
                   <td class="py-0.5 px-4 text-left text-lg font-medium text-gray-700 border">
                       {{ agent.ooc_equivalent_points}} 
@@ -269,13 +269,13 @@
                        
                    </td>
 
-                   <CSDTooltipCell :title="agent.db_name" class="text-blue-700">
+                   <TooltipCell :title="agent.db_name" class="text-blue-700">
                       <button  @click="openMetricsTypeModal({ year_month: agent.year_month, employee_status: agent.employee_status, submitted: agent.submitted, employee_id: agent.id, agent_dbname:agent.db_name, month: agent.month, year: agent.year, position_id: agent.position_id, position_name: agent.position_name, team_id:agent.team_id, 
                         missed_calls: agent.missed_calls,  total_missed_calls: agent.total_missed_calls,
                         image_link: agent.image_link,metrics_type: 'missedcalls' })" >
                           {{ agent.agent_missed_result }}
                       </button>
-                    </CSDTooltipCell>  
+                    </TooltipCell>  
 
                   <td class="py-0.5 px-4 text-left text-lg font-medium text-gray-700 border">
                       {{ agent.mc_equivalent_points }}
@@ -286,13 +286,13 @@
                       {{ agent.mc_equivalent_points_percentage }}
                        
                    </td>
-                   <CSDTooltipCell :title="agent.db_name" class="text-blue-700">
+                   <TooltipCell :title="agent.db_name" class="text-blue-700">
                       <button  @click="openMetricsTypeModal({ year_month: agent.year_month, employee_status: agent.employee_status, submitted: agent.submitted, employee_id: agent.id, agent_dbname:agent.db_name, month: agent.month, year: agent.year, position_id: agent.position_id, position_name: agent.position_name, team_id:agent.team_id, 
                         opening_hc : agent.opening_hc, closing_hc: agent.closing_hc,  no_of_resignation: agent.no_of_resignation,
                         image_link: agent.image_link,metrics_type: 'attrition_rate' })" >
                           {{ agent.attrition_result }}
                       </button>
-                    </CSDTooltipCell> 
+                    </TooltipCell> 
 
                   <td class="py-0.5 px-4 text-left text-lg font-medium text-gray-700 border">
                         {{ agent.attrition_equivalent_points }}
@@ -304,13 +304,13 @@
                        
                    </td>      
 
-                 <CSDTooltipCell :title="agent.db_name" :class="getColorByValue(agent.total_performance_score_percentage)">
+                 <TooltipCell :title="agent.db_name" :class="getColorByValue(agent.total_performance_score_percentage)">
                     {{agent.total_performance_score_percentage}}
-                 </CSDTooltipCell>
-                 <CSDTooltipCell :title="agent.db_name"
+                 </TooltipCell>
+                 <TooltipCell :title="agent.db_name"
                                   :class="getDescriptionColor(agent.total_performance_score_description)">
                                   {{ agent.total_performance_score_description}}
-                 </CSDTooltipCell>                  
+                 </TooltipCell>                  
   
 
                    
@@ -509,7 +509,7 @@
 
   import CsdPerformanceMetrics  from '~/components/csd/CsdPerformanceMetrics';
 
-  import  CSDTooltipCell  from  '~/components/csd/CsdTooltipCell';
+  import TooltipCell  from  '~/components/evaluation/TooltipCell';
 
 
    
@@ -548,7 +548,7 @@
     const yearMoonth = ref('')
 
 
-  const csdStoreInstance= useCsdStore()
+  const csdStoreInstance= useEvaluationStore()
       
   const openMetricsTypeModal = (selectedAgent) => {
     

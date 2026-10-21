@@ -125,7 +125,7 @@
     </div>
 
     <!-- The same modal / handlers as the CSD Evaluation page (feedback_by_admin) -->
-    <CsdEvaluation
+    <EvaluationMetricModal
       :showModal="showModalEvalType"
       :evalType="eval_type"
       :modalType="modalEvalType"
@@ -142,7 +142,7 @@
 // FEEDBACK > FEEDBACK ADMIN of the CSD department. Admin only.
 // Lists ALL the CSD staff (every position level) of the selected month (year_month of the navbar, else the current
 // month) and lets the admin add / edit / delete the feedback_by_admin. It reuses what the CSD Evaluation page uses:
-// the csd store, the /csd_evaluation endpoints and the CsdEvaluation modal.
+// the csd store, the /csd_evaluation endpoints and the EvaluationMetricModal modal.
 definePageMeta({
   layout: 'csd',
   middleware: ['auth', 'admin-only', 'department-layout'],
@@ -151,11 +151,11 @@ definePageMeta({
 })
 
 import { ref, computed, watch, onMounted } from 'vue'
-import CsdEvaluation from '~/components/csd/CsdEvaluation.vue'
+import EvaluationMetricModal from '~/components/evaluation/EvaluationMetricModal.vue'
 import { isFutureMonth } from '@/utils/constants'
 
 const route = useRoute()
-const csdStoreInstance = useCsdStore()
+const csdStoreInstance = useEvaluationStore()
 // csd or collection (from the url): every request carries ?department=..., the backend answers with the staff of that department
 const { label: departmentLabel, query: withDepartment } = useDepartmentView()
 const deptQuery = computed(() => withDepartment(route.query))

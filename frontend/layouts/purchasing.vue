@@ -1,9 +1,9 @@
 
 <template>
   <div class="flex">
-  <SidebarMenuCsd department="purchasing" />
+  <DepartmentSidebarMenu department="purchasing" />
     <div class="flex-1 relative">
-      <NavigationBarCsd department="purchasing" />
+      <DepartmentNavigationBar department="purchasing" />
       <NuxtPage />
 
       <!-- 🚀 Global ShipOK Notification Component -->
@@ -17,9 +17,9 @@
 </template>
 
 <script setup>
-// Purchasing uses the same sidebar and navigation bar as CSD (components/csd), with its own menu: config/purchasingMenu.js
-import NavigationBarCsd from '~/components/csd/NavigationBarCsd.vue';
-import SidebarMenuCsd from '~/components/csd/SidebarMenuCsd.vue';
+// Purchasing uses the same sidebar and navigation bar as the other departments (components/evaluation), with its own menu: config/purchasingMenu.js
+import DepartmentNavigationBar from '~/components/evaluation/DepartmentNavigationBar.vue';
+import DepartmentSidebarMenu from '~/components/evaluation/DepartmentSidebarMenu.vue';
 
 
 </script>

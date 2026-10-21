@@ -1,9 +1,9 @@
 
 <template>
   <div class="flex">
-  <SidebarMenuCsd department="csd" />
+  <DepartmentSidebarMenu department="csd" />
     <div class="flex-1 relative">
-      <NavigationBarCsd department="csd" />
+      <DepartmentNavigationBar department="csd" />
       <NuxtPage />
 
       <!-- 🚀 Global ShipOK Notification Component -->
@@ -17,8 +17,8 @@
 </template>
 
 <script setup>
-import NavigationBarCsd from '~/components/csd/NavigationBarCsd.vue';
-import SidebarMenuCsd from '~/components/csd/SidebarMenuCsd.vue';
+import DepartmentNavigationBar from '~/components/evaluation/DepartmentNavigationBar.vue';
+import DepartmentSidebarMenu from '~/components/evaluation/DepartmentSidebarMenu.vue';
 
 
 </script>

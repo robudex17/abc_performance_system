@@ -7,7 +7,7 @@ import API from '~/utils/api'
 //   monthly      the employees of the month (a list, or one employee when employee_id is given)
 //   yearly       the employees of the year (average of the submitted months)
 //   yearDetail   one employee: { agentMetricsFullYear: [the submitted months], yearAverage }
-export const useCsdAgentPerformanceStore = defineStore('csdAgentPerformanceStore', () => {
+export const useEvaluationAgentPerformanceStore = defineStore('evaluationAgentPerformanceStore', () => {
     const authStore = useAuthStore()
     authStore.fetchTokenFromLocalStore()
     const token = authStore.state.token

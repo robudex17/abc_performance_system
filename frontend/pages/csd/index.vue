@@ -95,7 +95,7 @@
 
         <!-- TABLE VIEW: AGENT and TEAM LEADER -->
         <div v-else-if="!isCardView" class="overflow-x-auto shadow-xl rounded-lg">
-          <leader-board-table-view-csd :agents="csd_leaderboard"></leader-board-table-view-csd>
+          <leader-board-table :agents="csd_leaderboard"></leader-board-table>
         </div>
 
         <!-- CARD VIEW: AGENT and TEAM LEADER -->
@@ -338,7 +338,7 @@
 import { onMounted, reactive, ref, watch, computed } from 'vue';
 import { getStarClass } from '@/utils/constants'
 import API from '~/utils/api'
-import LeaderBoardTableViewCsd from '~/components/csd/LeaderBoardTableViewCsd.vue'
+import LeaderBoardTable from '~/components/evaluation/LeaderBoardTable.vue'
 
 definePageMeta({
   middleware: ['auth', 'department-layout'],
@@ -351,7 +351,7 @@ const route = useRoute()
 // csd or collection (from the url): the backend answers with the staff of that department
 const { code: departmentCode } = useDepartmentView()
 const config = useRuntimeConfig()
-const csdStoreInstance = useCsdStore()
+const csdStoreInstance = useEvaluationStore()
 const { setRatingNameColor } = useRatingColor()
 
 // the table view and the Excel export need the details of everybody: admin, poweruser and the CSD managers (level 10 and 9)

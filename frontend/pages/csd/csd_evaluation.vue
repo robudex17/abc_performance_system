@@ -103,7 +103,7 @@
                        
                    </td> -->
 
-                  <CSDTooltipCell :title="agent.db_name" class="text-blue-700">
+                  <TooltipCell :title="agent.db_name" class="text-blue-700">
                      <button v-if="!agent.performance_computed"  @click="openMetricsTypeModal({ year_month: agent.year_month,employee_status: agent.employee_status, eval_submitted: agent.eval_submitted, employee_id: agent.id, db_name: agent.db_name, month: agent.month, year: agent.year, position_id: agent.position_id, position_name: agent.position_name, team_id:agent.team_id,performance:agent.performance,image_link: agent.image_link,eval_type: 'performance' })" >
                         {{ agent.performance }}
                     </button>
@@ -117,7 +117,7 @@
                       @click="alertComputedPerformance(agent)"
                       :title="(agent.performance_sources || []).map(source => source.db_name + ' (' + source.department_code + '): ' + (source.counted ? source.performance : 'not counted')).join('  |  ')"
                     >{{ agent.performance }}</span>
-                   </CSDTooltipCell>                   
+                   </TooltipCell>                   
 
                   <!-- Leadership Performance: VIEW ONLY, the result (1 - 5) of the leadership evaluation that the head of the leader
                        answered in the menu Leadership Performance. Only the leaders (position level 7 - 10) have it, 0 = not answered
@@ -138,48 +138,48 @@
                   </td>
                   
 
-                  <CSDTooltipCell :title="agent.db_name" class="text-blue-700">
+                  <TooltipCell :title="agent.db_name" class="text-blue-700">
                      <button  @click="openMetricsTypeModal({ year_month: agent.year_month,employee_status: agent.employee_status, eval_submitted: agent.eval_submitted, employee_id: agent.id, db_name: agent.db_name, month: agent.month, year: agent.year, position_id: agent.position_id, position_name: agent.position_name, team_id:agent.team_id,absences:agent.absences,image_link: agent.image_link,eval_type: 'absences' })" >
                         {{ agent.absences }}
                     </button>
-                   </CSDTooltipCell>
+                   </TooltipCell>
 
          
 
                    
-                  <CSDTooltipCell :title="agent.db_name" class="text-blue-700">
+                  <TooltipCell :title="agent.db_name" class="text-blue-700">
                     
                       <button  @click="openMetricsTypeModal({ year_month: agent.year_month,employee_status: agent.employee_status, eval_submitted: agent.eval_submitted, employee_id: agent.id, db_name:agent.db_name, month: agent.month, year: agent.year, position_id: agent.position_id, position_name: agent.position_name, team_id:agent.team_id, 
                         tardiness: agent.tardiness,image_link: agent.image_link, eval_type: 'tardiness' })" >
                           {{ agent.tardiness }}
                       </button>
-                  </CSDTooltipCell> 
+                  </TooltipCell> 
                     
 
-                   <CSDTooltipCell :title="agent.db_name" class="text-blue-700">
+                   <TooltipCell :title="agent.db_name" class="text-blue-700">
                     
                       <button  @click="openMetricsTypeModal({ year_month: agent.year_month, employee_status: agent.employee_status, eval_submitted: agent.eval_submitted, employee_id: agent.id, db_name:agent.db_name, month: agent.month, year: agent.year, position_id: agent.position_id, position_name: agent.position_name, team_id:agent.team_id, 
                         memo: agent.memo,   image_link: agent.image_link, eval_type: 'memo' })" >
                           {{ agent.memo }}
                       </button>
-                    </CSDTooltipCell>  
+                    </TooltipCell>  
 
             
 
-                    <CSDTooltipCell :title="agent.db_name" class="text-blue-700">
+                    <TooltipCell :title="agent.db_name" class="text-blue-700">
                       <button  @click="openMetricsTypeModal({ year_month: agent.year_month, employee_status: agent.employee_status, eval_submitted: agent.eval_submitted, employee_id: agent.id, db_name:agent.db_name, month: agent.month, year: agent.year, position_id: agent.position_id, position_name: agent.position_name, team_id:agent.team_id, 
                         feedback_by_admin: parseFloat(agent.feedback_by_admin),
                         image_link: agent.image_link, eval_type: 'feedback_by_admin' })" >
                           {{ agent.feedback_by_admin }}
                       </button>
-                    </CSDTooltipCell>  
+                    </TooltipCell>  
 
             
                     <!-- Feedback (QA), Feedback (Immediate Head), Feedback (Members): VIEW ONLY.
                          They are given by the Quality Analyst, the immediate head and the members, the admin can not change them.
                          Like the sales evaluation: the number is a button that opens the list of the people who should give the
                          feedback; the ones who did not give yet are marked "No Feedback Yet". -->
-                    <CSDTooltipCell :title="agent.db_name">
+                    <TooltipCell :title="agent.db_name">
                       <span v-if="!receivesQaFeedback(agent)" class="text-gray-400">-</span>
                       <!-- the average, or 0 when nobody gave it yet. Clickable: the list shows who gave it and who did not yet -->
                       <button
@@ -190,9 +190,9 @@
                       >
                         {{ agent.feedback_by_qa ?? 0 }}
                       </button>
-                    </CSDTooltipCell>
+                    </TooltipCell>
 
-                    <CSDTooltipCell :title="agent.db_name">
+                    <TooltipCell :title="agent.db_name">
                       <span v-if="!receivesImmediateHeadFeedback(agent)" class="text-gray-400">-</span>
                       <!-- the average, or 0 when nobody gave it yet. Clickable: the list shows who gave it and who did not yet -->
                       <button
@@ -203,9 +203,9 @@
                       >
                         {{ agent.feedback_by_immediate_head ?? 0 }}
                       </button>
-                    </CSDTooltipCell>
+                    </TooltipCell>
 
-                    <CSDTooltipCell :title="agent.db_name">
+                    <TooltipCell :title="agent.db_name">
                       <span v-if="!receivesMembersFeedback(agent)" class="text-gray-400">-</span>
                       <!-- the average, or 0 when nobody gave it yet. Clickable: the list shows who gave it and who did not yet -->
                       <button
@@ -216,11 +216,11 @@
                       >
                         {{ agent.feedback_by_members ?? 0 }}
                       </button>
-                    </CSDTooltipCell>
+                    </TooltipCell>
 
                                      
                     <!-- Actions: Submit / Submitted + Review. The row of the CSD & Collection Manager (position level 10) is the Submit All -->
-                    <CSDTooltipCell :title="agent.db_name">
+                    <TooltipCell :title="agent.db_name">
                       <div class="flex justify-center space-x-2" v-if="agent.id == submitAllId">
 
                         <!-- Submit All: only when every row (his own too) is ready -->
@@ -288,7 +288,7 @@
                           Review
                         </button>
                       </div>
-                    </CSDTooltipCell>
+                    </TooltipCell>
 
                 </tr>
                 </tbody>     
@@ -296,7 +296,7 @@
 
 
 
-    <CsdEvaluation
+    <EvaluationMetricModal
     
       :showModal="showModalEvalType"
       :evalType="eval_type"
@@ -488,9 +488,9 @@
 
   import { months, monthMap, isFutureMonth, getDescriptionColor, getColorByValue } from '@/utils/constants'
 
-  import CsdEvaluation  from '~/components/csd/CsdEvaluation.vue';
+  import EvaluationMetricModal  from '~/components/evaluation/EvaluationMetricModal.vue';
 
-  import  CSDTooltipCell  from  '~/components/csd/CsdTooltipCell';
+  import TooltipCell  from  '~/components/evaluation/TooltipCell';
 
 
    
@@ -545,7 +545,7 @@
     const yearMoonth = ref('')
 
 
-  const csdStoreInstance= useCsdStore()
+  const csdStoreInstance= useEvaluationStore()
 
   // csd or collection (from the url): every request carries ?department=..., the backend answers with the staff of that department
   const { view, query: withDepartment } = useDepartmentView()

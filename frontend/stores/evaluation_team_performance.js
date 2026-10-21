@@ -7,7 +7,7 @@ import API from '~/utils/api'
 //   monthly   the teams of the month (a list; with team_id: an array with the team and its members, or empty)
 //   yearly    the teams of the year (a list)
 //   yearTeam  one team of the year: its months and its members (null when there is none)
-export const useCsdTeamPerformanceStore = defineStore('csdTeamPerformanceStore', () => {
+export const useEvaluationTeamPerformanceStore = defineStore('evaluationTeamPerformanceStore', () => {
     const authStore = useAuthStore()
     authStore.fetchTokenFromLocalStore()
     const token = authStore.state.token

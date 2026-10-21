@@ -175,7 +175,7 @@ import { ref, computed, watch, onMounted } from 'vue'
 import { isFutureMonth } from '@/utils/constants'
 
 const route = useRoute()
-const qaStore = useCsdQaFeedbackStore()
+const qaStore = useEvaluationQaFeedbackStore()
 const config = useRuntimeConfig()
 
 const search = ref('')

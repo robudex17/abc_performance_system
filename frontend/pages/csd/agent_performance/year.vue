@@ -40,7 +40,7 @@
 
           <!-- CARD VIEW -->
           <div v-if="isCardView" class="grid grid-cols-1 gap-6">
-            <CsdPerformanceCard :agent="agent" @details="showDetails"></CsdPerformanceCard>
+            <PerformanceCard :agent="agent" @details="showDetails"></PerformanceCard>
           </div>
 
           <!-- TABLE VIEW: the submitted months and their summary -->
@@ -50,14 +50,14 @@
               <span :class="csdRatingClass(agent.ratings_name) || setRatingNameColor(agent)">{{ agent.final_ratings }}</span> /
               <span :class="csdRatingClass(agent.ratings_name) || setRatingNameColor(agent)">{{ agent.ratings_name }}</span>
             </h1>
-            <leader-board-table-view-csd :agents="months"></leader-board-table-view-csd>
-            <csd-metrics-summary :agents="[agent]" :fullyear="true"></csd-metrics-summary>
+            <leader-board-table :agents="months"></leader-board-table>
+            <metrics-summary :agents="[agent]" :fullyear="true"></metrics-summary>
           </div>
         </div>
       </div>
     </div>
 
-    <CsdPerformanceDetailsModal :show="showModal" :agent="selectedAgent" :fullyear="true" @close="showModal = false"></CsdPerformanceDetailsModal>
+    <PerformanceDetailsModal :show="showModal" :agent="selectedAgent" :fullyear="true" @close="showModal = false"></PerformanceDetailsModal>
   </div>
 </template>
 
@@ -66,7 +66,7 @@
 // The employee comes from ?employee_id (the list page links to it), the backend answers only if the user may see him/her.
 import { ref, reactive, computed, onMounted, watch } from 'vue'
 import API from '~/utils/api'
-import LeaderBoardTableViewCsd from '~/components/csd/LeaderBoardTableViewCsd.vue'
+import LeaderBoardTable from '~/components/evaluation/LeaderBoardTable.vue'
 
 definePageMeta({
   middleware: ['auth', 'department-layout'],
@@ -83,7 +83,7 @@ const token = authStore.state.token
 const route = useRoute()
 // csd or collection (from the url): the backend answers with the staff of that department
 const { code: departmentCode, base } = useDepartmentView()
-const store = useCsdAgentPerformanceStore()
+const store = useEvaluationAgentPerformanceStore()
 const { setRatingNameColor } = useRatingColor()
 
 const isAdmin = ['admin', 'poweruser'].includes(currentUser?.role)

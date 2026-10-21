@@ -36,7 +36,7 @@
         <div v-else>
           <!-- CARD VIEW -->
           <div v-if="isCardView" class="grid grid-cols-1 gap-6">
-            <CsdPerformanceCard :agent="agent" @details="showDetails"></CsdPerformanceCard>
+            <PerformanceCard :agent="agent" @details="showDetails"></PerformanceCard>
           </div>
 
           <!-- TABLE VIEW -->
@@ -46,14 +46,14 @@
               <span :class="csdRatingClass(agent.ratings_name) || setRatingNameColor(agent)">{{ agent.final_ratings }}</span> /
               <span :class="csdRatingClass(agent.ratings_name) || setRatingNameColor(agent)">{{ agent.ratings_name }}</span>
             </h1>
-            <leader-board-table-view-csd :agents="[agent]"></leader-board-table-view-csd>
-            <csd-metrics-summary :agents="[agent]"></csd-metrics-summary>
+            <leader-board-table :agents="[agent]"></leader-board-table>
+            <metrics-summary :agents="[agent]"></metrics-summary>
           </div>
         </div>
       </div>
     </div>
 
-    <CsdPerformanceDetailsModal :show="showModal" :agent="selectedAgent" @close="showModal = false"></CsdPerformanceDetailsModal>
+    <PerformanceDetailsModal :show="showModal" :agent="selectedAgent" @close="showModal = false"></PerformanceDetailsModal>
   </div>
 </template>
 
@@ -63,7 +63,7 @@
 // his/her own performance: the backend answers only with the rows the user may see, this page only follows it.
 import { ref, reactive, computed, onMounted, watch } from 'vue'
 import API from '~/utils/api'
-import LeaderBoardTableViewCsd from '~/components/csd/LeaderBoardTableViewCsd.vue'
+import LeaderBoardTable from '~/components/evaluation/LeaderBoardTable.vue'
 
 definePageMeta({
   middleware: ['auth', 'department-layout'],
@@ -80,7 +80,7 @@ const token = authStore.state.token
 const route = useRoute()
 // csd or collection (from the url): the backend answers with the staff of that department
 const { code: departmentCode, base } = useDepartmentView()
-const store = useCsdAgentPerformanceStore()
+const store = useEvaluationAgentPerformanceStore()
 const { setRatingNameColor } = useRatingColor()
 
 const isAdmin = ['admin', 'poweruser'].includes(currentUser?.role)

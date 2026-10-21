@@ -24,7 +24,7 @@
         <div v-else>
           <!-- CARD VIEW -->
           <div v-if="isCardView" class="grid grid-cols-1 gap-6">
-            <CsdTeamCard :team="team" @details="showDetails"></CsdTeamCard>
+            <TeamCard :team="team" @details="showDetails"></TeamCard>
           </div>
 
           <!-- TABLE VIEW: the team and its members -->
@@ -56,13 +56,13 @@
             </table>
 
             <h1 class="text-2xl font-extrabold text-gray-800 mb-3 text-center">Team Members Monthly Performance</h1>
-            <leader-board-table-view-csd :agents="team.teams"></leader-board-table-view-csd>
+            <leader-board-table :agents="team.teams"></leader-board-table>
           </div>
         </div>
       </div>
     </div>
 
-    <CsdTeamDetailsModal :show="showModal" :team="selectedTeam" @close="showModal = false"></CsdTeamDetailsModal>
+    <TeamDetailsModal :show="showModal" :team="selectedTeam" @close="showModal = false"></TeamDetailsModal>
   </div>
 </template>
 
@@ -71,7 +71,7 @@
 // The team comes from ?team_id (the list links to it); a team leader (level 8 / 7) has only his/her own team.
 // The backend answers only with the team and the members the user may see.
 import { ref, reactive, computed, onMounted, watch } from 'vue'
-import LeaderBoardTableViewCsd from '~/components/csd/LeaderBoardTableViewCsd.vue'
+import LeaderBoardTable from '~/components/evaluation/LeaderBoardTable.vue'
 
 definePageMeta({
   middleware: ['auth', 'department-layout'],
@@ -88,7 +88,7 @@ const isAdminUser = ['admin', 'poweruser'].includes(currentUser?.role)
 const route = useRoute()
 // csd or collection (from the url): the backend answers with the staff of that department
 const { code: departmentCode, base } = useDepartmentView()
-const store = useCsdTeamPerformanceStore()
+const store = useEvaluationTeamPerformanceStore()
 const { setRatingNameColor } = useRatingColor()
 
 const isCardView = ref(true)

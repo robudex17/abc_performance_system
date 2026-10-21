@@ -3,7 +3,7 @@ import { reactive } from 'vue'
 
 import API from '~/utils/api'
 
-export const useCsdStore = defineStore('csdStore', () => {
+export const useEvaluationStore = defineStore('evaluationStore', () => {
     //call auth store fetch the token on the localstorage 
     //save it to state.token
     const authStore = useAuthStore()
