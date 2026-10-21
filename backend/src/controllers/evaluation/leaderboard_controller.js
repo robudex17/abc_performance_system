@@ -1,6 +1,7 @@
 const pool = require('../../config/db')
 const { generateCsdEvaluation } = require('./evaluation_controller')
-const { readDepartment, badDepartment, isFullViewer } = require('./department_scope')
+const { readDepartment, badDepartment } = require('./department_scope')
+const { canSeeDetails } = require('./visibility_rules')
 
 // CSD leaderboard, built like the sales leaderboard but on the CSD evaluation (not on csd_performance_metrics):
 //   - the rows are the ones of the CSD Evaluation page: Performance (typed by the admin), Absences, Tardiness, Memo and
@@ -171,15 +172,6 @@ const DETAIL_FIELDS = [
     'performance_score', 'team_performance_score', 'leadership_required', 'leadership_score', 'absence_score', 'tardiness_score', 'memo_score', 'feedback_score',
     'performance_rating', 'absence_rating', 'tardiness_rating', 'memo_rating', 'feedback_rating',
 ]
-
-// ownTeamId: the team of the user, read from his/her own row of the evaluation (the team of the login token is not reliable)
-const canSeeDetails = (user, row, ownTeamId) => {
-    if (isFullViewer(user)) return true
-    const level = Number(user?.position_level)
-    if (level === 10 || level === 9) return true
-    if (Number(row.id) === Number(user?.login_id)) return true
-    return (level === 8 || level === 7) && row.team_id != null && ownTeamId != null && Number(row.team_id) === Number(ownTeamId)
-}
 
 const limitDetails = (user, row, ownTeamId) => {
     const allowed = canSeeDetails(user, row, ownTeamId)

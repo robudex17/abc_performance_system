@@ -1,13 +1,14 @@
 const { scoring } = require('./leaderboard_controller')
 const { shared } = require('./agent_performance_controller')
-const { readDepartment, badDepartment, isFullViewer } = require('./department_scope')
+const { readDepartment, badDepartment } = require('./department_scope')
+const { canViewTeams } = require('./visibility_rules')
 
 // Team Monthly / Team Yearly performance of the CSD teams (the "Team Performance" menu), same idea as the sales team pages.
 // A team is the staff with the same team_id. The team rating is the average of the final ratings of its members:
 //   monthly   all the members of the month; the team is INCOMPLETE RATING while one of them is not submitted
 //             (the same rule as the Team board of the leaderboard)
 //   yearly    all the SUBMITTED member-months of the year (only the submitted months count, like the sales yearly pages)
-// The members are the ones the user may see (agent_performance_controller.js, canSee):
+// The members are the ones the user may see (visibility_rules.js, canSee):
 //   admin, poweruser, level 10 -> all the teams, level 9 -> the staff of level 1 - 9, level 8 and 7 -> their own team.
 //   Position level 1, 2, 3 have no team performance.
 //
@@ -18,12 +19,7 @@ const { readDepartment, badDepartment, isFullViewer } = require('./department_sc
 //           GET /csd_team_performance/yearly/:team_id?year=YYYY               one team: its months and its members (or null)
 
 const { toNumber, round4, ratingName, loadScoreTables, INCOMPLETE } = scoring
-const { canSee, buildMonth, buildYear, yearAverage, readYear, currentYearMonth } = shared
-
-const TEAM_LEVELS = [10, 9, 8, 7]
-
-const canViewTeams = (user) =>
-    isFullViewer(user) || TEAM_LEVELS.includes(Number(user?.position_level))
+const { buildMonth, buildYear, yearAverage, readYear, currentYearMonth } = shared
 
 const byLevelThenName = (a, b) => Number(b.position_level) - Number(a.position_level) || String(a.db_name).localeCompare(String(b.db_name))
 const byRatingDesc = (a, b) => parseFloat(b.final_ratings) - parseFloat(a.final_ratings)

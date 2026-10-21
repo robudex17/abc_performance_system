@@ -1,5 +1,6 @@
 const { generateCsdEvaluation } = require('./evaluation_controller')
-const { readDepartment, badDepartment, isFullViewer } = require('./department_scope')
+const { readDepartment, badDepartment } = require('./department_scope')
+const { canSee } = require('./visibility_rules')
 const { scoring } = require('./leaderboard_controller')
 
 // Agent Monthly / Agent Yearly performance of the CSD staff (the "Agent Performance" and "Performance Evaluation" menus).
@@ -32,20 +33,6 @@ const FIVE_DECIMALS_KEYS = ['performance', 'performance_score', 'team_performanc
 const currentYearMonth = () => {
     const today = new Date()
     return `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}`
-}
-
-// is the row (an employee of a month) one the user may see.
-// ownTeamId: the team of the user in that month. It is NOT read from the login token: the employee login reads the team
-// from the sales table, so the team of the token can be empty or another team. It is the team of his/her own row.
-const canSee = (user, row, ownTeamId) => {
-    if (isFullViewer(user)) return true
-
-    const level = Number(user?.position_level)
-    if (Number(row.id) === Number(user?.login_id)) return true       // always him/herself
-    if (level === 10) return true
-    if (level === 9) return Number(row.position_level) <= 9
-    if (level === 8 || level === 7) return row.team_id != null && ownTeamId != null && Number(row.team_id) === Number(ownTeamId)
-    return false
 }
 
 // every employee of the month (all position levels) with the scores, only the ones the user may see
@@ -136,7 +123,7 @@ const readYear = (req) => {
 }
 
 // shared with the team performance pages (team_performance_controller.js)
-exports.shared = { canSee, buildMonth, buildYear, yearAverage, readYear, currentYearMonth }
+exports.shared = { buildMonth, buildYear, yearAverage, readYear, currentYearMonth }
 
 // the data of the four pages, used by the routes and by the Excel export (agent_performance_export.js)
 exports.getMonthlyList = async (user, yearMonth, department = 'csd') => {
