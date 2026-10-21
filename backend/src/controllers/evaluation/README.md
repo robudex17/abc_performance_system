@@ -57,23 +57,25 @@ Every request has `?department=csd|collection|purchasing|hradmin` (`readDepartme
 - Averages of the Performance have 5 decimals, the final rating 4.
 
 ## The urls
-The addresses of the engine are under :
+The addresses of the engine are under `/api/evaluation/...`:
 
 | Address | What |
 |---|---|
-|  | the evaluation of the month (read, add, change, delete a metric) |
-|  | submit (POST) and review (DELETE) |
-| ,  | the leaderboard and its Excel |
-| ,  | Agent Monthly / Yearly and their Excel |
-|  | Team Monthly / Yearly |
-|  | the feedback of the Quality Analyst |
-|  | the leadership evaluation (it had a neutral name already) |
+| `/evaluation/records/:eval_type[/:employee_id]` | the evaluation of the month (read, add, change, delete a metric) |
+| `/evaluation/status/:employee_id` | submit (POST) and review (DELETE) |
+| `/evaluation/leaderboard/:scope`, `/evaluation/leaderboard_export/:scope` | the leaderboard and its Excel |
+| `/evaluation/agent_performance/...`, `/evaluation/agent_performance_export/...` | Agent Monthly / Yearly and their Excel |
+| `/evaluation/team_performance/...` | Team Monthly / Yearly |
+| `/evaluation/qa_feedback` | the feedback of the Quality Analyst |
+| `/leadership_evaluations` | the leadership evaluation (it had a neutral name already) |
 
-The first addresses (, , , , , ,
-, ) still answer: every route of  has both. They are kept so that an old
-frontend that is still open keeps working. **Remove the old address of each route when the servers run the new frontend.**
-The CSD only routes keep their names (, the email reports).
+The first addresses (`/csd_evaluation`, `/csd_evaluation_status`, `/csd_leaderboard`, `/csd_leaderboard_export`, `/csd_agent_performance`,
+`/csd_agent_performance_export`, `/csd_team_performance`, `/csd_qa_feedback`) still answer: every route of `routes/evaluation` has both. They are
+kept so that an old frontend that is still open keeps working.
+**Remove the old address of each route when the servers run the new frontend.**
+The CSD only routes keep their names (`/csd_performance_metrics`, the email reports).
 
 ## Names that look like CSD but are not
-Some functions () and the tables (, ) still have  in the name although they serve
-all the none-sales departments. They are left as they are on purpose: renaming a table also changes the database and every query.
+Some functions (`generateCsdEvaluation`) and the tables (`csd_evaluation_status`, `csd_performance_score`) still have `csd` in the name although
+they serve all the none-sales departments. They are left as they are on purpose: renaming a table also changes the database and every query.
+
