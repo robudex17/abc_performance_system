@@ -374,7 +374,7 @@ exports.fetch_eval_queries = {
         -- =====================================================
         -- ✅ EVALUATION STATUS
         -- =====================================================
-        LEFT JOIN csd_evaluation_status csd_eval
+        LEFT JOIN evaluation_status csd_eval
             ON csd_eval.employee_id = e.id
         AND csd_eval.year_month = ?
 

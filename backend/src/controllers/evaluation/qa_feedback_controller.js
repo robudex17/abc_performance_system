@@ -123,7 +123,7 @@ exports.fetchQaFeedbackStaff = async (req, res, next) => {
              ${FROM_SNAPSHOT}
              LEFT JOIN employees mgr ON ea.manager_id = mgr.id
              LEFT JOIN teams2 t ON ea.team_id = t.id
-             LEFT JOIN csd_evaluation_status cs ON cs.employee_id = e.id AND cs.\`year_month\` = ?
+             LEFT JOIN evaluation_status cs ON cs.employee_id = e.id AND cs.\`year_month\` = ?
              WHERE d.code = 'collection' AND p.level <= ?
              ORDER BY p.level DESC, e.db_name`,
             [...snapshotParams(when.yearMonth), when.yearMonth, COLLECTION_MAX_POSITION_LEVEL]

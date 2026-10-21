@@ -51,7 +51,7 @@ const getEvaluatees = async (user, yearMonth, employeeId = null) => {
                 COALESCE(cs.submitted, 0) AS eval_submitted
          ${FROM_SNAPSHOT}
          LEFT JOIN teams2 t ON ea.team_id = t.id
-         LEFT JOIN csd_evaluation_status cs ON cs.employee_id = e.id AND cs.\`year_month\` = ?
+         LEFT JOIN evaluation_status cs ON cs.employee_id = e.id AND cs.\`year_month\` = ?
          LEFT JOIN employees mgr ON ea.manager_id = mgr.id
          WHERE p.level IN (${EVALUATED_LEVELS.map(() => '?').join(',')})
            ${anyHead ? '' : 'AND ea.manager_id = ? AND e.id <> ?'}

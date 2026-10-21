@@ -77,7 +77,7 @@ const pickTeam = (teams, teamId, user) => {
 }
 
 exports.getTeamsMonthly = async (user, yearMonth, teamId, department = 'csd') => {
-    const tables = await loadScoreTables()
+    const tables = await loadScoreTables(department)
     return pickTeam(await buildTeamsOfMonth(user, yearMonth, tables, department), teamId, user)
 }
 

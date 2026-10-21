@@ -661,7 +661,7 @@ exports.generateCsdEvaluation  = async (year_month, scope, department_code,  met
 // Submit the CSD evaluation of the month: admin only (routes/evaluation/evaluation_routes.js).
 // employee_id 'all' submits everybody (the Submit button of the CSD & Collection Manager and the Submit All button),
 // it needs all the rows to be ready. What is ready is decided here, not by what the page sends.
-// Table: csd_evaluation_status( employee_id, dbname, year_month, submitted )
+// Table: evaluation_status( employee_id, dbname, year_month, submitted )
 const readStatusYearMonth = (req) => {
     const yearMonth = req.body?.year_month || req.query.year_month
     if (!/^\d{4}-(0[1-9]|1[0-2])$/.test(yearMonth || '')) return null
@@ -703,9 +703,9 @@ exports.submitCsdEvaluation = async (req, res, next) => {
         connection = await pool.getConnection()
         await connection.beginTransaction()
         for (const agent of targets) {
-            await connection.execute('DELETE FROM csd_evaluation_status WHERE employee_id = ? AND `year_month` = ?', [agent.id, yearMonth])
+            await connection.execute('DELETE FROM evaluation_status WHERE employee_id = ? AND `year_month` = ?', [agent.id, yearMonth])
             await connection.execute(
-                'INSERT INTO csd_evaluation_status (employee_id, dbname, `year_month`, submitted) VALUES (?, ?, ?, 1)',
+                'INSERT INTO evaluation_status (employee_id, dbname, `year_month`, submitted) VALUES (?, ?, ?, 1)',
                 [agent.id, agent.db_name, yearMonth]
             )
         }
@@ -738,7 +738,7 @@ exports.reviewCsdEvaluation = async (req, res, next) => {
             const lockedAll = await getReviewBlockers(ids, yearMonth)
             if (lockedAll.length > 0) return res.status(409).json({ message: `Review ${[...new Set(lockedAll.map(blocker => blocker.head))].join(', ')} first: ${lockedAll.map(blocker => blocker.employee).join(', ')} can not be reviewed while the evaluation of the head is submitted` })
             if (ids.length > 0) {
-                await pool.query('DELETE FROM csd_evaluation_status WHERE `year_month` = ? AND employee_id IN (?)', [yearMonth, ids])
+                await pool.query('DELETE FROM evaluation_status WHERE `year_month` = ? AND employee_id IN (?)', [yearMonth, ids])
             }
             return res.status(200).json({ message: `${department.toUpperCase()} evaluation of ${yearMonth} is marked for review` })
         }
@@ -748,7 +748,7 @@ exports.reviewCsdEvaluation = async (req, res, next) => {
             return res.status(409).json({ message: `Review ${locked[0].head} first: ${locked[0].employee} can not be reviewed while the evaluation of ${locked[0].head} is submitted (the Performance of ${locked[0].head} is made of ${locked[0].employee})` })
         }
 
-        const [result] = await pool.execute('DELETE FROM csd_evaluation_status WHERE employee_id = ? AND `year_month` = ?', [employeeId, yearMonth])
+        const [result] = await pool.execute('DELETE FROM evaluation_status WHERE employee_id = ? AND `year_month` = ?', [employeeId, yearMonth])
         if (result.affectedRows === 0) return res.status(404).json({ message: 'The evaluation is not submitted' })
 
         res.status(200).json({ message: `CSD evaluation of ${employeeId} (${yearMonth}) is marked for review` })
