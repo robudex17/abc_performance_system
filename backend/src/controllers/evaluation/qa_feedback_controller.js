@@ -1,6 +1,6 @@
 const pool = require('../../config/db')
-const csdEvaluationController = require('./csd_evaluation_controller')
-const { FROM_SNAPSHOT, snapshotParams } = require('./csd_month_snapshot')
+const csdEvaluationController = require('./evaluation_controller')
+const { FROM_SNAPSHOT, snapshotParams } = require('./month_snapshot')
 
 // QA feedback of the CSD staff (feedback_by_nonesales_qa table, built like feedback_by_admin).
 // The Quality Analyst gives ONE score (greater than 0, 5 at most) per employee and month, like the feedback by admin.

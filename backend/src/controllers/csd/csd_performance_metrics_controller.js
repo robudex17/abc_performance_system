@@ -4,7 +4,7 @@ const { validationResult, body } = require('express-validator')
 
 const { parseYearMonth } = require('../helper_scripts/global_variables_and_functions')
 
-const { fetch_queries, add_queries, update_queries, delete_queries }  = require(`./csd_metrics_queries`)
+const { fetch_queries, add_queries, update_queries, delete_queries }  = require(`../evaluation/metrics_queries`)
 
 let array_of_values = []
 let success_message = ""

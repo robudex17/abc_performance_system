@@ -1,13 +1,13 @@
-const { scoring } = require('./csd_leaderboard_controller')
-const { shared } = require('./csd_agent_performance_controller')
-const { readDepartment, badDepartment, isFullViewer } = require('./csd_department')
+const { scoring } = require('./leaderboard_controller')
+const { shared } = require('./agent_performance_controller')
+const { readDepartment, badDepartment, isFullViewer } = require('./department_scope')
 
 // Team Monthly / Team Yearly performance of the CSD teams (the "Team Performance" menu), same idea as the sales team pages.
 // A team is the staff with the same team_id. The team rating is the average of the final ratings of its members:
 //   monthly   all the members of the month; the team is INCOMPLETE RATING while one of them is not submitted
 //             (the same rule as the Team board of the leaderboard)
 //   yearly    all the SUBMITTED member-months of the year (only the submitted months count, like the sales yearly pages)
-// The members are the ones the user may see (csd_agent_performance_controller.js, canSee):
+// The members are the ones the user may see (agent_performance_controller.js, canSee):
 //   admin, poweruser, level 10 -> all the teams, level 9 -> the staff of level 1 - 9, level 8 and 7 -> their own team.
 //   Position level 1, 2, 3 have no team performance.
 //

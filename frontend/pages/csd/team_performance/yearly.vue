@@ -79,7 +79,7 @@
 </template>
 
 <script setup>
-// CSD Team Yearly (list): the average of the submitted months of the teams the user may see (csd_team_performance_controller.js).
+// CSD Team Yearly (list): the average of the submitted months of the teams the user may see (team_performance_controller.js).
 // The details of one team: year.vue
 import { ref, computed, onMounted, watch } from 'vue'
 import { setRatingColor, setRatingNameColor } from '@/utils/constants'

@@ -1,6 +1,6 @@
 const pool = require('../../config/db')
 const { isViewer } = require('../../middleware/leadership_access')
-const { FROM_SNAPSHOT, snapshotParams } = require('./csd_month_snapshot')
+const { FROM_SNAPSHOT, snapshotParams } = require('./month_snapshot')
 const { tasksFor, LEADERSHIP_SCORES, EVALUATED_LEVELS } = require('../../config/leadership_tasks')
 
 // Leadership Individual Performance (table leadership_evaluations), for the position level 7, 8, 9 and 10.
@@ -10,11 +10,11 @@ const { tasksFor, LEADERSHIP_SCORES, EVALUATED_LEVELS } = require('../../config/
 //   an assistant manager             -> his/her team leaders and assistant team leaders (direct reports of level 7, 8)
 // The head is the immediate head (manager_id) of the month, in any department (the Collection assistant manager evaluates the
 // Collection team leaders). The result of an evaluation is the average of the scores (1 - 5), it is the LEADERSHIP part
-// of the Performance in the CSD Evaluation (csd_leadership.js).
+// of the Performance in the CSD Evaluation (leadership_scores.js).
 //
 // The answers are confidential like the feedback: only the one who gives the evaluation reads, saves and deletes it. Admin and
 // poweruser can only VIEW it. A month that is already submitted (CSD Evaluation) or a resigned employee can not be changed:
-// middleware/csd_evaluation_lock.js, used in the routes.
+// middleware/evaluation_lock.js, used in the routes.
 //
 //   GET    /leadership_evaluations/tasks                          the form (tasks, indicators and the scores of the drop down)
 //   GET    /leadership_evaluations?year_month=YYYY-MM             the employees I evaluate, with my result of the month
@@ -123,7 +123,7 @@ const readChange = async (req, { needsBody }) => {
     if (!employee) return { error: { status: 403, message: 'You are not allowed to evaluate this employee' } }
 
     // a resigned employee, or a month that is already submitted in the CSD Evaluation, can not be added, updated or deleted
-    // (the same rule as middleware/csd_evaluation_lock.js, checked here too)
+    // (the same rule as middleware/evaluation_lock.js, checked here too)
     const lock = lockOf(employee)
     if (lock) return { error: { status: 409, message: lock.message } }
 

@@ -100,7 +100,7 @@
 
 <script setup>
 // CSD Agent Monthly (list): everybody the user may see for the month (admin, poweruser, level 10 / 9 / 8 / 7, each one its part:
-// the backend decides, see csd_agent_performance_controller.js). The details of one employee: month.vue
+// the backend decides, see agent_performance_controller.js). The details of one employee: month.vue
 import { ref, computed, onMounted, watch } from 'vue'
 import API from '~/utils/api'
 import { setRatingColor, setRatingNameColor } from '@/utils/constants'

@@ -1,7 +1,7 @@
 const { isQaStaff } = require('./qa_access')
 const { GOM_LEVEL, MANAGER_LEVEL } = require('../config/leadership_tasks')
 
-// Who may use the Leadership Individual Performance (routes/csd/csd_leadership_routes.js). Put it after authenticateToken.
+// Who may use the Leadership Individual Performance (routes/evaluation/leadership_routes.js). Put it after authenticateToken.
 //   evaluators  the GOM (position level 15), the managers (10), the assistant managers (9) and the team leaders (8) who have a
 //               leader to evaluate (the controller checks that the employee is a direct report). The Quality Analyst (level 9) has
 //               nobody to evaluate.

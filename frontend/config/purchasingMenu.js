@@ -6,7 +6,7 @@
 //   admin / poweruser      -> everything (poweruser: no feedback, no admin panel)
 // No Quality Analyst feedback in Purchasing (the Quality Analyst is the QA of CSD and Collection).
 // The Purchasing Manager (position level 10, based in Japan) is the head of the department: he is NOT in the evaluation, the leaderboard, the
-// Agent and Team Performance (backend: csd_department.js), he evaluates the leadership of the Purchasing team leaders and he sees the
+// Agent and Team Performance (backend: department_scope.js), he evaluates the leadership of the Purchasing team leaders and he sees the
 // Purchasing views (position level 10 sees everybody of his department, like the admin).
 
 export const purchasingMenu = [

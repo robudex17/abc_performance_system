@@ -104,7 +104,7 @@
 
 <script setup>
 // CSD Agent Yearly (list): the average of the submitted months of everybody the user may see (the backend decides who:
-// csd_agent_performance_controller.js). The details of one employee: year.vue
+// agent_performance_controller.js). The details of one employee: year.vue
 import { ref, computed, onMounted, watch } from 'vue'
 import API from '~/utils/api'
 import { setRatingColor, setRatingNameColor } from '@/utils/constants'

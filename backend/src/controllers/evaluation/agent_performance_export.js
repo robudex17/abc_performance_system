@@ -1,11 +1,11 @@
 const ExcelJS = require('exceljs')
-const { getMonthlyList, getMonthlyOne, getYearlyList, getYearlyOne } = require('./csd_agent_performance_controller')
-const { excel } = require('./csd_leaderboard_export')
-const { readDepartment, badDepartment, DEPARTMENT_LABELS } = require('./csd_department')
+const { getMonthlyList, getMonthlyOne, getYearlyList, getYearlyOne } = require('./agent_performance_controller')
+const { excel } = require('./leaderboard_export')
+const { readDepartment, badDepartment, DEPARTMENT_LABELS } = require('./department_scope')
 const { getDataBorder, getHeaderBorder, getHeaderStyle } = require('../helper_scripts/global_variables_and_functions')
 
 // Excel of the Agent Monthly / Agent Yearly pages (same pattern as the sales exports, with the CSD data only).
-// Admin and poweruser only (routes/csd/csd_agent_performance_routes.js).
+// Admin and poweruser only (routes/evaluation/agent_performance_routes.js).
 //   GET /csd_agent_performance_export/monthly?year_month=                the list of the month
 //   GET /csd_agent_performance_export/monthly/:employee_id?year_month=   one employee: the table + the metrics summary
 //   GET /csd_agent_performance_export/yearly?year=                       the list of the year

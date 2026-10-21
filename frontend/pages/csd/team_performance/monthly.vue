@@ -80,7 +80,7 @@
 </template>
 
 <script setup>
-// CSD Team Monthly (list): the teams of the month the user may see (the backend decides, see csd_team_performance_controller.js).
+// CSD Team Monthly (list): the teams of the month the user may see (the backend decides, see team_performance_controller.js).
 // A team that is not complete (a member is not submitted) has no details. The details of one team: month.vue
 import { ref, computed, onMounted, watch } from 'vue'
 import { setRatingColor, setRatingNameColor } from '@/utils/constants'

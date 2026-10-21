@@ -4,8 +4,8 @@ const router = express.Router()
 
 
 
-const csdLeaderBoardController  = require('../../controllers/csd/csd_leaderboard_controller')
-const csdLeaderboardExport = require('../../controllers/csd/csd_leaderboard_export')
+const csdLeaderBoardController  = require('../../controllers/evaluation/leaderboard_controller')
+const csdLeaderboardExport = require('../../controllers/evaluation/leaderboard_export')
 const { authenticateToken, authorizeRoles} = require('../../middleware/auth')
 
 

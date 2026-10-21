@@ -6,7 +6,7 @@
 // Feedback (Immediate Head) and Feedback (Members) are given in the Give Feedback pages and are not part of this lock.
 const pool = require('../config/db')
 
-const { isPerformanceComputed } = require('../controllers/csd/csd_manager_performance')
+const { isPerformanceComputed } = require('../controllers/evaluation/performance_resolver')
 
 const YEAR_MONTH_FORMAT = /^\d{4}-(0[1-9]|1[0-2])$/
 

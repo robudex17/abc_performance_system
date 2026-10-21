@@ -2,12 +2,12 @@ const pool = require('../../config/db')
 const { validationResult, body } = require('express-validator')
 
 const { parseYearMonth } = require('../helper_scripts/global_variables_and_functions')
-const { attachReceivedFeedback } = require('./csd_received_feedback')
-const { applyComputedPerformance, applySubmitDependencies, getSubmitBlockers, getReviewBlockers } = require('./csd_manager_performance')
-const { attachLeadership } = require('./csd_leadership')
-const { readDepartment, badDepartment, isExcludedFromEvaluation } = require('./csd_department')
+const { attachReceivedFeedback } = require('./received_feedback')
+const { applyComputedPerformance, applySubmitDependencies, getSubmitBlockers, getReviewBlockers } = require('./performance_resolver')
+const { attachLeadership } = require('./leadership_scores')
+const { readDepartment, badDepartment, isExcludedFromEvaluation } = require('./department_scope')
 
-const { fetch_eval_queries, delete_eval_queries, update_eval_queries, add_eval_queries }  = require(`./csd_metrics_queries`)
+const { fetch_eval_queries, delete_eval_queries, update_eval_queries, add_eval_queries }  = require(`./metrics_queries`)
 
 let array_of_values = []
 let success_message = ""
@@ -534,7 +534,7 @@ exports.generateCsdEvaluation  = async (year_month, scope, department_code,  met
     //     return {...agent, ... matching_agent}
     //  })
 
-     // the staff that is not in the evaluation of the department (the Purchasing Manager of Japan), see csd_department.js
+     // the staff that is not in the evaluation of the department (the Purchasing Manager of Japan), see department_scope.js
      const excludedIds = new Set(csdEvaluationResults.filter(row => isExcludedFromEvaluation(department_code, row)).map(row => Number(row.id)))
 
      let employee_to_evaluate  =  csdEvaluationResults.filter(row => !excludedIds.has(Number(row.id))).sort((a, b) => {
@@ -558,7 +558,7 @@ exports.generateCsdEvaluation  = async (year_month, scope, department_code,  met
      }
 
      // the performance of the assistant team leaders, team leaders, assistant managers and the manager is the average of
-     // their subordinates (it is not typed), see csd_manager_performance.js
+     // their subordinates (it is not typed), see performance_resolver.js
      await applyComputedPerformance(employee_to_evaluate, year_month)
 
      // the Leadership Individual Performance (questionnaire) of the leaders, the other part of their Performance
@@ -658,7 +658,7 @@ exports.generateCsdEvaluation  = async (year_month, scope, department_code,  met
 }
 
 
-// Submit the CSD evaluation of the month: admin only (routes/csd/csd_evaluation_routes.js).
+// Submit the CSD evaluation of the month: admin only (routes/evaluation/evaluation_routes.js).
 // employee_id 'all' submits everybody (the Submit button of the CSD & Collection Manager and the Submit All button),
 // it needs all the rows to be ready. What is ready is decided here, not by what the page sends.
 // Table: csd_evaluation_status( employee_id, dbname, year_month, submitted )

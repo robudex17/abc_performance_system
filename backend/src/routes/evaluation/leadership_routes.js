@@ -2,9 +2,9 @@ const express = require('express')
 
 const router = express.Router()
 
-const leadership = require('../../controllers/csd/csd_leadership_controller')
+const leadership = require('../../controllers/evaluation/leadership_controller')
 const { authenticateToken } = require('../../middleware/auth')
-const { lockCsdEvaluationWhenSubmitted } = require('../../middleware/csd_evaluation_lock')
+const { lockCsdEvaluationWhenSubmitted } = require('../../middleware/evaluation_lock')
 const { onlyLeadershipUsers, onlyEvaluators, onlyViewers } = require('../../middleware/leadership_access')
 
 // Who can evaluate whom is decided in the controller (the head of the employee, or the GOM for the manager).

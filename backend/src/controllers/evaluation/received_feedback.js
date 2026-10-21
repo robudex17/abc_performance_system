@@ -1,6 +1,6 @@
 const pool = require('../../config/db')
 const { isQaStaff } = require('../../middleware/qa_access')
-const { FROM_SNAPSHOT, snapshotParams } = require('./csd_month_snapshot')
+const { FROM_SNAPSHOT, snapshotParams } = require('./month_snapshot')
 
 // The feedback an employee RECEIVED in a month, for the CSD Evaluation page (same idea as the sales evaluation, where
 // the list of every feedback has ALL the people who should give it: the ones who did not give yet have a score of 0).

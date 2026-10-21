@@ -3,7 +3,7 @@ import { reactive } from 'vue'
 
 import API from '~/utils/api'
 
-// Leadership Individual Performance (backend: csd_leadership_controller.js)
+// Leadership Individual Performance (backend: leadership_controller.js)
 //   tasks / scores   the form: TASK | KEY PERFORMANCE INDICATORS | SCORE (drop down) | COMMENTS
 //   employees        the leaders the logged in user evaluates, with his/her result of the month
 //   evaluation       the evaluation of one leader (null = not evaluated yet)

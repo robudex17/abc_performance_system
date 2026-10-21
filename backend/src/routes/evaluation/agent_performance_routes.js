@@ -2,8 +2,8 @@ const express = require('express')
 
 const router = express.Router()
 
-const csdAgentPerformance = require('../../controllers/csd/csd_agent_performance_controller')
-const csdAgentPerformanceExport = require('../../controllers/csd/csd_agent_performance_export')
+const csdAgentPerformance = require('../../controllers/evaluation/agent_performance_controller')
+const csdAgentPerformanceExport = require('../../controllers/evaluation/agent_performance_export')
 const { authenticateToken, authorizeRoles } = require('../../middleware/auth')
 
 // Who can see which employee is decided in the controller (position level / team / role).

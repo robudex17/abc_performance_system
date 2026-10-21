@@ -1,6 +1,6 @@
 const pool = require('../../config/db')
-const { generateCsdEvaluation } = require('./csd_evaluation_controller')
-const { readDepartment, badDepartment, isFullViewer } = require('./csd_department')
+const { generateCsdEvaluation } = require('./evaluation_controller')
+const { readDepartment, badDepartment, isFullViewer } = require('./department_scope')
 
 // CSD leaderboard, built like the sales leaderboard but on the CSD evaluation (not on csd_performance_metrics):
 //   - the rows are the ones of the CSD Evaluation page: Performance (typed by the admin), Absences, Tardiness, Memo and
@@ -229,7 +229,7 @@ const groupByTeam = (allRows, rankedRows) => {
 
 // The leaderboard of a month: returns { data } or { error: { status, message } }.
 // Used by the page (fetchCsdLeaderboard) and by the Excel export.
-// shared with the agent performance pages (csd_agent_performance_controller.js)
+// shared with the agent performance pages (agent_performance_controller.js)
 exports.scoring = { scoreEmployee, loadScoreTables, ratingName, toNumber, round4, INCOMPLETE }
 
 exports.buildCsdLeaderboard = async (user, scope, yearMonth, employeeId, department = 'csd') => {

@@ -1,4 +1,4 @@
-// Who can add / change / delete the CSD evaluation data (routes/csd/csd_evaluation_routes.js).
+// Who can add / change / delete the CSD evaluation data (routes/evaluation/evaluation_routes.js).
 // Same rules as the CSD Evaluation page (pages/csd/csd_evaluation.vue), now also checked by the backend:
 //  - performance and feedback_by_admin : the admin, or the CSD managers (position level 10 and 9)
 //  - absences, tardiness and memo      : the admin only

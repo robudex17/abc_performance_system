@@ -4,10 +4,10 @@ const router = express.Router()
 
 
 
-const csdEvaluation= require('../../controllers/csd/csd_evaluation_controller')
+const csdEvaluation= require('../../controllers/evaluation/evaluation_controller')
 const { authenticateToken, authorizeRoles} = require('../../middleware/auth')
-const { canChangeCsdEvaluation } = require('../../middleware/csd_evaluation_access')
-const { lockCsdEvaluationWhenSubmitted } = require('../../middleware/csd_evaluation_lock')
+const { canChangeCsdEvaluation } = require('../../middleware/evaluation_access')
+const { lockCsdEvaluationWhenSubmitted } = require('../../middleware/evaluation_lock')
 
 
 // submit / review of the month (admin only). employee_id can be 'all'.

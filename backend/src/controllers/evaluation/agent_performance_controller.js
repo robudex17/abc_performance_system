@@ -1,10 +1,10 @@
-const { generateCsdEvaluation } = require('./csd_evaluation_controller')
-const { readDepartment, badDepartment, isFullViewer } = require('./csd_department')
-const { scoring } = require('./csd_leaderboard_controller')
+const { generateCsdEvaluation } = require('./evaluation_controller')
+const { readDepartment, badDepartment, isFullViewer } = require('./department_scope')
+const { scoring } = require('./leaderboard_controller')
 
 // Agent Monthly / Agent Yearly performance of the CSD staff (the "Agent Performance" and "Performance Evaluation" menus).
 // Same idea as the sales pages: a list of everybody the user may see, and the performance of one employee.
-// Scores and ratings are the ones of the CSD leaderboard (csd_leaderboard_controller.js, built on the CSD evaluation).
+// Scores and ratings are the ones of the CSD leaderboard (leaderboard_controller.js, built on the CSD evaluation).
 //
 // Who sees whom (checked here, the pages only follow it):
 //   admin, poweruser, position level 10   everybody (level 1 - 10)
@@ -135,10 +135,10 @@ const readYear = (req) => {
     return /^\d{4}$/.test(year) ? year : null
 }
 
-// shared with the team performance pages (csd_team_performance_controller.js)
+// shared with the team performance pages (team_performance_controller.js)
 exports.shared = { canSee, buildMonth, buildYear, yearAverage, readYear, currentYearMonth }
 
-// the data of the four pages, used by the routes and by the Excel export (csd_agent_performance_export.js)
+// the data of the four pages, used by the routes and by the Excel export (agent_performance_export.js)
 exports.getMonthlyList = async (user, yearMonth, department = 'csd') => {
     const tables = await loadScoreTables()
     const rows = await buildMonth(user, yearMonth, tables, department)

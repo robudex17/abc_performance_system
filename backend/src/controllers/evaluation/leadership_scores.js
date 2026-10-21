@@ -2,12 +2,12 @@ const pool = require('../../config/db')
 const { EVALUATED_LEVELS } = require('../../config/leadership_tasks')
 
 // The Leadership Individual Performance of the leaders (position level 7, 8, 9, 10) in the CSD Evaluation.
-// The evaluation is made by the head of the employee in csd_leadership_controller.js (table leadership_evaluations).
+// The evaluation is made by the head of the employee in leadership_controller.js (table leadership_evaluations).
 // Every leader of the list gets:
 //   leadership_required   true (the leader can not be submitted without it)
 //   leadership_score      the score of the questionnaire, 1 - 5 (the average when more than one head evaluated), 0 = not answered yet
 //   leadership_by         who evaluated: [{ evaluator_id, evaluator_dbname, leadership_score }]
-// The score is the LEADERSHIP part of the Performance, see scoreEmployee() in csd_leaderboard_controller.js.
+// The score is the LEADERSHIP part of the Performance, see scoreEmployee() in leaderboard_controller.js.
 exports.attachLeadership = async (rows, yearMonth) => {
     const leaders = rows.filter(row => EVALUATED_LEVELS.includes(Number(row.position_level)))
     if (leaders.length === 0) return

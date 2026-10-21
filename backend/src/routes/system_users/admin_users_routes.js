@@ -1,7 +1,7 @@
 const express = require('express')
 
 const router = express.Router()
-const adminUserController = require ('../../controllers/hr_admin/admin_users_controller')
+const adminUserController = require ('../../controllers/system_users/admin_users_controller')
 const { validateNewAndUpdateStandardUser } = require('../../middleware/validator')
 // const uploadImage = require('../middleware/fileupload')
 const { upload } = require('../../middleware/fileupload_to_minio')  // updated import

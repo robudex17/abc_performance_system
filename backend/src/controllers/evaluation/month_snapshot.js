@@ -1,5 +1,5 @@
 // The employees of a month as they were in that month, in ANY department: the latest assignment and the latest employment
-// valid in the month (the same snapshot rule as the CSD evaluation query, csd_metrics_queries.js).
+// valid in the month (the same snapshot rule as the CSD evaluation query, metrics_queries.js).
 // Needed where CSD work reaches the other departments, because the CSD & Collection Manager (position level 10) and the
 // CSD & Collections Quality Analyst / Trainer belong to CSD but also serve Collection.
 //

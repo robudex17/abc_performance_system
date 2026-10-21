@@ -1,6 +1,6 @@
 const pool = require('../../config/db')
 const { isQaStaff } = require('../../middleware/qa_access')
-const { FROM_SNAPSHOT, snapshotParams } = require('./csd_month_snapshot')
+const { FROM_SNAPSHOT, snapshotParams } = require('./month_snapshot')
 
 // Who types the Performance and who gets it computed (CSD Evaluation):
 //

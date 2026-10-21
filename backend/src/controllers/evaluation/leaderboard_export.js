@@ -1,6 +1,6 @@
 const ExcelJS = require('exceljs')
-const { buildCsdLeaderboard } = require('./csd_leaderboard_controller')
-const { readDepartment, badDepartment, DEPARTMENT_LABELS } = require('./csd_department')
+const { buildCsdLeaderboard } = require('./leaderboard_controller')
+const { readDepartment, badDepartment, DEPARTMENT_LABELS } = require('./department_scope')
 const { getDataBorder, getHeaderBorder, getHeaderStyle } = require('../helper_scripts/global_variables_and_functions')
 
 // Excel export of the CSD leaderboard (table view of the page), same look as the sales leaderboard export.
@@ -138,7 +138,7 @@ const writeTable = (rows, worksheet, title) => {
     })
 }
 
-// shared with the agent performance export (csd_agent_performance_export.js)
+// shared with the agent performance export (agent_performance_export.js)
 exports.excel = { writeTable, RATING_COLORS, capitalize, toNumber, COLUMN_GROUPS, leadershipOf, individualScoreOf }
 
 exports.csdLeaderboardExportToExcel = async (req, res, next) => {

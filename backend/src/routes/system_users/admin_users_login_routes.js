@@ -4,7 +4,7 @@ const router = express.Router()
 
 const { authenticateToken, authorizeRoles, allowedAdmins } = require('../../middleware/auth')
 
-const loginController = require('../../controllers/hr_admin/admin_users_login_controller')
+const loginController = require('../../controllers/system_users/admin_users_login_controller')
 
 const { registerUser, loginUser,logoutUser, updateLogin } = require('../../middleware/validator')
 

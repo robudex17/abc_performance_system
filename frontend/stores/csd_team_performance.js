@@ -3,7 +3,7 @@ import { reactive } from 'vue'
 
 import API from '~/utils/api'
 
-// Team Monthly / Team Yearly performance of the CSD teams (backend: csd_team_performance_controller.js)
+// Team Monthly / Team Yearly performance of the CSD teams (backend: team_performance_controller.js)
 //   monthly   the teams of the month (a list; with team_id: an array with the team and its members, or empty)
 //   yearly    the teams of the year (a list)
 //   yearTeam  one team of the year: its months and its members (null when there is none)

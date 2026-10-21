@@ -2,7 +2,7 @@ const express = require('express')
 
 const router = express.Router()
 
-const csdTeamPerformance = require('../../controllers/csd/csd_team_performance_controller')
+const csdTeamPerformance = require('../../controllers/evaluation/team_performance_controller')
 const { authenticateToken } = require('../../middleware/auth')
 
 // Which teams / members the user may see is decided in the controller (position level / team / role).

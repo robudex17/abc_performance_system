@@ -2,10 +2,10 @@ const express = require('express')
 
 const router = express.Router()
 
-const csdQaFeedbackController = require('../../controllers/csd/csd_qa_feedback_controller')
+const csdQaFeedbackController = require('../../controllers/evaluation/qa_feedback_controller')
 const { authenticateToken } = require('../../middleware/auth')
 const { onlyQaStaff } = require('../../middleware/qa_access')
-const { lockCsdEvaluationWhenSubmitted } = require('../../middleware/csd_evaluation_lock')
+const { lockCsdEvaluationWhenSubmitted } = require('../../middleware/evaluation_lock')
 
 // QA feedback (a score, no questionnaire) of the CSD staff of position level 8 and below.
 // Only the CSD & Collections Quality Analyst / Trainer can see and change it: not the admin, not the other managers.
