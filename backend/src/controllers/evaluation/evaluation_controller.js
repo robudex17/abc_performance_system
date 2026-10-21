@@ -519,9 +519,9 @@ exports.generateCsdEvaluation  = async (year_month, scope, department_code,  met
        
       const [csdEvaluationResults] = await pool.execute(
         `
-        ${fetch_eval_queries[eval_type]} WHERE d.code = '${department_code}' ${filter}
+        ${fetch_eval_queries[eval_type]} WHERE d.code = ? ${filter}
 
-        `,array_of_values
+        `,[...array_of_values, department_code]
       );
    
      

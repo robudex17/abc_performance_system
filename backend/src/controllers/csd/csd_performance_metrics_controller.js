@@ -416,9 +416,9 @@ exports.generateCsdPerformanceMetrics  = async (year_month, scope, department_co
        
       const [csdPerformanceMetricsResults] = await pool.execute(
         `
-        ${fetch_queries[metrics_type]} WHERE d.code = '${department_code}' ${filter}
+        ${fetch_queries[metrics_type]} WHERE d.code = ? ${filter}
 
-        `,array_of_values
+        `,[...array_of_values, department_code]
       );
    
 
