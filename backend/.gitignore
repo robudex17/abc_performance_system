@@ -4,5 +4,8 @@ node_modules
 *.log
 *.txt
 *.html
-tests/
+tests/*
+# the evaluation tests and the integration tests are part of the project
+!tests/evaluation/
+!tests/integration/
 password_gen.js
