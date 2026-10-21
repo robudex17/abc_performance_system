@@ -17,6 +17,6 @@ router.post('/admin_users_login', loginUser, loginController.loginUser)
 
 // router.post('/verify_token', loginController.verifyToken)
 
-router.post('/admin_users_logout',   loginController.logoutUser)
+router.post('/admin_users_logout',   authenticateToken, loginController.logoutUser)
  
 module.exports = router

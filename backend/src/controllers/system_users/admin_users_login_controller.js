@@ -165,7 +165,8 @@ exports.loginUser = async(req,res, next) => {
 
 exports.logoutUser = async (req, res, next) => {
     const refreshToken = req.cookies.refreshToken 
-    const loginId = req.body.login_id
+    // the logged in user (the route needs the token), never an id sent in the body
+    const loginId = req.user.login_id
     try {
         if(!refreshToken){
             return res.status(400).json({message: 'No refresh token provided'})
@@ -174,7 +175,7 @@ exports.logoutUser = async (req, res, next) => {
          //fetch and check the stored refresh token from database
          const [ storedToken ] = await pool.execute("SELECT * FROM refresh_tokens WHERE user_id=? AND revoked=0 LIMIT 1", [loginId])
     
-         if (!storedToken){
+         if (!storedToken || storedToken.length === 0){
            
             return res.status(403).json({message: 'Invalid refresh token, Token has been already revoked'})
         }

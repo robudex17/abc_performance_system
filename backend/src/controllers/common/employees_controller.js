@@ -133,6 +133,11 @@ exports.fetchEmployees = async (req,res, next ) => {
         try{
             const employeeStatus = req.query.employee_status || 'Hired'
             const departmentCode = req.params.department_code
+
+            // only the real statuses (the value is a query parameter too)
+            if (!['Hired', 'Resigned', 'Rehired'].includes(employeeStatus)) {
+                return res.status(400).json({ error: 'employee_status must be Hired, Resigned or Rehired' })
+            }
   
            console.log('the employee status is ', employeeStatus)
 
@@ -230,11 +235,12 @@ exports.fetchEmployees = async (req,res, next ) => {
 
                     LEFT JOIN employees_login el ON e.id = el.login_id
 
-                    WHERE ee.status = '${employeeStatus}' AND (d.code = '${departmentCode}' OR  LOWER(p.position_name) LIKE CONCAT('%', LOWER('${departmentCode}'), '%'))
+                    WHERE ee.status = ? AND (d.code = ? OR  LOWER(p.position_name) LIKE CONCAT('%', LOWER(?), '%'))
 
                     ORDER BY ee.start_date;
 
-                `
+                `,
+                [employeeStatus, departmentCode, departmentCode]
 
                 //    WHERE ae.status = 'Hired' || ae.status = 'Resigned';
             )

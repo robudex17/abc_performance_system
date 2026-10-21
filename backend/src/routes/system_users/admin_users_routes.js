@@ -9,7 +9,7 @@ const { authenticateToken, authorizeRoles, allowedAdmins } = require('../../midd
 
 
 // router.get('/standardusers/:user_id', authenticateToken,salesAgensController.fetchSalesAgent)
-router.get('/admin_users', adminUserController.fetchAdminUsers)
+router.get('/admin_users', authenticateToken, authorizeRoles('admin'), adminUserController.fetchAdminUsers)
 
 
 router.post('/admin_users', authenticateToken, authorizeRoles('admin'), allowedAdmins, upload.single('image'),  validateNewAndUpdateStandardUser, adminUserController.addNewAdminUser  )

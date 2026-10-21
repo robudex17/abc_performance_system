@@ -18,6 +18,6 @@ router.post('/employee_login', loginUser, loginController.loginUser)
 
 // router.post('/verify_token', loginController.verifyToken)
 
-router.post('/employee_logout', loginController.logoutUser)
+router.post('/employee_logout', authenticateToken, loginController.logoutUser)
  
 module.exports = router
