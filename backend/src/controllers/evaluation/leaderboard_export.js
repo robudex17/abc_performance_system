@@ -4,7 +4,7 @@ const { readDepartment, badDepartment, DEPARTMENT_LABELS } = require('./departme
 const { getDataBorder, getHeaderBorder, getHeaderStyle } = require('../helper_scripts/global_variables_and_functions')
 
 // Excel export of the CSD leaderboard (table view of the page), same look as the sales leaderboard export.
-// GET /csd_leaderboard_export/:scope?year_month=YYYY-MM   (admin and poweruser)
+// GET /evaluation/leaderboard_export/:scope?year_month=YYYY-MM   (admin and poweruser)
 // Only agent and team_leader: the team board is shown as cards only. Like the page, it is not exported
 // while the evaluation of somebody in the list is not submitted yet.
 

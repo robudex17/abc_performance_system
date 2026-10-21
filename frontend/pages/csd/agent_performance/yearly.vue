@@ -133,7 +133,7 @@ const year = computed(() => route.query.year || String(new Date().getFullYear())
 
 const agents = computed(() => store.state.yearly)
 
-const exportUrl = `${API.csd_agent_performance_export}/yearly`
+const exportUrl = `${API.evaluation_agent_performance_export}/yearly`
 const exportFileName = computed(() => `${departmentCode.value}-agents-yearly-performance-${year.value}.xlsx`)
 
 const itemsPerPage = 10

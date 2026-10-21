@@ -133,7 +133,7 @@ const agents = computed(() => store.state.monthly)
 // the export needs every evaluation of the month to be submitted (the same rule as the sales pages)
 const incomplete = computed(() => agents.value.some(agent => agent.submitted !== 1))
 
-const exportUrl = `${API.csd_agent_performance_export}/monthly`
+const exportUrl = `${API.evaluation_agent_performance_export}/monthly`
 const exportFileName = computed(() => `${departmentCode.value}-agents-monthly-performance-${yearMonth.value}.xlsx`)
 
 const itemsPerPage = 10

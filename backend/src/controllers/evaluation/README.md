@@ -56,7 +56,24 @@ Every request has `?department=csd|collection|purchasing|hradmin` (`readDepartme
 - The leadership evaluations and the feedback are confidential: only the giver reads and changes them; admin and poweruser only view.
 - Averages of the Performance have 5 decimals, the final rating 4.
 
+## The urls
+The addresses of the engine are under :
+
+| Address | What |
+|---|---|
+|  | the evaluation of the month (read, add, change, delete a metric) |
+|  | submit (POST) and review (DELETE) |
+| ,  | the leaderboard and its Excel |
+| ,  | Agent Monthly / Yearly and their Excel |
+|  | Team Monthly / Yearly |
+|  | the feedback of the Quality Analyst |
+|  | the leadership evaluation (it had a neutral name already) |
+
+The first addresses (, , , , , ,
+, ) still answer: every route of  has both. They are kept so that an old
+frontend that is still open keeps working. **Remove the old address of each route when the servers run the new frontend.**
+The CSD only routes keep their names (, the email reports).
+
 ## Names that look like CSD but are not
-The URLs keep their first names (`/csd_evaluation`, `/csd_leaderboard`, `/csd_agent_performance`...) and so do some functions
-(`generateCsdEvaluation`) and tables (`csd_evaluation_status`, `csd_performance_score`). They serve all the none-sales departments. They are
-left as they are on purpose: renaming a URL or a table also changes the frontend and the database.
+Some functions () and the tables (, ) still have  in the name although they serve
+all the none-sales departments. They are left as they are on purpose: renaming a table also changes the database and every query.

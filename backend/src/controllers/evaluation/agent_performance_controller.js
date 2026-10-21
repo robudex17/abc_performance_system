@@ -13,10 +13,10 @@ const { scoring } = require('./leaderboard_controller')
 //   position level 8 and 7                his/her own team (him/her included)
 //   position level 1, 2, 3                only him/herself
 //
-// Monthly:  GET /csd_agent_performance/monthly?year_month=YYYY-MM            the list
-//           GET /csd_agent_performance/monthly/:employee_id?year_month=...   one employee
-// Yearly:   GET /csd_agent_performance/yearly?year=YYYY                      the list (average of the submitted months)
-//           GET /csd_agent_performance/yearly/:employee_id?year=YYYY         the submitted months + the year average
+// Monthly:  GET /evaluation/agent_performance/monthly?year_month=YYYY-MM            the list
+//           GET /evaluation/agent_performance/monthly/:employee_id?year_month=...   one employee
+// Yearly:   GET /evaluation/agent_performance/yearly?year=YYYY                      the list (average of the submitted months)
+//           GET /evaluation/agent_performance/yearly/:employee_id?year=YYYY         the submitted months + the year average
 // Like the sales yearly pages, only the SUBMITTED months count.
 
 const MONTH_NAMES = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December']

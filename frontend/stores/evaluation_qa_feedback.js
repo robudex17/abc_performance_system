@@ -3,7 +3,7 @@ import { reactive } from 'vue'
 
 import API from '~/utils/api'
 
-// QA feedback of the CSD staff (/csd_qa_feedback): the Quality Analyst gives one score per employee and month.
+// QA feedback of the CSD staff (/evaluation/qa_feedback): the Quality Analyst gives one score per employee and month.
 // The actions throw an Error with the message of the server, the page shows it.
 export const useEvaluationQaFeedbackStore = defineStore('evaluationQaFeedbackStore', () => {
     const authStore = useAuthStore()
@@ -44,7 +44,7 @@ export const useEvaluationQaFeedbackStore = defineStore('evaluationQaFeedbackSto
     const fetchStaff = async (yearMonth) => {
         state.loading = true
         try {
-            state.staff = await request(`${API.csd_qa_feedback}?year_month=${yearMonth}`)
+            state.staff = await request(`${API.evaluation_qa_feedback}?year_month=${yearMonth}`)
         } finally {
             state.loading = false
         }
@@ -52,12 +52,12 @@ export const useEvaluationQaFeedbackStore = defineStore('evaluationQaFeedbackSto
 
     // httpMethod: POST (add) or PUT (edit)
     const saveFeedback = async (httpMethod, employeeId, yearMonth, feedbackScore) => {
-        const data = await request(`${API.csd_qa_feedback}/${employeeId}?year_month=${yearMonth}`, httpMethod, { feedback_score: feedbackScore })
+        const data = await request(`${API.evaluation_qa_feedback}/${employeeId}?year_month=${yearMonth}`, httpMethod, { feedback_score: feedbackScore })
         return data.message
     }
 
     const deleteFeedback = async (employeeId, yearMonth) => {
-        const data = await request(`${API.csd_qa_feedback}/${employeeId}?year_month=${yearMonth}`, 'DELETE')
+        const data = await request(`${API.evaluation_qa_feedback}/${employeeId}?year_month=${yearMonth}`, 'DELETE')
         return data.message
     }
 

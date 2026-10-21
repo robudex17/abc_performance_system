@@ -29,10 +29,10 @@ export const useEvaluationStore = defineStore('evaluationStore', () => {
         state.error = null
 
         
-        let url = `${API.csd_leaderboard}`
+        let url = `${API.evaluation_leaderboard}`
         
         if(scope){
-            url = `${API.csd_leaderboard}/${scope}`
+            url = `${API.evaluation_leaderboard}/${scope}`
         }
 
         if(employee_id){
@@ -430,7 +430,7 @@ export const useEvaluationStore = defineStore('evaluationStore', () => {
         state.error = null
         try {
             // csd (default) or collection: 'all' is everybody of that department
-            const statusUrl = new URL(`${API.csd_evaluation_status}/${employee_id}`)
+            const statusUrl = new URL(`${API.evaluation_status}/${employee_id}`)
             if (query_string?.department) statusUrl.searchParams.append('department', query_string.department)
 
             const response = await fetch(statusUrl, {

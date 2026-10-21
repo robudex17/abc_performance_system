@@ -95,7 +95,7 @@ const employeeId = computed(() => route.query.employee_id || currentUser?.login_
 const agent = computed(() => store.state.yearDetail.yearAverage)
 const months = computed(() => store.state.yearDetail.agentMetricsFullYear)
 
-const exportUrl = computed(() => `${API.csd_agent_performance_export}/yearly/${employeeId.value}`)
+const exportUrl = computed(() => `${API.evaluation_agent_performance_export}/yearly/${employeeId.value}`)
 const exportFileName = computed(() => `${departmentCode.value}-${agent.value?.db_name}-yearly-performance-${year.value}.xlsx`)
 
 const selectedAgent = reactive({})

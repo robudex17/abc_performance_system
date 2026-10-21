@@ -6,10 +6,10 @@ const { getDataBorder, getHeaderBorder, getHeaderStyle } = require('../helper_sc
 
 // Excel of the Agent Monthly / Agent Yearly pages (same pattern as the sales exports, with the CSD data only).
 // Admin and poweruser only (routes/evaluation/agent_performance_routes.js).
-//   GET /csd_agent_performance_export/monthly?year_month=                the list of the month
-//   GET /csd_agent_performance_export/monthly/:employee_id?year_month=   one employee: the table + the metrics summary
-//   GET /csd_agent_performance_export/yearly?year=                       the list of the year
-//   GET /csd_agent_performance_export/yearly/:employee_id?year=          one employee: the submitted months + the year summary
+//   GET /evaluation/agent_performance_export/monthly?year_month=                the list of the month
+//   GET /evaluation/agent_performance_export/monthly/:employee_id?year_month=   one employee: the table + the metrics summary
+//   GET /evaluation/agent_performance_export/yearly?year=                       the list of the year
+//   GET /evaluation/agent_performance_export/yearly/:employee_id?year=          one employee: the submitted months + the year summary
 // Like the pages: the monthly exports need the evaluation to be submitted.
 
 const { writeTable, capitalize, toNumber, RATING_COLORS, leadershipOf, individualScoreOf } = excel

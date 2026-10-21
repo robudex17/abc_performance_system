@@ -10,10 +10,10 @@ const { lockCsdEvaluationWhenSubmitted } = require('../../middleware/evaluation_
 // QA feedback (a score, no questionnaire) of the CSD staff of position level 8 and below.
 // Only the CSD & Collections Quality Analyst / Trainer can see and change it: not the admin, not the other managers.
 
-router.get('/csd_qa_feedback', authenticateToken, onlyQaStaff, csdQaFeedbackController.fetchQaFeedbackStaff)
+router.get(['/evaluation/qa_feedback', '/csd_qa_feedback'], authenticateToken, onlyQaStaff, csdQaFeedbackController.fetchQaFeedbackStaff)
 
-router.post('/csd_qa_feedback/:employee_id', authenticateToken, onlyQaStaff, lockCsdEvaluationWhenSubmitted, csdQaFeedbackController.addQaFeedback)
-router.put('/csd_qa_feedback/:employee_id', authenticateToken, onlyQaStaff, lockCsdEvaluationWhenSubmitted, csdQaFeedbackController.updateQaFeedback)
-router.delete('/csd_qa_feedback/:employee_id', authenticateToken, onlyQaStaff, lockCsdEvaluationWhenSubmitted, csdQaFeedbackController.deleteQaFeedback)
+router.post(['/evaluation/qa_feedback/:employee_id', '/csd_qa_feedback/:employee_id'], authenticateToken, onlyQaStaff, lockCsdEvaluationWhenSubmitted, csdQaFeedbackController.addQaFeedback)
+router.put(['/evaluation/qa_feedback/:employee_id', '/csd_qa_feedback/:employee_id'], authenticateToken, onlyQaStaff, lockCsdEvaluationWhenSubmitted, csdQaFeedbackController.updateQaFeedback)
+router.delete(['/evaluation/qa_feedback/:employee_id', '/csd_qa_feedback/:employee_id'], authenticateToken, onlyQaStaff, lockCsdEvaluationWhenSubmitted, csdQaFeedbackController.deleteQaFeedback)
 
 module.exports = router

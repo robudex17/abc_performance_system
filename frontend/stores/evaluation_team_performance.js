@@ -26,7 +26,7 @@ export const useEvaluationTeamPerformanceStore = defineStore('evaluationTeamPerf
         state.error = null
 
         try {
-            const url = new URL(`${API.csd_team_performance}/${period}${teamId ? `/${teamId}` : ''}`)
+            const url = new URL(`${API.evaluation_team_performance}/${period}${teamId ? `/${teamId}` : ''}`)
             if (period === 'monthly' && queryString?.year_month) url.searchParams.append('year_month', queryString.year_month)
             if (period === 'yearly' && queryString?.year) url.searchParams.append('year', queryString.year)
             // csd (default) or collection: the teams of that department

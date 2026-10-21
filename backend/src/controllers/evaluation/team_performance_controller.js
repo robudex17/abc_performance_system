@@ -13,10 +13,10 @@ const { canViewTeams } = require('./visibility_rules')
 //   Position level 1, 2, 3 have no team performance.
 //
 // :team_id can be 'me': the team of the user (the page of a team leader).
-// Monthly:  GET /csd_team_performance/monthly?year_month=YYYY-MM              the teams
-//           GET /csd_team_performance/monthly/:team_id?year_month=...         one team with its members (an array of 0 or 1)
-// Yearly:   GET /csd_team_performance/yearly?year=YYYY                        the teams
-//           GET /csd_team_performance/yearly/:team_id?year=YYYY               one team: its months and its members (or null)
+// Monthly:  GET /evaluation/team_performance/monthly?year_month=YYYY-MM              the teams
+//           GET /evaluation/team_performance/monthly/:team_id?year_month=...         one team with its members (an array of 0 or 1)
+// Yearly:   GET /evaluation/team_performance/yearly?year=YYYY                        the teams
+//           GET /evaluation/team_performance/yearly/:team_id?year=YYYY               one team: its months and its members (or null)
 
 const { toNumber, round4, ratingName, loadScoreTables, INCOMPLETE } = scoring
 const { buildMonth, buildYear, yearAverage, readYear, currentYearMonth } = shared

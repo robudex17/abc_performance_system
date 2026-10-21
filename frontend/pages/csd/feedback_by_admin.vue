@@ -142,7 +142,7 @@
 // FEEDBACK > FEEDBACK ADMIN of the CSD department. Admin only.
 // Lists ALL the CSD staff (every position level) of the selected month (year_month of the navbar, else the current
 // month) and lets the admin add / edit / delete the feedback_by_admin. It reuses what the CSD Evaluation page uses:
-// the csd store, the /csd_evaluation endpoints and the EvaluationMetricModal modal.
+// the csd store, the /evaluation/records endpoints and the EvaluationMetricModal modal.
 definePageMeta({
   layout: 'csd',
   middleware: ['auth', 'admin-only', 'department-layout'],

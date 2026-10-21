@@ -103,7 +103,7 @@ const readChangeRequest = async (req, { needsScore }) => {
 }
 
 
-// GET /csd_qa_feedback?year_month=YYYY-MM
+// GET /evaluation/qa_feedback?year_month=YYYY-MM
 // The CSD staff of position level 8 and below for the month (same list as the CSD evaluation) with the QA feedback.
 exports.fetchQaFeedbackStaff = async (req, res, next) => {
     const when = readYearMonth(req.query.year_month)
@@ -168,7 +168,7 @@ exports.fetchQaFeedbackStaff = async (req, res, next) => {
 }
 
 
-// POST /csd_qa_feedback/:employee_id?year_month=YYYY-MM    body: { feedback_score }
+// POST /evaluation/qa_feedback/:employee_id?year_month=YYYY-MM    body: { feedback_score }
 exports.addQaFeedback = async (req, res, next) => {
     try {
         const request = await readChangeRequest(req, { needsScore: true })
@@ -196,7 +196,7 @@ exports.addQaFeedback = async (req, res, next) => {
 }
 
 
-// PUT /csd_qa_feedback/:employee_id?year_month=YYYY-MM    body: { feedback_score }
+// PUT /evaluation/qa_feedback/:employee_id?year_month=YYYY-MM    body: { feedback_score }
 exports.updateQaFeedback = async (req, res, next) => {
     try {
         const request = await readChangeRequest(req, { needsScore: true })
@@ -224,7 +224,7 @@ exports.updateQaFeedback = async (req, res, next) => {
 }
 
 
-// DELETE /csd_qa_feedback/:employee_id?year_month=YYYY-MM
+// DELETE /evaluation/qa_feedback/:employee_id?year_month=YYYY-MM
 exports.deleteQaFeedback = async (req, res, next) => {
     try {
         const request = await readChangeRequest(req, { needsScore: false })

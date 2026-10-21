@@ -376,7 +376,7 @@ const toggleView = () => {
   isCardView.value = !isCardView.value
 }
 
-const exportUrl = computed(() => `${API.csd_leaderboard_export}/${leaderboardOption.value}`)
+const exportUrl = computed(() => `${API.evaluation_leaderboard_export}/${leaderboardOption.value}`)
 const exportFileName = computed(() => `${departmentCode.value}-${leaderboardOption.value}-leaderboard-${route.query.year_month || 'current'}.xlsx`)
 
 const csd_leaderboard = computed(() => csdStoreInstance.state.csdLeaderboard);

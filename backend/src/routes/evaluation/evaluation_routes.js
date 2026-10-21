@@ -11,16 +11,16 @@ const { lockCsdEvaluationWhenSubmitted } = require('../../middleware/evaluation_
 
 
 // submit / review of the month (admin only). employee_id can be 'all'.
-router.post('/csd_evaluation_status/:employee_id', authenticateToken, authorizeRoles('admin'), csdEvaluation.submitCsdEvaluation)
-router.delete('/csd_evaluation_status/:employee_id', authenticateToken, authorizeRoles('admin'), csdEvaluation.reviewCsdEvaluation)
+router.post(['/evaluation/status/:employee_id', '/csd_evaluation_status/:employee_id'], authenticateToken, authorizeRoles('admin'), csdEvaluation.submitCsdEvaluation)
+router.delete(['/evaluation/status/:employee_id', '/csd_evaluation_status/:employee_id'], authenticateToken, authorizeRoles('admin'), csdEvaluation.reviewCsdEvaluation)
 
 
-router.get('/csd_evaluation/:eval_type/:employee_id', authenticateToken, canReadCsdEvaluation, csdEvaluation.fetchCsdEvaluation)
-router.get('/csd_evaluation/:eval_type', authenticateToken, canReadCsdEvaluation, csdEvaluation.fetchCsdEvaluation)
+router.get(['/evaluation/records/:eval_type/:employee_id', '/csd_evaluation/:eval_type/:employee_id'], authenticateToken, canReadCsdEvaluation, csdEvaluation.fetchCsdEvaluation)
+router.get(['/evaluation/records/:eval_type', '/csd_evaluation/:eval_type'], authenticateToken, canReadCsdEvaluation, csdEvaluation.fetchCsdEvaluation)
 
-router.post('/csd_evaluation/:eval_type/:employee_id', authenticateToken, canChangeCsdEvaluation, lockCsdEvaluationWhenSubmitted, csdEvaluation.addCsdEvaluation)
-router.put('/csd_evaluation/:eval_type/:employee_id', authenticateToken, canChangeCsdEvaluation, lockCsdEvaluationWhenSubmitted, csdEvaluation.updateCsdEvaluation)
-router.delete('/csd_evaluation/:eval_type/:employee_id', authenticateToken, canChangeCsdEvaluation, lockCsdEvaluationWhenSubmitted, csdEvaluation.deleteCsdEvaluation)
+router.post(['/evaluation/records/:eval_type/:employee_id', '/csd_evaluation/:eval_type/:employee_id'], authenticateToken, canChangeCsdEvaluation, lockCsdEvaluationWhenSubmitted, csdEvaluation.addCsdEvaluation)
+router.put(['/evaluation/records/:eval_type/:employee_id', '/csd_evaluation/:eval_type/:employee_id'], authenticateToken, canChangeCsdEvaluation, lockCsdEvaluationWhenSubmitted, csdEvaluation.updateCsdEvaluation)
+router.delete(['/evaluation/records/:eval_type/:employee_id', '/csd_evaluation/:eval_type/:employee_id'], authenticateToken, canChangeCsdEvaluation, lockCsdEvaluationWhenSubmitted, csdEvaluation.deleteCsdEvaluation)
 
 
 
