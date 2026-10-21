@@ -503,7 +503,7 @@ exports.generateCsdPerformanceMetrics  = async (year_month, scope, department_co
         ) 
 
     const  [csdPerformanceScore] =  await pool.execute(
-            'SELECT min_value, max_value, description FROM evaluation_performance_score WHERE department_code IS NULL'
+            'SELECT min_value, max_value, description FROM csd_performance_score'
         ) 
        
     const getPointsAndPercentage =   async(value, lookup_points_table, percentage) => {
@@ -1331,7 +1331,7 @@ exports.submitCsdPerformanceMetrics= async (req, res, next) => {
 
   const table = {
     'metrics': 'csd_performance_status',
-    'evaluation': 'evaluation_status'
+    'evaluation': 'csd_evaluation_status'
   }
 
 
@@ -1414,7 +1414,7 @@ exports.reviewCsdPerformanceMetrics = async (req, res, next) => {
 
    const table = {
     'metrics': 'csd_performance_status',
-    'evaluation': 'evaluation_status'
+    'evaluation': 'csd_evaluation_status'
    }
 
   

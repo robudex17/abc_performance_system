@@ -166,7 +166,7 @@ exports.fetchAgentEmailResponsesCount = async (req, res, next) => {
             -- ✅ Evaluation Status
             LEFT JOIN (
                 SELECT employee_id, submitted
-                FROM evaluation_status
+                FROM csd_evaluation_status
                 WHERE year_month = ?
             ) csd ON csd.employee_id = e.id
 

@@ -45,7 +45,7 @@ Every request has `?department=csd|collection|purchasing|hradmin` (`readDepartme
 - **Which Performance is typed or computed (per department, per month):** `RULES` in `performance_resolver.js`. A rule applies from its month on,
   the older months keep the rule they had.
 - **Who sees what:** `visibility_rules.js`. Who may read or change the evaluation: `middleware/evaluation_access.js`.
-- **The weights, the score tables, the rating names:** the database tables (`evaluation_criteria`, `evaluation_performance_score`, `result_ratings`...).
+- **The weights, the score tables, the rating names:** the database tables (`evaluation_criteria`, `csd_performance_score`, `result_ratings`...).
 - **The leadership forms:** `config/leadership_tasks.js` (`tasksFor`).
 - **A person that is not evaluated:** `EXCLUDED_POSITIONS` in `department_scope.js`.
 
@@ -75,12 +75,7 @@ kept so that an old frontend that is still open keeps working.
 **Remove the old address of each route when the servers run the new frontend.**
 The CSD only routes keep their names (`/csd_performance_metrics`, the email reports).
 
-## The tables
-The tables of the engine have neutral names: evaluation_status (the submitted flags), evaluation_performance_score (the Performance % to a score), none_sales_performance, evaluation_criteria,
-absences_score, tardiness_score, memorandum_score, result_ratings and the feedback tables. The performance mapping can be different for each department:
-a department that has rows with its department_code uses them, the others use the default rows (department_code NULL). Purchasing uses the default
-rows until its own mapping is added. The change of the names is in database/migrations/2026-10-22_neutral_evaluation_tables.sql.
-
 ## Names that look like CSD but are not
-Some functions (generateCsdEvaluation) still have csd in the name although they serve all the none-sales departments. csd_performance_status is the
-submit status of the CSD performance metrics, it is really CSD only.
+Some functions (`generateCsdEvaluation`) and the tables (`csd_evaluation_status`, `csd_performance_score`) still have `csd` in the name although
+they serve all the none-sales departments. They are left as they are on purpose: renaming a table also changes the database and every query.
+

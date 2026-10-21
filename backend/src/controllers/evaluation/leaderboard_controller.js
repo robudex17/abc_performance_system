@@ -5,8 +5,8 @@ const { canSeeDetails } = require('./visibility_rules')
 
 // CSD leaderboard, built like the sales leaderboard but on the CSD evaluation (not on csd_performance_metrics):
 //   - the rows are the ones of the CSD Evaluation page: Performance (typed by the admin), Absences, Tardiness, Memo and
-//     the feedback, only the SUBMITTED ones count (evaluation_status), the others are "INCOMPLETE RATING".
-//   - Performance -> evaluation_performance_score (the Performance is rounded to a whole number first, 90.5 = 91).
+//     the feedback, only the SUBMITTED ones count (csd_evaluation_status), the others are "INCOMPLETE RATING".
+//   - Performance -> csd_performance_score (the Performance is rounded to a whole number first, 90.5 = 91).
 //     Absences, Tardiness and Memo -> absences_score, tardiness_score, memorandum_score (0 = 5, not in the table = 0).
 //   - Feedback: Feedback (Admin) when it exists, if not the average of the Feedback (QA), (Immediate Head) and (Members) that have a value.
 //   - Final rating = the scores x the weights of evaluation_criteria (performance, absence, tardiness, memorandum_recieved, feedback),
@@ -31,20 +31,9 @@ const toNumber = (value) => {
     return Number.isFinite(number) ? number : 0
 }
 
-// The mapping of the Performance (%) to a score is the one of the department when it has its own rows (department_code), else the default rows
-// (department_code NULL: CSD, Collection and the departments that have not got their own mapping yet, e.g. Purchasing).
-const pickDepartmentRows = (rows, department) => {
-    const own = rows.filter(row => row.department_code != null && row.department_code === department)
-    return own.length > 0 ? own : rows.filter(row => row.department_code == null)
-}
-
 // the score tables, read once per request
-const loadScoreTables = async (department = 'csd') => {
-    const [performanceRows] = await pool.execute(
-        'SELECT department_code, min_value, max_value, score, description FROM evaluation_performance_score WHERE department_code = ? OR department_code IS NULL',
-        [department]
-    )
-    const performance = pickDepartmentRows(performanceRows, department)
+const loadScoreTables = async () => {
+    const [performance] = await pool.execute('SELECT min_value, max_value, score, description FROM csd_performance_score')
     const [absences] = await pool.execute('SELECT absence_count AS count, score FROM absences_score')
     const [tardiness] = await pool.execute('SELECT tardiness_count AS count, score FROM tardiness_score')
     const [memo] = await pool.execute('SELECT memo_count AS count, score FROM memorandum_score')
@@ -122,7 +111,7 @@ const scoreEmployee = (agent, tables) => {
         }
     }
 
-    // The score of the Performance percentage (evaluation_performance_score). For the leaders (position level 7 - 10) the Performance is
+    // The score of the Performance percentage (csd_performance_score). For the leaders (position level 7 - 10) the Performance is
     // the average of this team score and the leadership score (the questionnaire): (5 + 5) / 2 = 5, and it counts as the 80%.
     // A leader without a leadership evaluation (a month submitted before the questionnaire existed) keeps the team score only.
     const teamPerformanceScore = toNumber(performanceRow?.score)
@@ -233,7 +222,7 @@ const groupByTeam = (allRows, rankedRows) => {
 // The leaderboard of a month: returns { data } or { error: { status, message } }.
 // Used by the page (fetchCsdLeaderboard) and by the Excel export.
 // shared with the agent performance pages (agent_performance_controller.js)
-exports.scoring = { scoreEmployee, loadScoreTables, pickDepartmentRows, ratingName, toNumber, round4, INCOMPLETE }
+exports.scoring = { scoreEmployee, loadScoreTables, ratingName, toNumber, round4, INCOMPLETE }
 
 exports.buildCsdLeaderboard = async (user, scope, yearMonth, employeeId, department = 'csd') => {
     if (!SCOPES.includes(scope)) {
@@ -244,7 +233,7 @@ exports.buildCsdLeaderboard = async (user, scope, yearMonth, employeeId, departm
     }
 
     const evaluation = await generateCsdEvaluation(yearMonth, 'all', department, 'all', 'all', null, user)
-    const tables = await loadScoreTables(department)
+    const tables = await loadScoreTables()
     const ownTeamId = evaluation.find(agent => Number(agent.id) === Number(user?.login_id))?.team_id ?? null
 
     const ranked = evaluation

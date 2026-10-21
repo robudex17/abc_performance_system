@@ -173,7 +173,7 @@ const descendantsOf = (id, childrenOf) => {
 }
 
 const loadSubmittedIds = async (yearMonth) => {
-    const [rows] = await pool.execute('SELECT employee_id FROM evaluation_status WHERE `year_month` = ? AND submitted = 1', [yearMonth])
+    const [rows] = await pool.execute('SELECT employee_id FROM csd_evaluation_status WHERE `year_month` = ? AND submitted = 1', [yearMonth])
     return new Set(rows.map(row => Number(row.employee_id)))
 }
 

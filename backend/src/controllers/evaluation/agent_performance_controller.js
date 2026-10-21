@@ -102,7 +102,7 @@ const yearAverage = (records, allRecords, tables, year) => {
 
 // all the scored rows of the year, grouped by employee (only the employees the user may see)
 const buildYear = async (user, year, department = 'csd') => {
-    const tables = await loadScoreTables(department)
+    const tables = await loadScoreTables()
     const months = monthsOfTheYear(year)
 
     const byEmployee = new Map()
@@ -127,7 +127,7 @@ exports.shared = { buildMonth, buildYear, yearAverage, readYear, currentYearMont
 
 // the data of the four pages, used by the routes and by the Excel export (agent_performance_export.js)
 exports.getMonthlyList = async (user, yearMonth, department = 'csd') => {
-    const tables = await loadScoreTables(department)
+    const tables = await loadScoreTables()
     const rows = await buildMonth(user, yearMonth, tables, department)
     return rows.sort((a, b) => parseFloat(b.final_ratings) - parseFloat(a.final_ratings))
 }

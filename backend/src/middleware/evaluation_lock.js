@@ -1,6 +1,6 @@
 // Locks the CSD evaluation data of an employee for a month (none-sales only, the sales evaluation has its own rules).
 //  1. Resigned staff: can never be changed, not even after the evaluation is reviewed.
-//  2. Submitted evaluation (evaluation_status.submitted = 1): can not be changed until the admin clicks Review.
+//  2. Submitted evaluation (csd_evaluation_status.submitted = 1): can not be changed until the admin clicks Review.
 // The resigned check is first, then the submitted check (same order as the sales pages).
 // Used by the routes that change Performance, Absences, Tardiness, Memo, Feedback (Admin) and Feedback (QA).
 // Feedback (Immediate Head) and Feedback (Members) are given in the Give Feedback pages and are not part of this lock.
@@ -43,7 +43,7 @@ exports.lockEvaluationWhenSubmitted = async (req, res, next) => {
         }
 
         const [status] = await pool.execute(
-            'SELECT 1 FROM evaluation_status WHERE employee_id = ? AND `year_month` = ? AND submitted = 1 LIMIT 1',
+            'SELECT 1 FROM csd_evaluation_status WHERE employee_id = ? AND `year_month` = ? AND submitted = 1 LIMIT 1',
             [employeeId, yearMonth]
         )
         if (status.length > 0) {
