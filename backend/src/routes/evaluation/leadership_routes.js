@@ -4,7 +4,7 @@ const router = express.Router()
 
 const leadership = require('../../controllers/evaluation/leadership_controller')
 const { authenticateToken } = require('../../middleware/auth')
-const { lockCsdEvaluationWhenSubmitted } = require('../../middleware/evaluation_lock')
+const { lockEvaluationWhenSubmitted } = require('../../middleware/evaluation_lock')
 const { onlyLeadershipUsers, onlyEvaluators, onlyViewers } = require('../../middleware/leadership_access')
 
 // Who can evaluate whom is decided in the controller (the head of the employee, or the GOM for the manager).
@@ -18,8 +18,8 @@ router.get('/leadership_evaluations', authenticateToken, onlyEvaluators, leaders
 router.get('/leadership_evaluations/:employee_id/view', authenticateToken, onlyViewers, leadership.viewEvaluation)
 router.get('/leadership_evaluations/:employee_id', authenticateToken, onlyEvaluators, leadership.fetchEvaluation)
 
-router.post('/leadership_evaluations/:employee_id', authenticateToken, onlyEvaluators, lockCsdEvaluationWhenSubmitted, leadership.addEvaluation)
-router.put('/leadership_evaluations/:employee_id', authenticateToken, onlyEvaluators, lockCsdEvaluationWhenSubmitted, leadership.updateEvaluation)
-router.delete('/leadership_evaluations/:employee_id', authenticateToken, onlyEvaluators, lockCsdEvaluationWhenSubmitted, leadership.deleteEvaluation)
+router.post('/leadership_evaluations/:employee_id', authenticateToken, onlyEvaluators, lockEvaluationWhenSubmitted, leadership.addEvaluation)
+router.put('/leadership_evaluations/:employee_id', authenticateToken, onlyEvaluators, lockEvaluationWhenSubmitted, leadership.updateEvaluation)
+router.delete('/leadership_evaluations/:employee_id', authenticateToken, onlyEvaluators, lockEvaluationWhenSubmitted, leadership.deleteEvaluation)
 
 module.exports = router

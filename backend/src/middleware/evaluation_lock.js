@@ -15,7 +15,7 @@ const currentYearMonth = () => {
     return `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}`
 }
 
-exports.lockCsdEvaluationWhenSubmitted = async (req, res, next) => {
+exports.lockEvaluationWhenSubmitted = async (req, res, next) => {
     const employeeId = Number(req.params.employee_id)
     const yearMonth = req.query.year_month || currentYearMonth()
 

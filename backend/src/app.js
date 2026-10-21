@@ -41,12 +41,12 @@ const salesAgentsRoutes2 = require('./routes/sales_agents_route2')
 
 
 const csdPerformanceMetricsRoutes = require('./routes/csd/csd_performance_metrics_routes')
-const csdLeadboardRoutes = require('./routes/evaluation/leaderboard_routes')
-const csdAgentPerformanceRoutes = require('./routes/evaluation/agent_performance_routes')
-const csdTeamPerformanceRoutes = require('./routes/evaluation/team_performance_routes')
-const csdLeadershipRoutes = require('./routes/evaluation/leadership_routes')
-const csdEvaluationRoute = require('./routes/evaluation/evaluation_routes')
-const csdQaFeedbackRoutes = require('./routes/evaluation/qa_feedback_routes')
+const leaderboardRoutes = require('./routes/evaluation/leaderboard_routes')
+const agentPerformanceRoutes = require('./routes/evaluation/agent_performance_routes')
+const teamPerformanceRoutes = require('./routes/evaluation/team_performance_routes')
+const leadershipRoutes = require('./routes/evaluation/leadership_routes')
+const evaluationRoutes = require('./routes/evaluation/evaluation_routes')
+const qaFeedbackRoutes = require('./routes/evaluation/qa_feedback_routes')
 
 const imagesRoutes = require('./routes/common/images_routes')
 const noneSalesPerformanceRoutes = require('./routes/common/none_sales_performance_routes')
@@ -95,12 +95,12 @@ app.use("/api", departmentsRoutes)  // common routes for departments, including 
 
 
 app.use('/api', csdPerformanceMetricsRoutes)
-app.use('/api',  csdLeadboardRoutes)
-app.use('/api',  csdAgentPerformanceRoutes)
-app.use('/api',  csdTeamPerformanceRoutes)
-app.use('/api',  csdLeadershipRoutes)
-app.use('/api', csdEvaluationRoute)
-app.use('/api', csdQaFeedbackRoutes)
+app.use('/api',  leaderboardRoutes)
+app.use('/api',  agentPerformanceRoutes)
+app.use('/api',  teamPerformanceRoutes)
+app.use('/api',  leadershipRoutes)
+app.use('/api', evaluationRoutes)
+app.use('/api', qaFeedbackRoutes)
 
 app.use('/api', imagesRoutes)
 app.use('/api', noneSalesPerformanceRoutes)

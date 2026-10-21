@@ -11,12 +11,12 @@ const ADMIN_ONLY = ['absences', 'tardiness', 'memo']
 
 // Who can READ the evaluation (the list has the feedback and who gave it): the admin, the poweruser, the GOM and the managers (level 10 and 9).
 // The agents and the team leaders see only their own results through the leaderboard and the Agent / Team Performance pages.
-exports.canReadCsdEvaluation = (req, res, next) => {
+exports.canReadEvaluation = (req, res, next) => {
     if (isFullViewer(req.user) || MANAGER_LEVELS.includes(Number(req.user?.position_level))) return next()
     return res.status(403).json({ message: 'Access Denied: not allowed to read the evaluation of the month' })
 }
 
-exports.canChangeCsdEvaluation = (req, res, next) => {
+exports.canChangeEvaluation = (req, res, next) => {
     const isAdmin = req.user?.role === 'admin'
     const isCsdManager = MANAGER_LEVELS.includes(Number(req.user?.position_level))
     const evalType = req.params.eval_type
