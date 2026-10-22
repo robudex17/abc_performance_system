@@ -12,6 +12,8 @@ module.exports = {
     performanceRules: '../../src/controllers/evaluation/performance_resolver',
     department: '../../src/controllers/evaluation/department_scope',
     visibility: '../../src/controllers/evaluation/visibility_rules',
+    monthRange: '../../src/controllers/evaluation/month_range',
+    customRange: '../../src/controllers/evaluation/custom_range_controller',
     leadershipAccess: '../../src/middleware/leadership_access',
     leadershipTasks: '../../src/config/leadership_tasks',
     app: '../../src/app',

@@ -67,6 +67,7 @@ The addresses of the engine are under `/api/evaluation/...`:
 | `/evaluation/agent_performance/...`, `/evaluation/agent_performance_export/...` | Agent Monthly / Yearly and their Excel |
 | `/evaluation/team_performance/...` | Team Monthly / Yearly |
 | `/evaluation/qa_feedback` | the feedback of the Quality Analyst |
+| `/evaluation/custom_range[/:employee_id]`, `/evaluation/custom_range_export[/:employee_id]` | the Custom Range: the average of the submitted months between `start_date` and `end_date` (YYYY-MM, 12 months at most), filter `employee_status=all\|hired\|resigned`; admin, poweruser and the GOM (`custom_range_controller.js`, `month_range.js`) |
 | `/leadership_evaluations` | the leadership evaluation (it had a neutral name already) |
 
 The first addresses (`/csd_evaluation`, `/csd_evaluation_status`, `/csd_leaderboard`, `/csd_leaderboard_export`, `/csd_agent_performance`,

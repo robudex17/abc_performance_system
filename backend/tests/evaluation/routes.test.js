@@ -21,6 +21,9 @@ const EVALUATION = [
     ['get', '/evaluation/qa_feedback', '/csd_qa_feedback'],
 ]
 const OTHERS = [
+    ['get', '/evaluation/custom_range'],
+    ['get', '/evaluation/custom_range/5'],
+    ['get', '/evaluation/custom_range_export'],
     ['get', '/leadership_evaluations'],
     ['get', '/leadership_evaluations/tasks'],
     ['get', '/departments'],
@@ -42,6 +45,13 @@ describe('the routes of the evaluation', () => {
     test('the evaluation list is not for the agents (it has the feedback and who gave it)', async () => {
         const response = await request(app).get('/api/evaluation/records/all').set('Authorization', 'Bearer ' + AGENT)
         expect(response.statusCode).toBe(403)
+    })
+
+    test('the custom range is for the admin, the poweruser and the GOM only', async () => {
+        const query = { start_date: '2026-01', end_date: '2026-03' }
+        for (const url of ['/api/evaluation/custom_range', '/api/evaluation/custom_range_export']) {
+            expect((await request(app).get(url).query(query).set('Authorization', 'Bearer ' + AGENT)).statusCode).toBe(403)
+        }
     })
 
     test('the list of the admin users is for the admin only', async () => {

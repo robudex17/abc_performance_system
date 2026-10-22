@@ -30,3 +30,9 @@ exports.canChangeEvaluation = (req, res, next) => {
     }
     next()
 }
+
+// The Custom Range page and its Excel (the average of the submitted months of a range chosen by the user): admin, poweruser and the GOM.
+exports.canUseCustomRange = (req, res, next) => {
+    if (isFullViewer(req.user)) return next()
+    return res.status(403).json({ message: 'Access Denied: the custom range is for the admin, the poweruser and the GOM' })
+}

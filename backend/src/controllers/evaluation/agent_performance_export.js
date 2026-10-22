@@ -183,3 +183,6 @@ exports.exportYearly = async (req, res) => {
         if (!res.headersSent) res.status(500).json({ error: 'Error, Cannot export the CSD yearly performance' })
     }
 }
+
+// shared with the custom range Excel (custom_range_export.js)
+exports.shared = { metricsOf, writeMetricsSummary, send }
