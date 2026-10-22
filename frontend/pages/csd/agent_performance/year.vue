@@ -40,7 +40,7 @@
 
           <!-- CARD VIEW -->
           <div v-if="isCardView" class="grid grid-cols-1 gap-6">
-            <PerformanceCard :agent="agent" @details="showDetails"></PerformanceCard>
+            <EvaluationPerformanceCard :agent="agent" @details="showDetails"></EvaluationPerformanceCard>
           </div>
 
           <!-- TABLE VIEW: the submitted months and their summary -->
@@ -51,13 +51,13 @@
               <span :class="csdRatingClass(agent.ratings_name) || setRatingNameColor(agent)">{{ agent.ratings_name }}</span>
             </h1>
             <leader-board-table :agents="months"></leader-board-table>
-            <metrics-summary :agents="[agent]" :fullyear="true"></metrics-summary>
+            <evaluation-metrics-summary :agents="[agent]" :fullyear="true"></evaluation-metrics-summary>
           </div>
         </div>
       </div>
     </div>
 
-    <PerformanceDetailsModal :show="showModal" :agent="selectedAgent" :fullyear="true" @close="showModal = false"></PerformanceDetailsModal>
+    <EvaluationPerformanceDetailsModal :show="showModal" :agent="selectedAgent" :fullyear="true" @close="showModal = false"></EvaluationPerformanceDetailsModal>
   </div>
 </template>
 
