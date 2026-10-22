@@ -1,9 +1,9 @@
 <template>
     <div>
-        <header class="bg-white shadow-md flex items-center justify-between px-6 py-4 fixed left-[304px] right-0">
+        <header class="bg-white shadow-md flex items-center justify-between gap-6 px-6 py-4 fixed left-[304px] right-0">
           <!-- Brand -->
-          <div class="flex items-center gap-10">
-              <div class="text-lg font-bold">SBTPH {{ view.label.toUpperCase() }} APP</div>
+          <div class="flex items-center gap-6 min-w-0">
+              <div class="text-lg font-bold whitespace-nowrap">SBTPH {{ view.label.toUpperCase() }} APP</div>
               <!-- Dropdown for manage sales agent -->
               <div v-if="route.path == employeesPath" class="flex items-center gap-2">
          
@@ -26,14 +26,14 @@
               <!-- Custom Range: the start month, the end month and the employee status (the pattern of the sales custom search: the bar changes the url) -->
               <div
                 v-else-if="isCustomRangePage"
-                class="flex flex-col sm:flex-row items-center gap-4"
+                class="flex items-center gap-3"
               >
                 <div v-if="isCustomRangeList" class="flex items-center gap-2">
-                  <label for="range-status" class="text-sm font-medium text-gray-700 whitespace-nowrap">Employee Status:</label>
+                  <label for="range-status" class="text-xs font-medium text-gray-700 whitespace-nowrap">Status:</label>
                   <select
                     id="range-status"
                     v-model="rangeStatus"
-                    class="border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-300"
+                    class="border border-gray-300 rounded px-2 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-blue-300"
                   >
                     <option value="all">ALL</option>
                     <option value="hired">HIRED</option>
@@ -41,21 +41,21 @@
                   </select>
                 </div>
                 <div class="flex items-center gap-2">
-                  <label for="start-date" class="text-sm font-medium text-gray-700 whitespace-nowrap">Start Date:</label>
+                  <label for="start-date" class="text-xs font-medium text-gray-700 whitespace-nowrap">From:</label>
                   <input
                     id="start-date"
                     type="month"
                     v-model="rangeStart"
-                    class="border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-300"
+                    class="border border-gray-300 rounded px-2 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-blue-300"
                   />
                 </div>
                 <div class="flex items-center gap-2">
-                  <label for="end-date" class="text-sm font-medium text-gray-700 whitespace-nowrap">End Date:</label>
+                  <label for="end-date" class="text-xs font-medium text-gray-700 whitespace-nowrap">To:</label>
                   <input
                     id="end-date"
                     type="month"
                     v-model="rangeEnd"
-                    class="border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-300"
+                    class="border border-gray-300 rounded px-2 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-blue-300"
                   />
                 </div>
                 <button
@@ -120,9 +120,9 @@
           </div>
 
                 <!-- User Profile -->
-            <div class="relative flex items-center gap-2 cursor-pointer group">
+            <div class="relative flex items-center gap-2 cursor-pointer group flex-shrink-0 whitespace-nowrap pl-4">
               <p>
-              <span class="font-semibold text-gray-700">Current User: </span>
+              <span class="font-semibold text-gray-700" :class="isCustomRangePage ? 'hidden 2xl:inline' : ''">Current User: </span>
               <span class="font-bold text-purple-800 uppercase"> {{ currentUser.username }}</span>
             
                </p> 
