@@ -23,6 +23,48 @@
                   Submit
                 </button>
               </div> 
+              <!-- Custom Range: the start month, the end month and the employee status (the pattern of the sales custom search: the bar changes the url) -->
+              <div
+                v-else-if="isCustomRangePage"
+                class="flex flex-col sm:flex-row items-center gap-4"
+              >
+                <div v-if="isCustomRangeList" class="flex items-center gap-2">
+                  <label for="range-status" class="text-sm font-medium text-gray-700 whitespace-nowrap">Employee Status:</label>
+                  <select
+                    id="range-status"
+                    v-model="rangeStatus"
+                    class="border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-300"
+                  >
+                    <option value="all">ALL</option>
+                    <option value="hired">HIRED</option>
+                    <option value="resigned">RESIGNED</option>
+                  </select>
+                </div>
+                <div class="flex items-center gap-2">
+                  <label for="start-date" class="text-sm font-medium text-gray-700 whitespace-nowrap">Start Date:</label>
+                  <input
+                    id="start-date"
+                    type="month"
+                    v-model="rangeStart"
+                    class="border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-300"
+                  />
+                </div>
+                <div class="flex items-center gap-2">
+                  <label for="end-date" class="text-sm font-medium text-gray-700 whitespace-nowrap">End Date:</label>
+                  <input
+                    id="end-date"
+                    type="month"
+                    v-model="rangeEnd"
+                    class="border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-300"
+                  />
+                </div>
+                <button
+                  class="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-300"
+                  @click="submitCustomRange"
+                >
+                  Submit
+                </button>
+              </div>
               <div
                 v-else
                 class="flex flex-col sm:flex-row items-center gap-4"
@@ -101,6 +143,7 @@
     
     import { months, monthMap, isFutureMonth } from '@/utils/constants'
     import { DEPARTMENT_VIEWS } from '~/config/departmentViews'
+    import { checkRange } from '~/utils/month_range'
 
     // the same navigation bar for CSD and Collection (the layouts pass the department)
     const props = defineProps({
@@ -146,6 +189,37 @@
       `${view.base}/agent_performance/yearly`, `${view.base}/agent_performance/year`,
       `${view.base}/team_performance/yearly`, `${view.base}/team_performance/year`,
     ].includes(route.path))
+    // the Custom Range pages (the list and the details of one employee): the start and the end month, and the status on the list
+    const isCustomRangeList = computed(() => route.path === `${view.base}/agent_performance/custom_range`)
+    const isCustomRangePage = computed(() => isCustomRangeList.value || route.path === `${view.base}/agent_performance/custom_range_details`)
+    const rangeStart = ref(route.query.start_date || '')
+    const rangeEnd = ref(route.query.end_date || '')
+    const rangeStatus = ref(route.query.employee_status || 'all')
+    watch(() => route.query, (query) => {
+      rangeStart.value = query.start_date || ''
+      rangeEnd.value = query.end_date || ''
+      rangeStatus.value = query.employee_status || 'all'
+    })
+
+    const submitCustomRange = () => {
+      const check = checkRange(rangeStart.value, rangeEnd.value)
+      if (!check.valid) {
+        alert(check.message)
+        return
+      }
+      const currentRoute = router.currentRoute.value
+      router.push({
+        path: currentRoute.path,
+        query: {
+          start_date: rangeStart.value,
+          end_date: rangeEnd.value,
+          ...(isCustomRangeList.value ? { employee_status: rangeStatus.value } : {}),
+          // the details page of one employee needs its employee after the range is changed
+          ...(currentRoute.query.employee_id ? { employee_id: currentRoute.query.employee_id } : {}),
+        },
+      })
+    }
+
     const thisYear = new Date().getFullYear()
     const yearOptions = Array.from({ length: 6 }, (_, index) => String(thisYear - index))
     const yearValue = ref(route.query.year || String(thisYear))

@@ -88,9 +88,12 @@ export const csdMenu = [
               subMenu: [
                 { name: 'Agent_Monthly', route: '/csd/agent_performance/monthly', icon: ['fas', 'user'] },
                 { name: 'Agent_Yearly', route: '/csd/agent_performance/yearly', icon: ['fas', 'user'] },
+                // the average of the submitted months between two months chosen by the user (admin, poweruser, GOM)
+                { name: 'Agent_CustomRange', route: '/csd/agent_performance/custom_range', icon: ['fas', 'user'], allowedRoles: ['admin', 'poweruser'] },
                 // hidden: not in the menu, the details pages opened from the list (the page guard uses them)
                 { name: 'Agent_Monthly_Details', route: '/csd/agent_performance/month', hidden: true },
                 { name: 'Agent_Yearly_Details', route: '/csd/agent_performance/year', hidden: true },
+                { name: 'Agent_CustomRange_Details', route: '/csd/agent_performance/custom_range_details', hidden: true, allowedRoles: ['admin', 'poweruser'] },
               ]
             },
             { 

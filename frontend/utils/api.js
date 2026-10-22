@@ -111,6 +111,8 @@ const API = {
   evaluation_leaderboard_export: `${HTTPADDR}/evaluation/leaderboard_export`,   // Excel of the table view (agent, team_leader), admin and poweruser
   evaluation_agent_performance: `${HTTPADDR}/evaluation/agent_performance`,                 // /monthly, /yearly (+ /:employee_id)
   evaluation_agent_performance_export: `${HTTPADDR}/evaluation/agent_performance_export`,   // Excel of the same pages, admin and poweruser
+  evaluation_custom_range: `${HTTPADDR}/evaluation/custom_range`,                     // the average of the submitted months between two months (+ /:employee_id)
+  evaluation_custom_range_export: `${HTTPADDR}/evaluation/custom_range_export`,       // Excel of the custom range, admin, poweruser and GOM
   evaluation_team_performance: `${HTTPADDR}/evaluation/team_performance`,                     // /monthly, /yearly (+ /:team_id)
   leadership_evaluations: `${HTTPADDR}/leadership_evaluations`,                // Leadership Individual Performance (the head evaluates the leaders)
   evaluation_qa_feedback: `${HTTPADDR}/evaluation/qa_feedback`,       // QA feedback (a score) of the CSD staff, Quality Analyst only
