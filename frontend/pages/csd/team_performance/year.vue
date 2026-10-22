@@ -24,7 +24,7 @@
         <div v-else>
           <!-- CARD VIEW -->
           <div v-if="isCardView" class="grid grid-cols-1 gap-6">
-            <TeamCard :team="team" @details="showDetails"></TeamCard>
+            <EvaluationTeamCard :team="team" @details="showDetails"></EvaluationTeamCard>
           </div>
 
           <!-- TABLE VIEW: the team by month and its members -->
@@ -64,7 +64,7 @@
       </div>
     </div>
 
-    <TeamDetailsModal :show="showModal" :team="selectedTeam" @close="showModal = false"></TeamDetailsModal>
+    <EvaluationTeamDetailsModal :show="showModal" :team="selectedTeam" @close="showModal = false"></EvaluationTeamDetailsModal>
   </div>
 </template>
 
