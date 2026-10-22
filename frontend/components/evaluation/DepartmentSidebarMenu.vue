@@ -76,7 +76,8 @@ const router = useRouter();
 const route = useRoute(); // Access the current route
 
 const activeMenu = ref(''); // Holds the name of the currently active menu (set from the route)
-const isCollapsed = ref(false);
+// shared with the navigation bar (it starts where the content starts, so it follows the sidebar when it is collapsed)
+const isCollapsed = useState('departmentSidebarCollapsed', () => false);
 const submenuStates = ref({});
 
 const { buildMenu } = useMenuBuilder()

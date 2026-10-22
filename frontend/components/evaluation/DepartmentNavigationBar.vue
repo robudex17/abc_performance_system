@@ -1,6 +1,10 @@
 <template>
     <div>
-        <header class="bg-white shadow-md flex items-center justify-between gap-6 px-6 py-4 fixed left-[304px] right-0">
+        <!-- the bar starts where the content starts: the sidebar (256px, or 64px when collapsed) and the padding of the main (48px) -->
+        <header
+          class="bg-white shadow-md flex items-center justify-between gap-6 px-6 py-4 fixed right-0 transition-all"
+          :style="{ left: sidebarCollapsed ? '112px' : '304px' }"
+        >
           <!-- Brand -->
           <div class="flex items-center gap-6 min-w-0">
               <div class="text-lg font-bold whitespace-nowrap">SBTPH {{ view.label.toUpperCase() }} APP</div>
@@ -165,6 +169,9 @@
     const updateImageLink = (imageLink) => {
         return `${config.public.imageBaseUrl}${imageLink}`
       }
+
+    // the sidebar (components/evaluation/DepartmentSidebarMenu.vue) toggles it
+    const sidebarCollapsed = useState('departmentSidebarCollapsed', () => false)
 
     const viewMode = ref("card");
     const selectedMonth = ref("");
