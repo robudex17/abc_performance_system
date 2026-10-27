@@ -63,9 +63,9 @@ export const collectionMenu = [
 
                 // staff items, by position level (admin and poweruser never see them: they only view a feedback through its link)
                 // head rates the members (questionnaire)
-                { name: 'FEEDBACK MEMBERS', route: '/feedback/feedback_by_nonesales?feedback_type=by_head', icon: ['fas', 'users'], allowedLevels: [10, 9, 8], excludedRoles: ['admin', 'poweruser'] },
+                { name: 'FEEDBACK MEMBERS', route: '/feedback/feedback_by_nonesales?feedback_type=by_head', icon: ['fas', 'users'], allowedLevels: [10, 9, 8, 7], excludedRoles: ['admin', 'poweruser'] },
                 // members rate the head
-                { name: 'FEEDBACK HEAD', route: '/feedback/feedback_by_nonesales?feedback_type=by_member', icon: ['fas', 'user-tie'], allowedLevels: [9, 8, 3, 2, 1], excludedRoles: ['admin', 'poweruser'] },
+                { name: 'FEEDBACK HEAD', route: '/feedback/feedback_by_nonesales?feedback_type=by_member', icon: ['fas', 'user-tie'], allowedLevels: [9, 8, 7, 3, 2, 1], excludedRoles: ['admin', 'poweruser'] },
               ]
             },
 

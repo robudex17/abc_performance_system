@@ -10,8 +10,8 @@
 //    the allowed position levels are the same as the sidebar menu (config/csdMenu.js).
 // NOTE: this only guards the page; the backend checks the same rules before it returns or saves any answer.
 const ALLOWED_LEVELS = {
-  by_member: [9, 8, 3, 1],
-  by_head: [10, 9, 8],
+  by_member: [9, 8, 7, 3, 2, 1],
+  by_head: [10, 9, 8, 7],
 }
 
 const VIEWER_ROLES = ['admin', 'poweruser']
