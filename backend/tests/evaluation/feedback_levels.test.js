@@ -46,3 +46,18 @@ describe('feedback levels: menus and page guard', () => {
         expect(guardLevels('by_member')).toContain(7)
     })
 })
+
+// FEEDBACK HEAD is hidden (menu) and denied (page guard) for a user whose head is in an office that does not receive feedback
+describe('feedback head and the office of the head', () => {
+    test.each(MENUS)('%s: the FEEDBACK HEAD item requires a head that receives feedback', (menu) => {
+        const lines = read(`config/${menu}.js`).split('\n').filter(line => line.includes('feedback_type=by_member'))
+        expect(lines.length).toBeGreaterThan(0)
+        lines.forEach(line => expect(line).toContain('requiresReceivingHead: true'))
+    })
+
+    test('the menu rule and the page guard read the flag of the login token', () => {
+        expect(read('composables/useAccessControl.js')).toMatch(/requiresReceivingHead && user\.head_receives_feedback === false/)
+        expect(guard).toMatch(/by_member' && user\.head_receives_feedback === false/)
+        expect(fs.readFileSync(path.join(__dirname, '../../src/utils/generate_token.js'), 'utf8')).toContain('head_receives_feedback')
+    })
+})

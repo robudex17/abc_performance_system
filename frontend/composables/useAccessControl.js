@@ -9,6 +9,8 @@ export const useAccessControl = () => {
   // allowedPositions and allowedPositionNames are extra restrictions on top of that.
   //   excludedRoles         -> user.role in this list is always denied (e.g. hide from admin)
   //   excludedPositionNames -> user.position_name in this list is always denied (e.g. hide from the Quality Analyst)
+  //   requiresReceivingHead -> denied when the immediate head does not receive feedback (user.head_receives_feedback is false:
+  //                            the head is in an office like Japan, see backend feedback_office.js)
   const normalize = (text) => String(text ?? '').replace(/\s+/g, ' ').trim().toLowerCase()
   const isOneOfThePositionNames = (user, names) => names.some(name => normalize(name) === normalize(user.position_name))
 
@@ -19,6 +21,7 @@ export const useAccessControl = () => {
     const user = effectiveUser(rawUser)
     if (item.excludedRoles && item.excludedRoles.includes(user.role)) return false
     if (item.excludedPositionNames && isOneOfThePositionNames(user, item.excludedPositionNames)) return false
+    if (item.requiresReceivingHead && user.head_receives_feedback === false) return false
 
     if (!item.allowedRoles && !item.allowedLevels && !item.allowedPositions && !item.allowedPositionNames) return true
 

@@ -141,7 +141,7 @@ export const csdMenu = [
                 // the Quality Analyst gives a score to all the CSD staff of level 8 and below (no questionnaire, like the feedback by admin)
                 { name: 'FEEDBACK MEMBERS', route: '/csd/feedback_by_qa', icon: ['fas', 'users'], allowedPositionNames: [QA_POSITION_NAME], excludedRoles: ['admin', 'poweruser'] },
                 // members rate the head: level 9, 8, 3, 2, 1
-                { name: 'FEEDBACK HEAD', route: '/feedback/feedback_by_nonesales?feedback_type=by_member', icon: ['fas', 'user-tie'], allowedLevels: [9, 8, 7, 3, 2, 1], excludedRoles: ['admin', 'poweruser'] },
+                { name: 'FEEDBACK HEAD', route: '/feedback/feedback_by_nonesales?feedback_type=by_member', icon: ['fas', 'user-tie'], allowedLevels: [9, 8, 7, 3, 2, 1], excludedRoles: ['admin', 'poweruser'], requiresReceivingHead: true },
 
               ]
 

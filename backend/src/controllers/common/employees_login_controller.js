@@ -4,6 +4,7 @@ const { validationResult } = require('express-validator')
 const bcyrpt = require('bcrypt')
 
 
+const { headCanReceiveFeedback } = require('./feedback_office')
 const { generateAccessToken,  decodedToken } = require('../../utils/generate_token')
 
 exports.registerUser = async(req,res,next) => {
@@ -251,6 +252,9 @@ exports.loginUser = async(req,res, next) => {
        }
 
        user[0].login_type = 'employee'
+
+       // false when the office of the immediate head does not receive feedback (Japan): the menu hides FEEDBACK HEAD
+       user[0].head_receives_feedback = user[0].manager_id ? await headCanReceiveFeedback(user[0].login_id, user[0].manager_id) : true
 
 
 

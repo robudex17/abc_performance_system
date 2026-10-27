@@ -43,6 +43,9 @@ export default defineNuxtRouteMiddleware((to) => {
   // staff: the right position level ...
   if (!allowedLevels.includes(Number(user.position_level))) return deny()
 
+  // the members of an office that is not allowed to rate the head (Japan) have no FEEDBACK HEAD
+  if ((to.params.feedback_type || to.query.feedback_type) === 'by_member' && user.head_receives_feedback === false) return deny()
+
   // ... and the form page only for the one who gives the feedback
   if (isFormPage && Number(to.query.who_give_feedback_id) !== Number(user.login_id)) return deny()
 })
