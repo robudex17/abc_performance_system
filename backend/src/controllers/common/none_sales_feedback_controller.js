@@ -1,4 +1,5 @@
 const pool = require('../../config/db')
+const { headCanReceiveFeedback } = require('./feedback_office')
 
 const YEAR_MONTH_FORMAT = /^\d{4}-(0[1-9]|1[0-2])$/
 
@@ -37,6 +38,12 @@ const isRelatedToTheGiver = async (feedback_type, who_give_feedback_id, who_rece
 }
 
 
+// The members rate the head (by_member) unless the office of the head does not receive feedback from the office of the
+// member (Japan, see feedback_office.js). The head rates the members (by_head) without this check.
+const OFFICE_MESSAGE = 'The office of this immediate head does not receive feedback from your office'
+const canRateTheHead = async (feedback_type, who_give_feedback_id, who_receive_feedback_id) =>
+    feedback_type !== 'by_member' || headCanReceiveFeedback(who_give_feedback_id, who_receive_feedback_id)
+
 exports.addNoneSalesFeedback = async (req, res, next) => {
     const {
         who_give_feedback_id,
@@ -64,6 +71,10 @@ exports.addNoneSalesFeedback = async (req, res, next) => {
     try {
         if (!(await isRelatedToTheGiver(feedback_type, who_give_feedback_id, who_receive_feedback_id))) {
             return res.status(403).json({ error: 'You can only give feedback to your own immediate head or members' })
+        }
+
+        if (!(await canRateTheHead(feedback_type, who_give_feedback_id, who_receive_feedback_id))) {
+            return res.status(403).json({ error: OFFICE_MESSAGE })
         }
 
         // the names are read from the database (the login token / browser does not always have the db_name)
@@ -137,6 +148,10 @@ exports.updateNoneSalesFeedback = async (req, res, next) => {
     const error_message = `Database Error, Cannot Update ${type.label} Feedback`
 
     try {
+        if (!(await canRateTheHead(feedback_type, who_give_feedback_id, who_receive_feedback_id))) {
+            return res.status(403).json({ error: OFFICE_MESSAGE })
+        }
+
         // the update is only allowed when can_update is enabled (by the admin)
         const [current] = await pool.execute(
             `SELECT can_update FROM ${type.table} WHERE ${type.giver}_id = ? AND ${type.receiver}_id = ? AND \`year_month\` = ?`,

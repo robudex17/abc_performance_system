@@ -2,10 +2,14 @@ const e = require('express')
 const pool = require('../../config/db')
 const { validationResult} = require('express-validator')
 const { uploadToMinio, removeFromMinio } = require('../../middleware/fileupload_to_minio')
+const { headCanReceiveFeedback } = require('./feedback_office')
 
 // the image is saved in the MinIO server: the database keeps only the file name (the same as the sales agents),
 // the page builds the url of the image from it (config.public.imageBaseUrl)
 const DEFAULT_IMAGE = 'sbtlogo.png'
+
+// a new assignment (transfer, rehire) keeps the office of the previous one (one ? = the employee id)
+const KEEP_OFFICE = `COALESCE((SELECT office_id FROM employee_assignments WHERE employee_id = ? ORDER BY id DESC LIMIT 1), 1)`
 
 // Shared select for the feedback lookups below: latest assignment + latest employment of every employee.
 // Append a WHERE clause (with ? placeholders) when using it.
@@ -91,6 +95,11 @@ exports.fetchEmployees = async (req,res, next ) => {
     if(req.query.feedback_type == 'by_member') {
         try{
             if(!req.user.manager_id) {
+                return res.json([])
+            }
+
+            // the head of another office that does not receive feedback (Japan): nobody to rate
+            if (!(await headCanReceiveFeedback(req.user.login_id, req.user.manager_id))) {
                 return res.json([])
             }
 
@@ -523,9 +532,9 @@ exports.updateEmployee = async (req, res, next) => {
             // Insert new assignment
             await connection.execute(
                 `INSERT INTO employee_assignments 
-                (employee_id, position_id, market_id, team_id, manager_id, department_id, effective_from, effective_to) 
-                VALUES (?, ?, ?, ?, ?, ?,?, NULL)`,
-                [id, position_id, market_id, team_id, manager_id, department_id, effective_from]
+                (employee_id, position_id, market_id, team_id, manager_id, department_id, office_id, effective_from, effective_to)
+                SELECT ?, ?, ?, ?, ?, ?, ${KEEP_OFFICE}, ?, NULL`,
+                [id, position_id, market_id, team_id, manager_id, department_id, id, effective_from]
             );
 
 
@@ -547,8 +556,8 @@ exports.updateEmployee = async (req, res, next) => {
 
 
         const [assignmentResult] = await connection.execute(
-            `INSERT INTO employee_assignments (employee_id, manager_id, position_id, market_id, team_id, department_id, effective_from, effective_to) VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
-            [id, manager_id, position_id, market_id, team_id, department_id, start_date, null]
+            `INSERT INTO employee_assignments (employee_id, manager_id, position_id, market_id, team_id, department_id, office_id, effective_from, effective_to) SELECT ?, ?, ?, ?, ?, ?, ${KEEP_OFFICE}, ?, NULL`,
+            [id, manager_id, position_id, market_id, team_id, department_id, id, start_date]
         );
 
            await connection.commit();
