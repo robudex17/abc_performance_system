@@ -1,6 +1,6 @@
 <template>
   <div class="flex items-center justify-center min-h-screen bg-gray-100 p-4 mt-20">
-    <div class="w-full max-w-3xl bg-white shadow-lg rounded-lg p-6">
+    <div class="w-full max-w-5xl bg-white shadow-lg rounded-lg p-6">
       <h2 class="text-2xl font-semibold text-gray-800 text-center">
         {{ feedbackTitle }} FOR
         <span class="uppercase text-blue-700 font-bold">
@@ -12,31 +12,34 @@
       <h2 v-if="viewOnly" class="text-center text-red-600 font-bold text-2xl mb-4">(VIEW ONLY)</h2>
 
       <form @submit.prevent="submitFeedback">
-        <div v-for="(question, index) in questions" :key="question.id" class="mb-4 p-4 border rounded-lg bg-gray-50">
-          <p class="text-gray-700 font-medium">{{ index + 1 }}. {{ question.text }}</p>
-
-          <div class="mt-2 flex justify-between space-x-4">
-            <label
-              v-for="choice in question.choices"
-              :key="choice.score"
-              class="w-full flex flex-col items-center border rounded-lg py-2 px-4 transition"
-              :class="[
-                viewOnly ? 'cursor-default' : 'cursor-pointer hover:bg-gray-200',
-                responses[question.id] === choice.score ? 'bg-blue-300 border-blue-700' : 'border-gray-300'
-              ]"
-            >
-              <input
-                type="radio"
-                :name="`question-${question.id}`"
-                :value="choice.score"
-                v-model="responses[question.id]"
-                :disabled="viewOnly"
-                class="hidden"
-              />
-              <span class="text-lg font-medium" :class="responses[question.id] === choice.score ? 'text-red-500' : 'text-gray-700'">{{ choice.label }}</span>
-              <span class="text-xs text-gray-500" :class="responses[question.id] === choice.score ? 'text-green-300 font-bold' : 'text-gray-700'">({{ choice.score }} pts)</span>
-            </label>
-          </div>
+        <!-- one row per question, one radio button per answer under its label (the scores are not shown) -->
+        <div class="overflow-x-auto">
+          <table class="w-full min-w-[640px] border-collapse text-sm">
+            <thead>
+              <tr>
+                <th class="w-2/5"></th>
+                <th v-for="choice in answerLabels" :key="choice.score" class="py-3 px-2 text-center font-normal text-gray-700">{{ choice.label }}</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr v-for="(question, index) in questions" :key="question.id" class="odd:bg-gray-100">
+                <td class="py-3 px-3 text-gray-800">{{ index + 1 }}. {{ question.text }}</td>
+                <td v-for="choice in question.choices" :key="choice.score" class="text-center">
+                  <label class="flex items-center justify-center py-3" :class="viewOnly ? 'cursor-default' : 'cursor-pointer'">
+                    <input
+                      type="radio"
+                      :name="`question-${question.id}`"
+                      :value="choice.score"
+                      v-model="responses[question.id]"
+                      :disabled="viewOnly"
+                      :aria-label="`${choice.label}: ${question.text}`"
+                      class="h-5 w-5 accent-blue-600"
+                    />
+                  </label>
+                </td>
+              </tr>
+            </tbody>
+          </table>
         </div>
 
         <div class="mt-6">
@@ -105,6 +108,9 @@ watch(
   },
   { immediate: true, deep: true }
 )
+
+// the labels of the header row: the answers of the first question (every question has the same answers)
+const answerLabels = computed(() => props.questions[0]?.choices ?? [])
 
 const totalScore = computed(() =>
   Object.values(responses.value).reduce((acc, score) => acc + (score || 0), 0)

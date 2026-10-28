@@ -6,17 +6,23 @@ import { computed } from 'vue'
 //   lm_by_agent  -> member rates the immediate head   (agentType 0)
 const NONE_SALES_DEPARTMENTS = ['csd', 'collection', 'purchasing', 'hradmin']
 
+// The answers of a feedback question, from the best to the worst (the score is what is saved and averaged).
+export const NONE_SALES_FEEDBACK_SCALE = [
+    { label: 'Always', score: 5 },
+    { label: 'Usually', score: 4 },
+    { label: 'Often', score: 3 },
+    { label: 'Seldom', score: 2 },
+    { label: 'Never', score: 1 },
+]
+
 export function useNoneSalesFeedbackQuestions(agentType, direction, department) {
 
-    // Same 5 / 3 / 1 scoring on every question.
+    // Same 5 point scoring on every question (the form shows the labels only, not the scores).
+    // Feedback saved before this scale (5 Yes always / 3 Yes sometimes / 1 No) keeps its numbers.
     const buildQuestions = (texts) => texts.map((text, index) => ({
         id: index + 1,
         text,
-        choices: [
-            { label: "Yes, always!", score: 5 },
-            { label: "Yes, sometimes.", score: 3 },
-            { label: "No, not at all.", score: 1 }
-        ]
+        choices: NONE_SALES_FEEDBACK_SCALE.map(choice => ({ ...choice }))
     }))
 
     // CSD and Collection: immediate head rates the member
