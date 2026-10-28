@@ -36,15 +36,21 @@ const currentYearMonth = () => {
 }
 
 // every employee of the month (all position levels) with the scores, only the ones the user may see
-const buildMonth = async (user, yearMonth, tables, department = 'csd') => {
+// scoreMonth: EVERYBODY of the month (the team pages need all the teams to know the best one), visibleOf: what the user may see
+const scoreMonth = async (user, yearMonth, tables, department = 'csd') => {
     const evaluation = await generateCsdEvaluation(yearMonth, 'all', department, 'all', 'all', null, user)
     const scored = evaluation.map(agent => scoreEmployee(agent, tables))
 
     // the team of the user in the month: the team of his/her own row
     const ownTeamId = scored.find(row => Number(row.id) === Number(user?.login_id))?.team_id ?? null
 
-    return scored.filter(row => canSee(user, row, ownTeamId))
+    return { scored, ownTeamId }
 }
+
+const visibleOf = (user, { scored, ownTeamId }) => scored.filter(row => canSee(user, row, ownTeamId))
+
+const buildMonth = async (user, yearMonth, tables, department = 'csd') =>
+    visibleOf(user, await scoreMonth(user, yearMonth, tables, department))
 
 const monthsOfTheYear = (year) => {
     const currentYear = new Date().getFullYear()
@@ -123,7 +129,7 @@ const readYear = (req) => {
 }
 
 // shared with the team performance pages (team_performance_controller.js)
-exports.shared = { buildMonth, buildYear, yearAverage, readYear, currentYearMonth }
+exports.shared = { buildMonth, scoreMonth, visibleOf, buildYear, yearAverage, readYear, currentYearMonth }
 
 // the data of the four pages, used by the routes and by the Excel export (agent_performance_export.js)
 exports.getMonthlyList = async (user, yearMonth, department = 'csd') => {

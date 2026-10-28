@@ -219,6 +219,23 @@ const groupByTeam = (allRows, rankedRows) => {
     return result
 }
 
+// The ranking of the teams of a month with the BEST TEAM tag. The leaderboard and the team performance pages both use it:
+// the best team is decided among ALL the teams, whatever teams the user is allowed to see.
+// scoredRows: everybody of the month (scoreEmployee), the teams are made of the ranked levels only
+const rankTeams = (scoredRows, tables) => {
+    const ranked = scoredRows.filter(agent => RANKED_LEVELS.includes(Number(agent.position_level)))
+    const teams = groupByTeam(scoredRows, ranked)
+    const topTeamRating = Math.max(...teams.filter(team => team.isCompleted).map(team => parseFloat(team.final_ratings)))
+    return teams
+        .map(team => ({
+            ...team,
+            ratings_name: team.isCompleted ? ratingName(tables.ratings, parseFloat(team.final_ratings)) : INCOMPLETE,
+            tag: team.isCompleted && parseFloat(team.final_ratings) === topTeamRating ? 'BEST TEAM' : '',
+        }))
+        .sort(byRatingDesc)
+}
+exports.rankTeams = rankTeams
+
 // The leaderboard of a month: returns { data } or { error: { status, message } }.
 // Used by the page (fetchCsdLeaderboard) and by the Excel export.
 // shared with the agent performance pages (agent_performance_controller.js)
@@ -236,21 +253,12 @@ exports.buildCsdLeaderboard = async (user, scope, yearMonth, employeeId, departm
     const tables = await loadScoreTables()
     const ownTeamId = evaluation.find(agent => Number(agent.id) === Number(user?.login_id))?.team_id ?? null
 
-    const ranked = evaluation
-        .filter(agent => RANKED_LEVELS.includes(Number(agent.position_level)))
-        .map(agent => scoreEmployee(agent, tables))
+    const scored = evaluation.map(agent => scoreEmployee(agent, tables))
+    const ranked = scored.filter(agent => RANKED_LEVELS.includes(Number(agent.position_level)))
 
     let data
     if (scope === 'team') {
-        const teams = groupByTeam(evaluation, ranked)
-        const topTeamRating = Math.max(...teams.filter(team => team.isCompleted).map(team => parseFloat(team.final_ratings)))
-        data = teams
-            .map(team => ({
-                ...team,
-                ratings_name: team.isCompleted ? ratingName(tables.ratings, parseFloat(team.final_ratings)) : INCOMPLETE,
-                tag: team.isCompleted && parseFloat(team.final_ratings) === topTeamRating ? 'BEST TEAM' : '',
-            }))
-            .sort(byRatingDesc)
+        data = rankTeams(scored, tables)
     } else {
         const levels = scope === 'agent' ? AGENT_LEVELS : TEAM_LEADER_LEVELS
         const rows = ranked.filter(row => levels.includes(Number(row.position_level)))

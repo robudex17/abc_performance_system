@@ -1,4 +1,4 @@
-const { scoring } = require('./leaderboard_controller')
+const { scoring, rankTeams } = require('./leaderboard_controller')
 const { shared } = require('./agent_performance_controller')
 const { readDepartment, badDepartment } = require('./department_scope')
 const { canViewTeams } = require('./visibility_rules')
@@ -19,7 +19,7 @@ const { canViewTeams } = require('./visibility_rules')
 //           GET /evaluation/team_performance/yearly/:team_id?year=YYYY               one team: its months and its members (or null)
 
 const { toNumber, round4, ratingName, loadScoreTables, INCOMPLETE } = scoring
-const { buildMonth, buildYear, yearAverage, readYear, currentYearMonth } = shared
+const { scoreMonth, visibleOf, buildYear, yearAverage, readYear, currentYearMonth } = shared
 
 const byLevelThenName = (a, b) => Number(b.position_level) - Number(a.position_level) || String(a.db_name).localeCompare(String(b.db_name))
 const byRatingDesc = (a, b) => parseFloat(b.final_ratings) - parseFloat(a.final_ratings)
@@ -31,7 +31,11 @@ const average = (rows) => (rows.length ? rows.reduce((sum, row) => sum + toNumbe
 
 // ---------------------------------------------------------------- monthly
 const buildTeamsOfMonth = async (user, yearMonth, tables, department = 'csd') => {
-    const rows = await buildMonth(user, yearMonth, tables, department)
+    const month = await scoreMonth(user, yearMonth, tables, department)
+    const rows = visibleOf(user, month)
+
+    // the BEST TEAM is the one of the leaderboard, among ALL the teams: a team leader only sees his/her own team here
+    const bestTeamIds = new Set(rankTeams(month.scored, tables).filter(team => team.tag).map(team => String(team.team_id)))
 
     const groups = new Map()
     for (const row of rows) {
@@ -63,9 +67,8 @@ const buildTeamsOfMonth = async (user, yearMonth, tables, department = 'csd') =>
         })
     }
 
-    const topRating = Math.max(...teams.filter(team => team.isCompleted).map(team => parseFloat(team.final_ratings)))
     return teams
-        .map(team => ({ ...team, tag: team.isCompleted && parseFloat(team.final_ratings) === topRating ? 'BEST TEAM' : '' }))
+        .map(team => ({ ...team, tag: bestTeamIds.has(String(team.team_id)) ? 'BEST TEAM' : '' }))
         .sort(byRatingDesc)
 }
 
