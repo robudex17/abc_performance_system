@@ -1,6 +1,7 @@
 <template>
   <div>
     <h1 class="text-2xl font-bold mb-4 text-center">Employee Feedback Information ({{ summary.month }} {{ summary.year }})</h1>
+    <p v-if="lock.locked" class="text-center text-sm font-bold text-red-600 mb-3">{{ lock.message }}</p>
 
     <div class="overflow-x-auto">
       <table class="w-full table-auto border-collapse bg-white">
@@ -127,7 +128,8 @@
                     <!-- Toggle Enable/Disable Update -->
                     <button
                       @click="toggleUpdate(row)"
-                      class="text-white font-bold px-2 py-2 rounded-2xl shadow-md transition duration-300"
+                      :disabled="lock.locked"
+                      class="text-white font-bold px-2 py-2 rounded-2xl shadow-md transition duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
                       :class="row.can_update ? 'bg-green-500 hover:bg-green-600' : 'bg-yellow-500 hover:bg-yellow-600'"
                     >
                       {{ row.can_update ? 'Update Enabled' : 'Update is Disabled' }}
@@ -136,7 +138,8 @@
                     <!-- Delete Button -->
                     <button
                       @click="deleteFeedback(row)"
-                      class="px-2 py-2 font-bold rounded-2xl shadow-md transition duration-300 text-white bg-red-500 hover:bg-red-600"
+                      :disabled="lock.locked"
+                      class="px-2 py-2 font-bold rounded-2xl shadow-md transition duration-300 text-white bg-red-500 hover:bg-red-600 disabled:opacity-50 disabled:cursor-not-allowed"
                     >
                       Delete
                     </button>
@@ -199,6 +202,7 @@ import { ref, computed } from 'vue'
 const props = defineProps({
   summary: { type: Object, required: true },
   employee: { type: Object, required: true },   // firstname, lastname, position_level, employee_status
+  lock: { type: Object, default: () => ({ locked: false, reason: null, message: '' }) },   // resigned or submitted: no update / delete
 })
 
 const emit = defineEmits(['passEnableDisableFeedback', 'passDeleteFeedback'])
@@ -259,12 +263,20 @@ const toggleUpdate = (row) => {
     alert('User is not allowed to enable or disable update feedback which already resigned.')
     return
   }
+  if (props.lock.locked) {
+    alert(props.lock.message)
+    return
+  }
   emit('passEnableDisableFeedback', { ...keyOf(row), can_update: row.can_update ? 0 : 1 })
 }
 
 const deleteFeedback = (row) => {
   if (props.employee.employee_status === 'Resigned') {
     alert('User is not allowed to delete feedback which already resigned.')
+    return
+  }
+  if (props.lock.locked) {
+    alert(props.lock.message)
     return
   }
   if (confirm(`Delete the feedback of ${row.who_give_feedback_name} for ${monthName(row.year_month)} ${row.year_month.slice(0, 4)}?`)) {

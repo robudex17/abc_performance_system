@@ -1,6 +1,7 @@
 <template>
   <div>
     <h1 class="text-2xl font-bold mb-4 text-center">{{ attendanceTitle }}</h1>
+    <p v-if="lock.locked" class="text-center text-sm font-bold text-red-600 mb-3">{{ lock.message }}</p>
 
     <div class="overflow-x-auto">
       <table class="w-full table-auto border-collapse bg-white">
@@ -14,7 +15,8 @@
                 Actions
                 <button
                   @click="openModal('add')"
-                  class="ml-2 bg-green-500 text-white py-1 px-3 rounded-lg flex items-center gap-2 hover:bg-green-600"
+                  :disabled="lock.locked"
+                  class="ml-2 bg-green-500 text-white py-1 px-3 rounded-lg flex items-center gap-2 hover:bg-green-600 disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   <font-awesome-icon icon="plus" />
                   Add
@@ -32,13 +34,15 @@
               <div class="flex justify-center gap-2">
                 <button
                   @click="openModal('edit', attendance)"
-                  class="bg-green-500 text-white py-1 px-3 rounded-lg hover:bg-green-600"
+                  :disabled="lock.locked"
+                  class="bg-green-500 text-white py-1 px-3 rounded-lg hover:bg-green-600 disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   Edit
                 </button>
                 <button
                   @click="deleteAttendance(attendance.year_month)"
-                  class="bg-red-500 text-white py-1 px-3 rounded-lg hover:bg-red-600"
+                  :disabled="lock.locked"
+                  class="bg-red-500 text-white py-1 px-3 rounded-lg hover:bg-red-600 disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   Delete
                 </button>
@@ -114,6 +118,7 @@ const props = defineProps({
   attendanceDetails: { type: Array, required: true },        // records of the selected month
   employee: { type: Object, required: true },                // needs employee_status
   defaultYearMonth: { type: String, required: true },        // month that is filled in on "Add"
+  lock: { type: Object, default: () => ({ locked: false, reason: null, message: "" }) },   // resigned or submitted: no add, edit or delete
 })
 
 const emit = defineEmits(['passAttendance', 'passUpdateAttendance', 'passDeleteAttendance'])
@@ -136,6 +141,12 @@ const isResigned = computed(() => props.employee.employee_status === 'Resigned')
 const openModal = (type, attendance = null) => {
   if (isResigned.value) {
     alert(`Adding or Updating ${props.attendanceType} of a Resigned employee is prohibited.`)
+    return
+  }
+
+  // submitted (the server checks it too)
+  if (props.lock.locked) {
+    alert(props.lock.message)
     return
   }
 
@@ -192,6 +203,11 @@ const submitForm = () => {
 const deleteAttendance = (yearMonth) => {
   if (isResigned.value) {
     alert(`Deleting ${props.attendanceType} of a Resigned employee is prohibited.`)
+    return
+  }
+
+  if (props.lock.locked) {
+    alert(props.lock.message)
     return
   }
 

@@ -92,6 +92,7 @@ const API = {
 
    employees: `${HTTPADDR}/employees`,
    employeeAttendance: `${HTTPADDR}/none_sales_attendance`,          // /:type(absences|tardiness|memo)/:employee_id
+   employeeLock: `${HTTPADDR}/evaluation/lock`,                       // /:employee_id?year_month= : resigned or submitted (the details page buttons)
    noneSalesFeedbackSummary: `${HTTPADDR}/feedback_by_nonesales_summary`, // /:employee_id?year=YYYY
 
    positions_roles: {

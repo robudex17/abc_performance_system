@@ -19,6 +19,7 @@
         <NoneSalesFeedbackSummaryComponent
           :summary="feedback"
           :employee="employee"
+          :lock="lock"
           @passEnableDisableFeedback="enableDisableFeedback"
           @passDeleteFeedback="deleteFeedback"
         />
@@ -30,6 +31,7 @@
           attendanceTitle="Employee Absences"
           :attendanceDetails="absences"
           :employee="employee"
+          :lock="lock"
           :defaultYearMonth="yearMonth"
           @passAttendance="addAttendance"
           @passUpdateAttendance="updateAttendance"
@@ -43,6 +45,7 @@
           attendanceTitle="Employee Tardiness"
           :attendanceDetails="tardiness"
           :employee="employee"
+          :lock="lock"
           :defaultYearMonth="yearMonth"
           @passAttendance="addAttendance"
           @passUpdateAttendance="updateAttendance"
@@ -56,6 +59,7 @@
           attendanceTitle="Employee Memo"
           :attendanceDetails="memo"
           :employee="employee"
+          :lock="lock"
           :defaultYearMonth="yearMonth"
           @passAttendance="addAttendance"
           @passUpdateAttendance="updateAttendance"
@@ -99,6 +103,8 @@ const absences = computed(() => detailsStore.state.absences)
 const tardiness = computed(() => detailsStore.state.tardiness)
 const memo = computed(() => detailsStore.state.memo)
 const feedback = computed(() => detailsStore.state.feedback)
+// resigned or the evaluation of the month is submitted: the buttons that change the data are disabled
+const lock = computed(() => detailsStore.state.lock)
 
 // the latest record of the history is the current employment and assignment
 const employee = computed(() => bio.value[0] || {})
@@ -110,6 +116,7 @@ const loadMonthData = async () => {
       detailsStore.fetchAttendance('tardiness', employeeId, yearMonth.value),
       detailsStore.fetchAttendance('memo', employeeId, yearMonth.value),
       detailsStore.fetchFeedbackSummary(employeeId, yearMonth.value),
+      detailsStore.fetchLock(employeeId, yearMonth.value),
     ])
   } catch (error) {
     alert(error.message)

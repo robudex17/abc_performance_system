@@ -16,6 +16,8 @@ export const useEmployeeDetailsStore = defineStore('employee_details', () => {
         memo: [],
         // GET /feedback_by_nonesales_summary: one row per month + the lists of the modals
         feedback: { year_month: '', month: '', year: new Date().getFullYear(), months: [], from_members: [], from_head: [], qa: [], admin: [] },
+        // GET /evaluation/lock: the data of the employee can not be changed in the month (reason: resigned | submitted)
+        lock: { locked: false, reason: null, message: '' },
         loading: false,
     })
 
@@ -78,6 +80,10 @@ export const useEmployeeDetailsStore = defineStore('employee_details', () => {
         return data.message
     }
 
+    const fetchLock = async (employeeId, yearMonth) => {
+        state.lock = await request(`${API.employeeLock}/${employeeId}?year_month=${yearMonth}`)
+    }
+
     const fetchFeedbackSummary = async (employeeId, yearMonth) => {
         state.feedback = await request(`${API.noneSalesFeedbackSummary}/${employeeId}?year_month=${yearMonth}`)
     }
@@ -100,6 +106,7 @@ export const useEmployeeDetailsStore = defineStore('employee_details', () => {
         addAttendance,
         updateAttendance,
         deleteAttendance,
+        fetchLock,
         fetchFeedbackSummary,
         enableDisableFeedbackUpdate,
         deleteFeedback,
