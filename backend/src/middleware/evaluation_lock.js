@@ -16,10 +16,9 @@ const currentYearMonth = () => {
     return `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}`
 }
 
-// Why the data of the employee can not be changed in the month: { reason, message }, or null when it can.
-// evalType 'performance' also checks the computed performance.
-const findLock = async (employeeId, yearMonth, evalType) => {
-    // employment status in that month (same snapshot rule as the CSD Evaluation list)
+// Is the employee resigned in the month? Employment status in that month (same snapshot rule as the CSD Evaluation list).
+// Used by the lock below and by the Review of the evaluation: the evaluation of a resigned employee is never reviewed.
+const isResignedInMonth = async (employeeId, yearMonth) => {
     const [employment] = await pool.execute(
         `SELECT status FROM employee_employments
           WHERE employee_id = ?
@@ -28,7 +27,14 @@ const findLock = async (employeeId, yearMonth, evalType) => {
           ORDER BY id DESC LIMIT 1`,
         [employeeId, yearMonth, yearMonth]
     )
-    if (employment[0]?.status === 'Resigned') {
+    return employment[0]?.status === 'Resigned'
+}
+exports.isResignedInMonth = isResignedInMonth
+
+// Why the data of the employee can not be changed in the month: { reason, message }, or null when it can.
+// evalType 'performance' also checks the computed performance.
+const findLock = async (employeeId, yearMonth, evalType) => {
+    if (await isResignedInMonth(employeeId, yearMonth)) {
         return { reason: 'resigned', message: 'The data of a resigned employee can not be changed' }
     }
 

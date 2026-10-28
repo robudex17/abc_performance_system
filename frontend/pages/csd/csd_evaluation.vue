@@ -38,7 +38,7 @@
                     <th class="py-0.5 px-4 text-center text-xs font-bold text-green-900 border ">Feedback(Immediate Head)</th>
                     <th class="py-0.5 px-4 text-center text-xs font-bold text-green-900 border  ">Feedback(Members)</th>
                     
-                   
+                  
                      <th class="py-0.5 px-4 text-center text-xs font-bold text-green-900 border">Submit</th>
              
                 </tr>
@@ -281,9 +281,9 @@
                         <button
                           v-if="agent.submitted == 1"
                           @click="reviewEvaluation(agent)"
-                          :disabled="Boolean(agent.review_locked_by)"
-                          :title="agent.review_locked_by ? 'Review ' + agent.review_locked_by + ' first: the Performance of ' + agent.review_locked_by + ' is made of this evaluation' : ''"
-                          :class="agent.review_locked_by ? 'bg-gray-400 text-white cursor-not-allowed py-0.5 px-3 rounded-lg text-sm' : 'bg-purple-500 text-white py-0.5 px-3 rounded-lg hover:bg-purple-600 text-sm'"
+                          :disabled="reviewLockedText(agent) !== ''"
+                          :title="reviewLockedText(agent)"
+                          :class="reviewLockedText(agent) !== '' ? 'bg-gray-400 text-white cursor-not-allowed py-0.5 px-3 rounded-lg text-sm' : 'bg-purple-500 text-white py-0.5 px-3 rounded-lg hover:bg-purple-600 text-sm'"
                         >
                           Review
                         </button>
@@ -840,8 +840,17 @@
     await csdStoreInstance.changeCsdEvaluationStatus(agent.id, agent.year_month, 'POST', deptQuery.value)
   }
 
+  // Why the Review of a row is disabled ('' = it can be clicked). Resigned is checked first: the evaluation of a resigned
+  // employee is never reviewed (nothing of him/her can change anymore). The server checks the same.
+  const reviewLockedText = (agent) => {
+    if (agent.employee_status === 'Resigned') return 'Resigned employee: the evaluation can not be reviewed'
+    if (agent.review_locked_by) return 'Review ' + agent.review_locked_by + ' first: the Performance of ' + agent.review_locked_by + ' is made of this evaluation'
+    return ''
+  }
+
   const reviewEvaluation = async (agent) => {
     if (!isAdmin()) return alert('Not allowed to review the CSD Evaluation')
+    if (reviewLockedText(agent) !== '') return alert(reviewLockedText(agent))
     await csdStoreInstance.changeCsdEvaluationStatus(agent.id, agent.year_month, 'DELETE', deptQuery.value)
   }
 

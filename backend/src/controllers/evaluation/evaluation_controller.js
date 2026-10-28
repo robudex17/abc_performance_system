@@ -3,6 +3,7 @@ const { validationResult, body } = require('express-validator')
 
 const { parseYearMonth } = require('../helper_scripts/global_variables_and_functions')
 const { attachReceivedFeedback } = require('./received_feedback')
+const { isResignedInMonth } = require('../../middleware/evaluation_lock')
 const { applyComputedPerformance, applySubmitDependencies, getSubmitBlockers, getReviewBlockers } = require('./performance_resolver')
 const { attachLeadership } = require('./leadership_scores')
 const { readDepartment, badDepartment, isExcludedFromEvaluation } = require('./department_scope')
@@ -734,13 +735,20 @@ exports.reviewCsdEvaluation = async (req, res, next) => {
         if (employeeId === 'all') {
             // only the employees of THIS department: the status table is shared by CSD and Collection
             const evaluation = await exports.generateCsdEvaluation(yearMonth, 'all', department, 'all', 'all', null, req.user)
-            const ids = evaluation.map(agent => agent.id)
+            // a resigned employee is never reviewed: the evaluation stays submitted, nothing of him/her can change
+            const resigned = evaluation.filter(agent => agent.employee_status === 'Resigned')
+            const ids = evaluation.filter(agent => agent.employee_status !== 'Resigned').map(agent => agent.id)
             const lockedAll = await getReviewBlockers(ids, yearMonth)
             if (lockedAll.length > 0) return res.status(409).json({ message: `Review ${[...new Set(lockedAll.map(blocker => blocker.head))].join(', ')} first: ${lockedAll.map(blocker => blocker.employee).join(', ')} can not be reviewed while the evaluation of the head is submitted` })
             if (ids.length > 0) {
                 await pool.query('DELETE FROM csd_evaluation_status WHERE `year_month` = ? AND employee_id IN (?)', [yearMonth, ids])
             }
-            return res.status(200).json({ message: `${department.toUpperCase()} evaluation of ${yearMonth} is marked for review` })
+            const note = resigned.length > 0 ? ` (${resigned.length} resigned employee${resigned.length === 1 ? '' : 's'} stay${resigned.length === 1 ? 's' : ''} submitted)` : ''
+            return res.status(200).json({ message: `${department.toUpperCase()} evaluation of ${yearMonth} is marked for review${note}`, resigned_skipped: resigned.length })
+        }
+
+        if (await isResignedInMonth(employeeId, yearMonth)) {
+            return res.status(409).json({ message: 'The evaluation of a resigned employee can not be reviewed' })
         }
 
         const locked = await getReviewBlockers([employeeId], yearMonth)
