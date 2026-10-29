@@ -54,7 +54,7 @@
                         <div class="flex items-center space-x-2">
                             <img
                             v-if="agent && agent.image_link"
-                            :src="agent.image_link"
+                            :src="imageUrlOf(agent.image_link)"
                             alt="Agent Image"
                             class="w-9 h-9 rounded-full object-cover shadow"
                             />
@@ -314,7 +314,7 @@
                   <td class="px-4 py-3 flex items-center space-x-3">
                     <img
                       v-if="data && data.image_link"
-                      :src="data.image_link"
+                      :src="imageUrlOf(data.image_link)"
                       alt="Agent Image"
                       class="w-10 h-10 rounded-full object-cover border"
                     />

@@ -45,7 +45,7 @@
                   <div class="flex items-center space-x-2">
                             <img
                             v-if="agent && agent.image_link"
-                            :src="agent.image_link"
+                            :src="imageUrlOf(agent.image_link)"
                             alt="Agent Image"
                             class="w-9 h-9 rounded-full object-cover shadow"
                             />

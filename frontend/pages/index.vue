@@ -50,7 +50,7 @@
 
                 <img
                   v-if="team.team_image"
-                  :src="team.team_image"
+                  :src="imageUrlOf(team.team_image)"
                   alt="Team Image"
                   class="w-20 h-20 rounded-full object-cover mb-4"
                 />
@@ -120,7 +120,7 @@
                 <!-- Agent Image -->
                 <img
                   v-if="agent.image_link"
-                  :src="agent.image_link"
+                  :src="imageUrlOf(agent.image_link)"
                   alt="Agent Image"
                   class="w-24 h-24 rounded-full object-cover border-2 border-gray-600 shadow-md"
                 />
@@ -171,7 +171,7 @@
                 <!-- Agent Image -->
                 <img
                   v-if="agent.image_link"
-                  :src="agent.image_link"
+                  :src="imageUrlOf(agent.image_link)"
                   alt="Agent Image"
                   class="w-24 h-24 rounded-full object-cover border-2 border-gray-600 shadow-md"
                 />
@@ -215,7 +215,7 @@
                 </div>
                 <img
                   v-if="agent.image_link"
-                  :src="agent.image_link"
+                  :src="imageUrlOf(agent.image_link)"
                   alt="Agent Image"
                   class="w-20 h-20 rounded-full object-cover mb-4"
                 />
@@ -270,7 +270,7 @@
       
         <img
           v-if="selectedAgent && selectedAgent.image_link"
-          :src="selectedAgent.image_link"
+          :src="imageUrlOf(selectedAgent.image_link)"
           alt="Agent Image"
           class="w-40 h-40 rounded-full object-cover mb-4"
         />
@@ -455,7 +455,7 @@
       <!-- Image Section -->
       <img
         v-if="selectedTeam && selectedTeam.team_image"
-        :src="electedTeam.team_image"
+        :src="imageUrlOf(selectedTeam.team_image)"
         alt="Team Image"
         class="w-40 h-40 rounded-full object-cover mb-4 border-4 border-gray-700 shadow-md"
       />
@@ -543,7 +543,7 @@
                 <div class="flex items-center justify-left space-x-2">
                   <img
                     v-if="member && member.image_link"
-                    :src="member.image_link"
+                    :src="imageUrlOf(member.image_link)"
                     alt="Agent Image"
                     class="w-10 h-10 rounded-full object-cover border border-gray-600"
                   />
@@ -746,6 +746,7 @@ const  toggleView = () => {
   }
   isCardView.value = !isCardView.value
 }
+
 
 
 
