@@ -6,7 +6,7 @@ const { attachReceivedFeedback } = require('./received_feedback')
 const { isResignedInMonth } = require('../../middleware/evaluation_lock')
 const { applyComputedPerformance, applySubmitDependencies, getSubmitBlockers, getReviewBlockers } = require('./performance_resolver')
 const { attachLeadership } = require('./leadership_scores')
-const { readDepartment, badDepartment, isExcludedFromEvaluation } = require('./department_scope')
+const { readDepartment, badDepartment, isExcludedFromEvaluation, DEPARTMENT_LABELS } = require('./department_scope')
 
 const { fetch_eval_queries, delete_eval_queries, update_eval_queries, add_eval_queries }  = require(`./metrics_queries`)
 
@@ -688,7 +688,7 @@ exports.submitCsdEvaluation = async (req, res, next) => {
         const evaluation = await exports.generateCsdEvaluation(yearMonth, 'all', department, 'all', 'all', null, req.user)
         const targets = employeeId === 'all' ? evaluation : evaluation.filter(agent => String(agent.id) === String(employeeId))
 
-        if (targets.length === 0) return res.status(404).json({ message: `Employee ${employeeId} not found in the CSD evaluation of ${yearMonth}` })
+        if (targets.length === 0) return res.status(404).json({ message: `Employee ${employeeId} not found in the ${DEPARTMENT_LABELS[department]} evaluation of ${yearMonth}` })
 
         const notReady = targets.filter(agent => !agent.ready_to_submit)
         if (notReady.length > 0) {
@@ -712,7 +712,8 @@ exports.submitCsdEvaluation = async (req, res, next) => {
         }
         await connection.commit()
 
-        res.status(201).json({ message: `CSD evaluation of ${employeeId} (${yearMonth}) is submitted`, submitted: targets.length })
+        const who = employeeId === 'all' ? 'everybody' : employeeId
+        res.status(201).json({ message: `${DEPARTMENT_LABELS[department]} evaluation of ${who} (${yearMonth}) is submitted`, submitted: targets.length })
     } catch (error) {
         if (connection) await connection.rollback()
         console.error('Error submitting the CSD evaluation:', error)
@@ -744,7 +745,7 @@ exports.reviewCsdEvaluation = async (req, res, next) => {
                 await pool.query('DELETE FROM csd_evaluation_status WHERE `year_month` = ? AND employee_id IN (?)', [yearMonth, ids])
             }
             const note = resigned.length > 0 ? ` (${resigned.length} resigned employee${resigned.length === 1 ? '' : 's'} stay${resigned.length === 1 ? 's' : ''} submitted)` : ''
-            return res.status(200).json({ message: `${department.toUpperCase()} evaluation of ${yearMonth} is marked for review${note}`, resigned_skipped: resigned.length })
+            return res.status(200).json({ message: `${DEPARTMENT_LABELS[department]} evaluation of ${yearMonth} is marked for review${note}`, resigned_skipped: resigned.length })
         }
 
         if (await isResignedInMonth(employeeId, yearMonth)) {
@@ -759,7 +760,7 @@ exports.reviewCsdEvaluation = async (req, res, next) => {
         const [result] = await pool.execute('DELETE FROM csd_evaluation_status WHERE employee_id = ? AND `year_month` = ?', [employeeId, yearMonth])
         if (result.affectedRows === 0) return res.status(404).json({ message: 'The evaluation is not submitted' })
 
-        res.status(200).json({ message: `CSD evaluation of ${employeeId} (${yearMonth}) is marked for review` })
+        res.status(200).json({ message: `${DEPARTMENT_LABELS[department]} evaluation of ${employeeId} (${yearMonth}) is marked for review` })
     } catch (error) {
         console.error('Error marking the CSD evaluation for review:', error)
         res.status(500).json({ error: 'Database Error, Cannot mark the CSD evaluation for review' })

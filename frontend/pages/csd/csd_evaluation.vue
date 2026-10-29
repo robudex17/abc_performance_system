@@ -836,7 +836,7 @@
   const isAdmin = () => currentUser.role == 'admin'
 
   const submitEvaluation = async (agent) => {
-    if (!isAdmin()) return alert('Not allowed to submit the CSD Evaluation')
+    if (!isAdmin()) return alert(`Not allowed to submit the ${view.value.label} Evaluation`)
     await csdStoreInstance.changeCsdEvaluationStatus(agent.id, agent.year_month, 'POST', deptQuery.value)
   }
 
@@ -849,19 +849,19 @@
   }
 
   const reviewEvaluation = async (agent) => {
-    if (!isAdmin()) return alert('Not allowed to review the CSD Evaluation')
+    if (!isAdmin()) return alert(`Not allowed to review the ${view.value.label} Evaluation`)
     if (reviewLockedText(agent) !== '') return alert(reviewLockedText(agent))
     await csdStoreInstance.changeCsdEvaluationStatus(agent.id, agent.year_month, 'DELETE', deptQuery.value)
   }
 
   const submitAllEvaluation = async () => {
-    if (!isAdmin()) return alert('Not allowed to submit the CSD Evaluation')
+    if (!isAdmin()) return alert(`Not allowed to submit the ${view.value.label} Evaluation`)
     if (!canSubmitAll.value) return
     await csdStoreInstance.changeCsdEvaluationStatus('all', agents.value[0].year_month, 'POST', deptQuery.value)
   }
 
   const reviewAllEvaluation = async () => {
-    if (!isAdmin()) return alert('Not allowed to review the CSD Evaluation')
+    if (!isAdmin()) return alert(`Not allowed to review the ${view.value.label} Evaluation`)
     await csdStoreInstance.changeCsdEvaluationStatus('all', agents.value[0].year_month, 'DELETE', deptQuery.value)
   }
 
