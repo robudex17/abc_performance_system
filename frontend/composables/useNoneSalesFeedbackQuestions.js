@@ -85,25 +85,10 @@ export function useNoneSalesFeedbackQuestions(agentType, direction, department, 
         "LEADERSHIP Employee demonstrates strong leadership skills – such as decision making accountability, communication and ability to inspire and guide the team toward achieving goals",
     ])
 
-    // Purchasing: immediate head rates the member
-    const purchasingMemberQuestions = buildQuestions([
-        "The employee consistently meets performance targets.",
-        "The employee follows company rules, policies, and manager’s instructions.",
-        "The employee cooperates with management projects, events, and inquiries.",
-        "The employee contributes positively to team morale and culture.",
-        "The employee shows initiative in learning new skills or processes.",
-        "The employee treats managers and colleagues with respect.",
-        "The employee demonstrates effort to learn and improve performance.",
-        "The employee is open to feedback and willing to improve.",
-        "The employee communicates clearly and concisely.",
-        "The employee finishes assigned tasks on time and ensures quality of work.",
-        "The employee responds immediately to concerns raised by managers.",
-        "The employee understands job functions, processes, and systems used at work.",
-        "The employee ensures all tasks, data entries, translations, and information are consistently accurate and free of errors.",
-        "The employee stays focused when faced with distractions, obstacles, or adversity.",
-        "The employee demonstrates the ability to identify and solve problems while working effectively with minimal supervision.",
-        "The employee promptly informs managers of absences, tardiness, and any work-related concerns.",
-    ])
+    // Purchasing: immediate head rates the member. The same competencies as CSD and Collection (the leadership one included).
+    // Give Purchasing its own list here (buildCompetencies([...], [...])) when its wording changes: its old 16 statements are in the
+    // git history (commit 3026d5d).
+    const purchasingMemberQuestions = csdCollectionMemberQuestions
 
     // All none-sales departments: member rates the immediate head
     const headQuestions = buildQuestions([
@@ -141,10 +126,10 @@ export function useNoneSalesFeedbackQuestions(agentType, direction, department, 
         if (!NONE_SALES_DEPARTMENTS.includes(departmentCode)) return []
 
         if (agentType === 1 && direction == 'agent_by_lm') {
-            if (departmentCode === 'purchasing') return purchasingMemberQuestions
             // the leadership competency only when the member who is rated is an assistant team leader, a team leader or an assistant manager
             const isLeader = LEADER_LEVELS.includes(Number(unref(receiverLevel)))
-            return csdCollectionMemberQuestions.filter(question => !question.leaderOnly || isLeader)
+            const memberQuestions = departmentCode === 'purchasing' ? purchasingMemberQuestions : csdCollectionMemberQuestions
+            return memberQuestions.filter(question => !question.leaderOnly || isLeader)
         }
         if (agentType === 0 && direction == 'lm_by_agent') return headQuestions
 

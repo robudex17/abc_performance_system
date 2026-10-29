@@ -27,9 +27,13 @@ describe('none-sales feedback: the competency format (CSD and Collection, the he
         expect(composable).toMatch(/COMPETENCY_ID_START = 101/)
     })
 
-    test('the other question sets keep the radio layout', () => {
-        expect(composable).toMatch(/purchasingMemberQuestions = buildQuestions\(\[/)
+    test('the member-rates-head form keeps the radio layout', () => {
         expect(composable).toMatch(/headQuestions = buildQuestions\(\[/)
+    })
+
+    test('Purchasing uses the same competencies as CSD and Collection (its own name, so it can get its own list later)', () => {
+        expect(composable).toMatch(/purchasingMemberQuestions = csdCollectionMemberQuestions/)
+        expect(composable).not.toMatch(/purchasingMemberQuestions = buildQuestions/)
     })
 
     test('the form: COMPETENCY and SCORE columns, a score from 5 to 1, and no comment box', () => {
@@ -55,8 +59,9 @@ describe('none-sales feedback: the LEADERSHIP competency only for leaders', () =
         expect(composable).toMatch(/filter\(question => !question\.leaderOnly \|\| isLeader\)/)
     })
 
-    test('Purchasing is not changed: it has no leadership competency', () => {
-        expect(composable).toMatch(/if \(departmentCode === 'purchasing'\) return purchasingMemberQuestions/)
+    test('Purchasing gets the leadership competency too: the filter runs for every department', () => {
+        expect(composable).toMatch(/departmentCode === 'purchasing' \? purchasingMemberQuestions : csdCollectionMemberQuestions/)
+        expect(composable).toMatch(/memberQuestions\.filter\(question => !question\.leaderOnly \|\| isLeader\)/)
     })
 
     test('the page reads the position of the member from the server for the giver, the admin gets it in the link', () => {
