@@ -25,29 +25,55 @@ export function useNoneSalesFeedbackQuestions(agentType, direction, department) 
         choices: NONE_SALES_FEEDBACK_SCALE.map(choice => ({ ...choice }))
     }))
 
+    // Competency form (the performance evaluation format): each item is written "TITLE description". The ALL CAPS words at the
+    // start are the title, the rest is the description. The form shows a COMPETENCY and a SCORE (5 4 3 2 1) column, no comment.
+    // The ids start at 101: the answers saved with the old questions (ids 1 - 21) never show under a competency.
+    const COMPETENCY_ID_START = 101
+    const buildCompetencies = (texts) => texts.map((text, index) => {
+        const words = text.trim().split(/\s+/)
+        let titleWords = 0
+        while (titleWords < words.length && words[titleWords] === words[titleWords].toUpperCase() && /[A-Z/]/.test(words[titleWords])) titleWords++
+        return {
+            id: COMPETENCY_ID_START + index,
+            title: words.slice(0, titleWords).join(' '),
+            description: words.slice(titleWords).join(' '),
+            text,
+            choices: NONE_SALES_FEEDBACK_SCALE.map(choice => ({ ...choice }))
+        }
+    })
+
     // CSD and Collection: immediate head rates the member
-    const csdCollectionMemberQuestions = buildQuestions([
-        "The employee consistently meets performance targets.",
-        "The employee follows company rules, policies, and manager’s instructions.",
-        "The employee handles customer inquiries efficiently.",
-        "The employee ensures accuracy and pays attention to detail when providing information to customers.",
-        "The employee understands job functions, processes, and systems used at work.",
-        "The employee responds immediately to concerns raised by customers or managers.",
+    const csdCollectionMemberQuestions = buildCompetencies([
+        // "The employee consistently meets performance targets.",
+        // "The employee follows company rules, policies, and manager’s instructions.",
+        // "The employee handles customer inquiries efficiently.",
+        // "The employee ensures accuracy and pays attention to detail when providing information to customers.",
+        // "The employee understands job functions, processes, and systems used at work.",
+        // "The employee responds immediately to concerns raised by customers or managers.",
         // "The employee finishes assigned tasks on time and ensures quality of work.",
-        "The employee communicates clearly and concisely.",
-        "The employee is open to feedback and willing to improve.",
-        "The employee demonstrates effort to learn and improve performance.",
+        // "The employee communicates clearly and concisely.",
+        // "The employee is open to feedback and willing to improve.",
+        // "The employee demonstrates effort to learn and improve performance.",
         // "The employee stays focused when faced with distractions, obstacles, or adversity.",
         // "The employee maintains a positive and empathetic tone during interactions.",
-        "The employee treats managers and colleagues with respect.",
-        "The employee cooperates with management projects, events, and inquiries.",
+        // "The employee treats managers and colleagues with respect.",
+        // "The employee cooperates with management projects, events, and inquiries.",
         // "The employee manages time well while balancing multiple tasks.",
-        "The employee contributes positively to team morale and culture.",
+        // "The employee contributes positively to team morale and culture.",
         // "The employee shows initiative in learning new skills or processes.",
         // "The employee adapts well to changes in procedures or customer needs.",
         // "The employee contributes to overall customer satisfaction.",
-        "The employee demonstrates the ability to identify and solve problems while working effectively with minimal supervision.",
-        "The employee promptly informs managers of absences, tardiness, and any work-related concerns.",
+        // "The employee demonstrates the ability to identify and solve problems while working effectively with minimal supervision.",
+        // "The employee promptly informs managers of absences, tardiness, and any work-related concerns.",
+
+        "SERIVCE ATTITUDE Level of commitment that employee has been able to manifest in terms of living up to the Company’s vision of providing service excellence to the Company’s external and internal customers.",
+        "TASK ACCOMPLISHMENT The extent to which the employee is able to accomplish all of the results, output, and special assignments expected of him/her",
+        "COMPREHENSION OF CONCEPT, THEORIES AND PRINCIPLES Employee exhibits understanding and mastery of principles, concepts and theories taught; ability to relate principles to practical situations and knows the",
+        "TASK COMPETENCE Employee applies skills and knowledge to achieve tasks at hand; organizes work methodically; pays attention to details; implements action thoroughly towards goals.",
+        "INTERPERSONAL COMPETENCE Employee exhibits ability to communicate, listen, express him/herself clearly and accurately; influences others positively, cooperates and supports efforts in building teamwork. He/She offers to assist and help co-workers in learning new task and meeting deadlines",
+        "PERSONAL COMPETENCE Employee possesses high energy and willing to perform assigned task. He/She is able manage stress and adapt to changes in his/her job easily manifests positive work attitude everyday",
+        "PROFESSIONALISM AND DECORUM The employee demonstrates the highest level of professionalism through speech, actions, and overall conduct. This includes reporting to work on time, and consistently adhering to ethical and compliance requirements, particularly in relation to sales conduct and other company policies.",
+        "VALUES / CHARACTER Employee able to set and maintain high standards and norms in the practice of his/her profession. Ability to exemplify the corporate values such as commitment to excellence, esprit d’ corps, integrity,",
     ])
 
     // Purchasing: immediate head rates the member

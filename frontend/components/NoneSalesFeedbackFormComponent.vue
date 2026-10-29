@@ -12,8 +12,45 @@
       <h2 v-if="viewOnly" class="text-center text-red-600 font-bold text-2xl mb-4">(VIEW ONLY)</h2>
 
       <form @submit.prevent="submitFeedback">
+        <!-- feedback given with the questions of an older form: its answers do not belong to these competencies -->
+        <p v-if="oldFormNotice" class="mb-4 p-3 rounded bg-amber-100 text-amber-900 text-sm font-medium text-center">{{ oldFormNotice }}</p>
+
+        <!-- the competency format (like the performance evaluation): COMPETENCY (title and description) and SCORE, no comment -->
+        <div v-if="isCompetencyForm" class="overflow-x-auto">
+          <p class="text-gray-600 text-sm mb-3 text-center">Rate each competency from 1 to 5. 5 is the highest and 1 is the lowest.</p>
+          <table class="w-full min-w-[520px] border-collapse border border-gray-400 text-sm">
+            <thead>
+              <tr class="bg-gray-100">
+                <th class="w-12 border border-gray-400 py-2"></th>
+                <th class="border border-gray-400 py-2 px-3 text-center font-bold tracking-wide">COMPETENCY</th>
+                <th class="w-32 border border-gray-400 py-2 px-3 text-center font-bold tracking-wide">SCORE</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr v-for="(question, index) in questions" :key="question.id">
+                <td class="border border-gray-400 py-2 text-center text-lg font-medium text-gray-800 align-middle">{{ index + 1 }}</td>
+                <td class="border border-gray-400 py-2 px-3 text-gray-900">
+                  <p class="font-bold uppercase">{{ question.title }}</p>
+                  <p>{{ question.description }}</p>
+                </td>
+                <td class="border border-gray-400 py-2 px-3 text-center align-middle">
+                  <select
+                    v-model.number="responses[question.id]"
+                    :disabled="viewOnly"
+                    :aria-label="`Score: ${question.title}`"
+                    class="w-full border rounded px-2 py-2 text-center text-lg font-semibold bg-white disabled:bg-gray-100 disabled:text-gray-700"
+                  >
+                    <option :value="null" disabled>-</option>
+                    <option v-for="choice in question.choices" :key="choice.score" :value="choice.score">{{ choice.score }}</option>
+                  </select>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
         <!-- one row per question, one radio button per answer under its label (the scores are not shown) -->
-        <div class="overflow-x-auto">
+        <div v-else class="overflow-x-auto">
           <table class="w-full min-w-[640px] border-collapse text-sm">
             <thead>
               <tr>
@@ -111,6 +148,17 @@ watch(
 
 // the labels of the header row: the answers of the first question (every question has the same answers)
 const answerLabels = computed(() => props.questions[0]?.choices ?? [])
+
+// the competency format: the questions have a title and a description (useNoneSalesFeedbackQuestions)
+const isCompetencyForm = computed(() => props.questions.length > 0 && props.questions.every(question => question.title))
+
+// a feedback that exists but has no answer for these questions was given with an older form (the saved score is still valid)
+const oldFormNotice = computed(() => {
+  if (props.feedback.length === 0) return ''
+  const hasAnAnswer = props.questions.some(question => responses.value[question.id] != null)
+  if (hasAnAnswer) return ''
+  return `This feedback was given with the previous questionnaire, its answers are not shown here. Its saved score is ${Number(props.feedback[0].feedback_score).toFixed(4)}.`
+})
 
 const totalScore = computed(() =>
   Object.values(responses.value).reduce((acc, score) => acc + (score || 0), 0)
