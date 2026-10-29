@@ -20,3 +20,23 @@ describe('none-sales feedback scale', () => {
         expect(form).toMatch(/type="radio"/)
     })
 })
+
+describe('none-sales feedback: the competency format (CSD and Collection, the head rates the member)', () => {
+    test('the questions of CSD / Collection are built as competencies with their own ids (101 and up)', () => {
+        expect(composable).toMatch(/csdCollectionMemberQuestions = buildCompetencies\(\[/)
+        expect(composable).toMatch(/COMPETENCY_ID_START = 101/)
+    })
+
+    test('the other question sets keep the radio layout', () => {
+        expect(composable).toMatch(/purchasingMemberQuestions = buildQuestions\(\[/)
+        expect(composable).toMatch(/headQuestions = buildQuestions\(\[/)
+    })
+
+    test('the form: COMPETENCY and SCORE columns, a score from 5 to 1, and no comment box', () => {
+        expect(form).toMatch(/COMPETENCY/)
+        expect(form).toMatch(/SCORE/)
+        expect(form).not.toMatch(/<textarea/)
+        expect(form).toMatch(/v-if="isCompetencyForm"/)
+        expect(form).toMatch(/v-else class="overflow-x-auto"/)
+    })
+})
