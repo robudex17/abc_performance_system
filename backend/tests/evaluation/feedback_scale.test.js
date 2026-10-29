@@ -40,3 +40,29 @@ describe('none-sales feedback: the competency format (CSD and Collection, the he
         expect(form).toMatch(/v-else class="overflow-x-auto"/)
     })
 })
+
+describe('none-sales feedback: the LEADERSHIP competency only for leaders', () => {
+    const page = fs.readFileSync(path.join(__dirname, '../../../frontend/pages/feedback/feedback_by_nonesales/[feedback_type].vue'), 'utf8')
+    const summary = fs.readFileSync(path.join(__dirname, '../../../frontend/components/NoneSalesFeedbackSummaryComponent.vue'), 'utf8')
+
+    test('the leaders are the assistant team leader (7), team leader (8) and assistant manager (9)', () => {
+        expect(composable).toMatch(/LEADER_LEVELS = \[7, 8, 9\]/)
+    })
+
+    test('LEADERSHIP is a leader only competency, after the others (the others keep their ids)', () => {
+        expect(composable).toMatch(/\], \[\s*\/\/[^\n]*\n\s*"LEADERSHIP /)
+        expect(composable).toMatch(/leaderOnly: index >= texts.length/)
+        expect(composable).toMatch(/filter\(question => !question\.leaderOnly \|\| isLeader\)/)
+    })
+
+    test('Purchasing is not changed: it has no leadership competency', () => {
+        expect(composable).toMatch(/if \(departmentCode === 'purchasing'\) return purchasingMemberQuestions/)
+    })
+
+    test('the page reads the position of the member from the server for the giver, the admin gets it in the link', () => {
+        expect(page).toMatch(/fetchEmployees\(\{ feedback_type: 'by_head' \}/)
+        expect(page).toMatch(/isViewer \? \(Number\(route\.query\.who_receive_position_level\)/)
+        expect(page).toMatch(/&& receiverLevelLoaded/)
+        expect(summary).toMatch(/who_receive_position_level: employee\.position_level/)
+    })
+})

@@ -10,7 +10,7 @@
     </p>
     <!-- the questions come from useNoneSalesFeedbackQuestions -->
     <none-sales-feedback-form-component
-      v-else-if="questions.length > 0 && (!isViewer || feedbackLoaded)"
+      v-else-if="questions.length > 0 && (!isViewer || feedbackLoaded) && receiverLevelLoaded"
       :questions="questions"
       :feedbackTitle="feedbackTitle"
       :feedbackSubtitle="feedbackSubtitle"
@@ -88,11 +88,35 @@ const questionsDepartment = isViewer
   ? (route.query.department_code || currentUser.department_code)
   : currentUser.department_code
 
+// The leadership competency is asked only when the member who is rated is a leader (assistant team leader, team leader, assistant
+// manager). The one who gives the feedback gets the position of the member from the server (the address can not hide the question),
+// the admin (view only) gets it in the link of the details page.
+const receiverLevel = ref(isViewer ? (Number(route.query.who_receive_position_level) || null) : null)
+const receiverLevelLoaded = ref(isViewer || feedbackType !== 'by_head')
+
 const { questions } = feedbackType === 'by_member'
   ? useNoneSalesFeedbackQuestions(0, 'lm_by_agent', questionsDepartment)
-  : useNoneSalesFeedbackQuestions(1, 'agent_by_lm', questionsDepartment)
+  : useNoneSalesFeedbackQuestions(1, 'agent_by_lm', questionsDepartment, receiverLevel)
 
 const feedbackStore = useFeedbackNoneSalesStore()
+const employeesStore = useManageEmployeesStore()
+
+// the members of the head (the same list as the page before this one)
+const loadReceiverLevel = async () => {
+  if (receiverLevelLoaded.value || isNotTheGiver) return
+
+  await employeesStore.fetchEmployees({ feedback_type: 'by_head' }, currentUser.department_code)
+  const member = employeesStore.state.employees.find(employee => Number(employee.id) === Number(who_receive_feedback_id))
+
+  if (!member) {
+    alert('Cannot read the position of the member, please try again.')
+    backToList()
+    return
+  }
+
+  receiverLevel.value = Number(member.position_level)
+  receiverLevelLoaded.value = true
+}
 
 // the feedback already submitted for the selected month (empty list = not submitted yet)
 const feedback = computed(() => feedbackStore.state[feedbackType] || [])
@@ -150,7 +174,10 @@ const addUpdateDeleteFeedback = async (feedbackResponse, httpMethod) => {
   backToList()
 }
 
-onMounted(fetchFeedback)
+onMounted(async () => {
+  await loadReceiverLevel()
+  await fetchFeedback()
+})
 
 // a different month was picked in the navbar
 watch(yearMonth, fetchFeedback)

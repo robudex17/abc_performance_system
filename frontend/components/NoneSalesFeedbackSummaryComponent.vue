@@ -156,6 +156,7 @@
                           feedback_type: row.feedback_type,
                           year_month: row.year_month,
                           department_code: employee.department_code,
+                          who_receive_position_level: employee.position_level,
                           admin_view_only: true,
                         },
                       }"

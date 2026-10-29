@@ -1,4 +1,4 @@
-import { computed } from 'vue'
+import { computed, unref } from 'vue'
 
 // Feedback questions for the none-sales departments (csd, collection, purchasing, hradmin). HR & Admin uses the questions of CSD / Collection.
 // Same direction names as useFeedbackQuestions (sales):
@@ -15,7 +15,11 @@ export const NONE_SALES_FEEDBACK_SCALE = [
     { label: 'Never', score: 1 },
 ]
 
-export function useNoneSalesFeedbackQuestions(agentType, direction, department) {
+// The members who are rated with the leadership competency: assistant team leader (7), team leader (8), assistant manager (9).
+export const LEADER_LEVELS = [7, 8, 9]
+
+// receiverLevel (a number or a ref): the position level of the member who receives the feedback (the head rates the member)
+export function useNoneSalesFeedbackQuestions(agentType, direction, department, receiverLevel = null) {
 
     // Same 5 point scoring on every question (the form shows the labels only, not the scores).
     // Feedback saved before this scale (5 Yes always / 3 Yes sometimes / 1 No) keeps its numbers.
@@ -28,8 +32,9 @@ export function useNoneSalesFeedbackQuestions(agentType, direction, department) 
     // Competency form (the performance evaluation format): each item is written "TITLE description". The ALL CAPS words at the
     // start are the title, the rest is the description. The form shows a COMPETENCY and a SCORE (5 4 3 2 1) column, no comment.
     // The ids start at 101: the answers saved with the old questions (ids 1 - 21) never show under a competency.
+    // leaderTexts: competencies that are asked only when the member who is rated is a leader (they continue the ids of the others)
     const COMPETENCY_ID_START = 101
-    const buildCompetencies = (texts) => texts.map((text, index) => {
+    const buildCompetencies = (texts, leaderTexts = []) => [...texts, ...leaderTexts].map((text, index) => {
         const words = text.trim().split(/\s+/)
         let titleWords = 0
         while (titleWords < words.length && words[titleWords] === words[titleWords].toUpperCase() && /[A-Z/]/.test(words[titleWords])) titleWords++
@@ -38,6 +43,7 @@ export function useNoneSalesFeedbackQuestions(agentType, direction, department) 
             title: words.slice(0, titleWords).join(' '),
             description: words.slice(titleWords).join(' '),
             text,
+            leaderOnly: index >= texts.length,
             choices: NONE_SALES_FEEDBACK_SCALE.map(choice => ({ ...choice }))
         }
     })
@@ -74,6 +80,9 @@ export function useNoneSalesFeedbackQuestions(agentType, direction, department) 
         "PERSONAL COMPETENCE Employee possesses high energy and willing to perform assigned task. He/She is able manage stress and adapt to changes in his/her job easily manifests positive work attitude everyday",
         "PROFESSIONALISM AND DECORUM The employee demonstrates the highest level of professionalism through speech, actions, and overall conduct. This includes reporting to work on time, and consistently adhering to ethical and compliance requirements, particularly in relation to sales conduct and other company policies.",
         "VALUES / CHARACTER Employee able to set and maintain high standards and norms in the practice of his/her profession. Ability to exemplify the corporate values such as commitment to excellence, esprit d’ corps, integrity,",
+    ], [
+        // only when the member who is rated is a leader (see LEADER_LEVELS)
+        "LEADERSHIP Employee demonstrates strong leadership skills – such as decision making accountability, communication and ability to inspire and guide the team toward achieving goals",
     ])
 
     // Purchasing: immediate head rates the member
@@ -132,7 +141,10 @@ export function useNoneSalesFeedbackQuestions(agentType, direction, department) 
         if (!NONE_SALES_DEPARTMENTS.includes(departmentCode)) return []
 
         if (agentType === 1 && direction == 'agent_by_lm') {
-            return departmentCode === 'purchasing' ? purchasingMemberQuestions : csdCollectionMemberQuestions
+            if (departmentCode === 'purchasing') return purchasingMemberQuestions
+            // the leadership competency only when the member who is rated is an assistant team leader, a team leader or an assistant manager
+            const isLeader = LEADER_LEVELS.includes(Number(unref(receiverLevel)))
+            return csdCollectionMemberQuestions.filter(question => !question.leaderOnly || isLeader)
         }
         if (agentType === 0 && direction == 'lm_by_agent') return headQuestions
 
