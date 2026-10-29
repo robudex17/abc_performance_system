@@ -23,9 +23,12 @@ export function useNoneSalesFeedbackQuestions(agentType, direction, department, 
 
     // Same 5 point scoring on every question (the form shows the labels only, not the scores).
     // Feedback saved before this scale (5 Yes always / 3 Yes sometimes / 1 No) keeps its numbers.
-    const buildQuestions = (texts) => texts.map((text, index) => ({
+    // asTable: the score table format (COMPETENCY and SCORE columns, see buildCompetencies) for plain statements: no title, the statement
+    // is the description. The ids stay 1, 2, 3 ... so the feedback already saved with the statements keeps its answers.
+    const buildQuestions = (texts, { asTable = false } = {}) => texts.map((text, index) => ({
         id: index + 1,
         text,
+        ...(asTable ? { layout: 'table', title: '', description: text } : {}),
         choices: NONE_SALES_FEEDBACK_SCALE.map(choice => ({ ...choice }))
     }))
 
@@ -43,6 +46,7 @@ export function useNoneSalesFeedbackQuestions(agentType, direction, department, 
             title: words.slice(0, titleWords).join(' '),
             description: words.slice(titleWords).join(' '),
             text,
+            layout: 'table',
             leaderOnly: index >= texts.length,
             choices: NONE_SALES_FEEDBACK_SCALE.map(choice => ({ ...choice }))
         }
@@ -85,10 +89,25 @@ export function useNoneSalesFeedbackQuestions(agentType, direction, department, 
         "LEADERSHIP Employee demonstrates strong leadership skills – such as decision making accountability, communication and ability to inspire and guide the team toward achieving goals",
     ])
 
-    // Purchasing: immediate head rates the member. The same competencies as CSD and Collection (the leadership one included).
-    // Give Purchasing its own list here (buildCompetencies([...], [...])) when its wording changes: its old 16 statements are in the
-    // git history (commit 3026d5d).
-    const purchasingMemberQuestions = csdCollectionMemberQuestions
+    // Purchasing: immediate head rates the member. Its own statements, shown in the same score table format as the competencies.
+    const purchasingMemberQuestions = buildQuestions([
+        "The employee consistently meets performance targets.",
+        "The employee follows company rules, policies, and manager’s instructions.",
+        "The employee cooperates with management projects, events, and inquiries.",
+        "The employee contributes positively to team morale and culture.",
+        "The employee shows initiative in learning new skills or processes.",
+        "The employee treats managers and colleagues with respect.",
+        "The employee demonstrates effort to learn and improve performance.",
+        "The employee is open to feedback and willing to improve.",
+        "The employee communicates clearly and concisely.",
+        "The employee finishes assigned tasks on time and ensures quality of work.",
+        "The employee responds immediately to concerns raised by managers.",
+        "The employee understands job functions, processes, and systems used at work.",
+        "The employee ensures all tasks, data entries, translations, and information are consistently accurate and free of errors.",
+        "The employee stays focused when faced with distractions, obstacles, or adversity.",
+        "The employee demonstrates the ability to identify and solve problems while working effectively with minimal supervision.",
+        "The employee promptly informs managers of absences, tardiness, and any work-related concerns.",
+    ], { asTable: true })
 
     // All none-sales departments: member rates the immediate head
     const headQuestions = buildQuestions([
@@ -118,6 +137,15 @@ export function useNoneSalesFeedbackQuestions(agentType, direction, department, 
     ])
 
 
+    // the member questions of the department (the head rates the member)
+    const memberQuestionsOf = (departmentCode) => departmentCode === 'purchasing' ? purchasingMemberQuestions : csdCollectionMemberQuestions
+
+    // true when the department has a question for leaders only: the page then needs the position of the member who is rated
+    const usesReceiverLevel = computed(() => {
+        const departmentCode = String(department || '').toLowerCase()
+        return NONE_SALES_DEPARTMENTS.includes(departmentCode) && memberQuestionsOf(departmentCode).some(question => question.leaderOnly)
+    })
+
     // Decide which set to return
     const questions = computed(() => {
 
@@ -128,13 +156,12 @@ export function useNoneSalesFeedbackQuestions(agentType, direction, department, 
         if (agentType === 1 && direction == 'agent_by_lm') {
             // the leadership competency only when the member who is rated is an assistant team leader, a team leader or an assistant manager
             const isLeader = LEADER_LEVELS.includes(Number(unref(receiverLevel)))
-            const memberQuestions = departmentCode === 'purchasing' ? purchasingMemberQuestions : csdCollectionMemberQuestions
-            return memberQuestions.filter(question => !question.leaderOnly || isLeader)
+            return memberQuestionsOf(departmentCode).filter(question => !question.leaderOnly || isLeader)
         }
         if (agentType === 0 && direction == 'lm_by_agent') return headQuestions
 
         return []
     })
 
-    return { questions }
+    return { questions, usesReceiverLevel }
 }

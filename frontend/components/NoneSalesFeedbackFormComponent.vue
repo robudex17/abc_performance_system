@@ -15,9 +15,9 @@
         <!-- feedback given with the questions of an older form: its answers do not belong to these competencies -->
         <p v-if="oldFormNotice" class="mb-4 p-3 rounded bg-amber-100 text-amber-900 text-sm font-medium text-center">{{ oldFormNotice }}</p>
 
-        <!-- the competency format (like the performance evaluation): COMPETENCY (title and description) and SCORE, no comment -->
-        <div v-if="isCompetencyForm" class="overflow-x-auto">
-          <p class="text-gray-600 text-sm mb-3 text-center">Rate each competency from 1 to 5. 5 is the highest and 1 is the lowest.</p>
+        <!-- the score table format (like the performance evaluation): COMPETENCY (title and description) and SCORE, no comment -->
+        <div v-if="isScoreTable" class="overflow-x-auto">
+          <p class="text-gray-600 text-sm mb-3 text-center">Rate each item from 1 to 5. 5 is the highest and 1 is the lowest.</p>
           <table class="w-full min-w-[520px] border-collapse border border-gray-400 text-sm">
             <thead>
               <tr class="bg-gray-100">
@@ -30,14 +30,14 @@
               <tr v-for="(question, index) in questions" :key="question.id">
                 <td class="border border-gray-400 py-2 text-center text-lg font-medium text-gray-800 align-middle">{{ index + 1 }}</td>
                 <td class="border border-gray-400 py-2 px-3 text-gray-900">
-                  <p class="font-bold uppercase">{{ question.title }}</p>
+                  <p v-if="question.title" class="font-bold uppercase">{{ question.title }}</p>
                   <p>{{ question.description }}</p>
                 </td>
                 <td class="border border-gray-400 py-2 px-3 text-center align-middle">
                   <select
                     v-model.number="responses[question.id]"
                     :disabled="viewOnly"
-                    :aria-label="`Score: ${question.title}`"
+                    :aria-label="`Score: ${question.title || question.description}`"
                     class="w-full border rounded px-2 py-2 text-center text-lg font-semibold bg-white disabled:bg-gray-100 disabled:text-gray-700"
                   >
                     <option :value="null" disabled>-</option>
@@ -149,8 +149,8 @@ watch(
 // the labels of the header row: the answers of the first question (every question has the same answers)
 const answerLabels = computed(() => props.questions[0]?.choices ?? [])
 
-// the competency format: the questions have a title and a description (useNoneSalesFeedbackQuestions)
-const isCompetencyForm = computed(() => props.questions.length > 0 && props.questions.every(question => question.title))
+// the score table format: the questions are made for it (layout 'table': the competencies, or statements shown as a table)
+const isScoreTable = computed(() => props.questions.length > 0 && props.questions.every(question => question.layout === 'table'))
 
 // a feedback that exists but has no answer for these questions was given with an older form (the saved score is still valid)
 const oldFormNotice = computed(() => {

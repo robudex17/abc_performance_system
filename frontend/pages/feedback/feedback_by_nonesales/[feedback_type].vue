@@ -92,11 +92,13 @@ const questionsDepartment = isViewer
 // manager). The one who gives the feedback gets the position of the member from the server (the address can not hide the question),
 // the admin (view only) gets it in the link of the details page.
 const receiverLevel = ref(isViewer ? (Number(route.query.who_receive_position_level) || null) : null)
-const receiverLevelLoaded = ref(isViewer || feedbackType !== 'by_head')
 
-const { questions } = feedbackType === 'by_member'
+const { questions, usesReceiverLevel } = feedbackType === 'by_member'
   ? useNoneSalesFeedbackQuestions(0, 'lm_by_agent', questionsDepartment)
   : useNoneSalesFeedbackQuestions(1, 'agent_by_lm', questionsDepartment, receiverLevel)
+
+// the position of the member is only needed by the departments that have a question for leaders (not Purchasing)
+const receiverLevelLoaded = ref(isViewer || feedbackType !== 'by_head' || !usesReceiverLevel.value)
 
 const feedbackStore = useFeedbackNoneSalesStore()
 const employeesStore = useManageEmployeesStore()

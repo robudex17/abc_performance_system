@@ -31,16 +31,21 @@ describe('none-sales feedback: the competency format (CSD and Collection, the he
         expect(composable).toMatch(/headQuestions = buildQuestions\(\[/)
     })
 
-    test('Purchasing uses the same competencies as CSD and Collection (its own name, so it can get its own list later)', () => {
-        expect(composable).toMatch(/purchasingMemberQuestions = csdCollectionMemberQuestions/)
-        expect(composable).not.toMatch(/purchasingMemberQuestions = buildQuestions/)
+    test('Purchasing keeps its own statements (16, ids 1 - 16) and only uses the score table format', () => {
+        expect(composable).toMatch(/purchasingMemberQuestions = buildQuestions\(\[/)
+        expect(composable).toMatch(/\], \{ asTable: true \}\)/)
+        expect(composable).not.toMatch(/purchasingMemberQuestions = csdCollectionMemberQuestions/)
+        const block = composable.split('const purchasingMemberQuestions = buildQuestions([')[1].split('], { asTable: true })')[0]
+        const statements = block.split('\n').map(line => line.trim()).filter(line => line.startsWith('"The employee'))
+        expect(statements).toHaveLength(16)
+        expect(block).not.toMatch(/LEADERSHIP/)
     })
 
     test('the form: COMPETENCY and SCORE columns, a score from 5 to 1, and no comment box', () => {
         expect(form).toMatch(/COMPETENCY/)
         expect(form).toMatch(/SCORE/)
         expect(form).not.toMatch(/<textarea/)
-        expect(form).toMatch(/v-if="isCompetencyForm"/)
+        expect(form).toMatch(/v-if="isScoreTable"/)
         expect(form).toMatch(/v-else class="overflow-x-auto"/)
     })
 })
@@ -59,9 +64,10 @@ describe('none-sales feedback: the LEADERSHIP competency only for leaders', () =
         expect(composable).toMatch(/filter\(question => !question\.leaderOnly \|\| isLeader\)/)
     })
 
-    test('Purchasing gets the leadership competency too: the filter runs for every department', () => {
+    test('the leader filter runs for every department; Purchasing has no leader only question, so it is not changed', () => {
         expect(composable).toMatch(/departmentCode === 'purchasing' \? purchasingMemberQuestions : csdCollectionMemberQuestions/)
-        expect(composable).toMatch(/memberQuestions\.filter\(question => !question\.leaderOnly \|\| isLeader\)/)
+        expect(composable).toMatch(/memberQuestionsOf\(departmentCode\)\.filter\(question => !question\.leaderOnly \|\| isLeader\)/)
+        expect(composable).toMatch(/return \{ questions, usesReceiverLevel \}/)
     })
 
     test('the page reads the position of the member from the server for the giver, the admin gets it in the link', () => {
