@@ -18,15 +18,15 @@
           <thead>
             <tr class="bg-gradient-to-r from-blue-200 to-blue-300 text-gray-800">
               <th class="py-2 px-2  border text-center text-medium font-bold ">ID</th>
-              <th class="py-2 px-2  border text-center text-medium font-bold ">Name</th>
-               <th class="py-2 px-2  border text-center text-medium font-bold ">Market</th>
-               <th class="py-2 px-2  border text-center text-medium font-bold ">Team</th>
+              <th class="py-2 px-2  border text-center text-medium font-bold cursor-pointer select-none hover:bg-blue-100" @click="toggleSort('db_name')" :title="'Click to sort'">Name <span class="text-xs">{{ sortMark('db_name') }}</span></th>
+               <th class="py-2 px-2  border text-center text-medium font-bold cursor-pointer select-none hover:bg-blue-100" @click="toggleSort('market_name')" :title="'Click to sort'">Market <span class="text-xs">{{ sortMark('market_name') }}</span></th>
+               <th class="py-2 px-2  border text-center text-medium font-bold cursor-pointer select-none hover:bg-blue-100" @click="toggleSort('team_name')" :title="'Click to sort'">Team <span class="text-xs">{{ sortMark('team_name') }}</span></th>
               <th class="py-2 px-2  border text-center text-medium font-bold ">Month</th>
               <th class="py-2 px-2  border text-center text-medium font-bold ">Year</th>
-              <th class="py-2 px-2  border text-center text-medium font-bold ">Target</th>
-              <th class="py-2 px-2  border text-center text-medium font-bold ">Shipok</th>
-              <th class="py-2 px-2  border text-center text-medium font-bold ">Percentage(%)</th>
-              <th class="py-2 px-2  border text-center text-medium font-bold ">Remaining Units</th>
+              <th class="py-2 px-2  border text-center text-medium font-bold cursor-pointer select-none hover:bg-blue-100" @click="toggleSort('total_target')" :title="'Click to sort'">Target <span class="text-xs">{{ sortMark('total_target') }}</span></th>
+              <th class="py-2 px-2  border text-center text-medium font-bold cursor-pointer select-none hover:bg-blue-100" @click="toggleSort('total_shipok')" :title="'Click to sort'">Shipok <span class="text-xs">{{ sortMark('total_shipok') }}</span></th>
+              <th class="py-2 px-2  border text-center text-medium font-bold cursor-pointer select-none hover:bg-blue-100" @click="toggleSort('percentage')" :title="'Click to sort'">Percentage(%) <span class="text-xs">{{ sortMark('percentage') }}</span></th>
+              <th class="py-2 px-2  border text-center text-medium font-bold cursor-pointer select-none hover:bg-blue-100" @click="toggleSort('remaining')" :title="'Click to sort'">Remaining Units <span class="text-xs">{{ sortMark('remaining') }}</span></th>
 
 
             </tr>
@@ -393,10 +393,51 @@
         Math.ceil(data.value.length / itemsPerPage)
       )
       
+      // Sort the Individual table by a column, like Excel: click once = ascending, again = descending, again = the original order.
+      // The whole list is sorted first and then cut into pages, so the order is right across all the pages.
+      const sortKey = ref(null)
+      const sortDirection = ref('asc')
+
+      const sortValueOf = {
+        total_target: (agent) => Number(agent.total_target) || 0,
+        total_shipok: (agent) => Number(agent.total_shipok) || 0,
+        // the same whole number the table shows (getWholeNumberPercentage)
+        percentage: (agent) => parseInt(getWholeNumberPercentage(agent.total_target, agent.total_shipok)),
+        remaining: (agent) => (Number(agent.total_target) || 0) - (Number(agent.total_shipok) || 0),
+        db_name: (agent) => String(agent.db_name ?? '').toLowerCase(),
+        market_name: (agent) => String(agent.market_name ?? '').toLowerCase(),
+        team_name: (agent) => String(agent.team_name ?? '').toLowerCase(),
+      }
+
+      const toggleSort = (key) => {
+        if (sortKey.value !== key) {
+          sortKey.value = key
+          sortDirection.value = 'asc'
+        } else if (sortDirection.value === 'asc') {
+          sortDirection.value = 'desc'
+        } else {
+          sortKey.value = null
+        }
+        currentPage.value = 1
+      }
+
+      const sortMark = (key) => sortKey.value !== key ? '' : (sortDirection.value === 'asc' ? '▲' : '▼')
+
+      const sortedAgents = computed(() => {
+        if (!sortKey.value || !data.value) return data.value
+        const valueOf = sortValueOf[sortKey.value]
+        const direction = sortDirection.value === 'asc' ? 1 : -1
+        // a copy: the data of the store is not changed. Equal values keep the original order (the sort is stable).
+        return [...data.value].sort((a, b) => {
+          const first = valueOf(a), second = valueOf(b)
+          return first < second ? -direction : first > second ? direction : 0
+        })
+      })
+
       const paginatedAgents = computed(() => {
         const start = (currentPage.value - 1) * itemsPerPage;
         const end = start + itemsPerPage;
-        return data.value?.slice(start, end);
+        return sortedAgents.value?.slice(start, end);
       });
 
 
