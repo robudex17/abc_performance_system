@@ -356,7 +356,7 @@
 
     // ✅ Table filter: one or several names (agents, a team or a market), no new search. The server sends the whole range once,
     // the rows are filtered here and the Excel export gets the same choice (filterIds).
-    const canFilter = computed(() => (isAdmin.value || currentUser.agent_type == 2) && filterBy.value !== 'overall')
+    const canFilter = computed(() => (isAdmin.value || currentUser.agent_type == 2 || Number(currentUser.position_level) === 15) && filterBy.value !== 'overall')
     const searchText = ref('')
     const selectedIds = ref([])
     const pickerOpen = ref(false)

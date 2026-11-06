@@ -21,7 +21,9 @@ exports.fetchCustomSearch = async (req,res, next ) => {
    const loginUser = req.user 
    
    //  filterId  in the query if the login user are admin , poweruser or agent_type = 2
-   if (loginUser.role != 'admin' && loginUser.role != 'poweruser'  && loginUser.agent_type !== 2){
+   // the GOM (position level 15, view only) sees everybody like the admin; the others only their own team / market / agent
+   const isGom = Number(loginUser.position_level) === 15
+   if (loginUser.role != 'admin' && loginUser.role != 'poweruser'  && loginUser.agent_type !== 2 && !isGom){
        
         switch(filterBy){
           case "team":

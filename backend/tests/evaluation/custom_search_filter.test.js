@@ -33,6 +33,25 @@ beforeEach(() => {
 
 const idsOf = (res) => res.json.mock.calls[0][0].map(row => row.id)
 
+describe('custom search: who sees everybody', () => {
+    const sqlOf = async (user) => {
+        const res = { status: jest.fn().mockReturnThis(), json: jest.fn() }
+        await controller.fetchCustomSearch({ user, query: { start_date: '2026-01', end_date: '2026-01', filterBy: 'individual', filterId: 'all' } }, res, jest.fn())
+        return pool.execute.mock.calls.map(([sql]) => String(sql))
+    }
+
+    test('the GOM (level 15, employee login) is not limited to his own id', async () => {
+        const sql = await sqlOf({ role: 'manager', login_type: 'employee', position_level: 15, login_id: 1 })
+        expect(sql.length).toBeGreaterThan(0)
+        expect(sql.some(text => text.includes('sa.id =?'))).toBe(false)
+    })
+
+    test('a sales agent still sees only his / her own', async () => {
+        const sql = await sqlOf({ role: 'user', login_type: 'salesagentuser', agent_type: 0, position_level: 1, login_id: 5 })
+        expect(sql.some(text => text.includes('sa.id =?'))).toBe(true)
+    })
+})
+
 describe('custom search: filterIds', () => {
     test('no filterIds: every agent of every month of the range', async () => {
         const { res } = await call({ filterBy: 'individual' })

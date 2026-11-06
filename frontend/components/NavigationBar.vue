@@ -245,7 +245,8 @@
     //   'lms','agent', 'individual','market', 'team'
     // ])
 
-    if (currentUser.role != 'admin' && currentUser.role != 'poweruser' && currentUser.agent_type !=2){
+    // the GOM (position level 15) searches everybody like the admin
+    if (currentUser.role != 'admin' && currentUser.role != 'poweruser' && currentUser.agent_type !=2 && Number(currentUser.position_level) !== 15){
       filterBy.value = [ 'individual', 'team', 'overall']
       
      
