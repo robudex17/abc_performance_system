@@ -207,6 +207,10 @@ describe('custom search: the screens', () => {
         expect(navigation).toMatch(/selectedFilterValue = ref\(''\)/)
     })
 
+    test('100 rows per page, like the dashboard', () => {
+        expect(page).toMatch(/itemsPerPage = ref\(100\)/)
+    })
+
     test('the export gets the filter and every column header sorts', () => {
         expect(page).toContain(':query="exportQuery"')
         for (const key of ['id', 'db_name', 'market_name', 'team_name', 'period', 'target', 'shipok', 'percentage', 'remaining']) {

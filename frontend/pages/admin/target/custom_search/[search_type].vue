@@ -351,7 +351,7 @@
     const data = computed(() => customSeachStore.state.customSearch)
 
     // ✅ Pagination
-    const itemsPerPage = ref(10)
+    const itemsPerPage = ref(100)   // 100 rows per page, like the dashboard (GOM request)
     const currentPage = ref(1)
 
     // ✅ Table filter: one or several names (agents, a team or a market), no new search. The server sends the whole range once,
