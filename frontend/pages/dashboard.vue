@@ -1,6 +1,6 @@
 <template>
   <div class="grid grid-cols-1 gap-4 p-4 mt-20">
-
+     
     <div v-if="dashBoardStore.state.loading">
       
         <spinner></spinner>
@@ -8,13 +8,13 @@
     <div v-else>
       <div v-if="data?.length === 0" class="text-red-700 font-bold  text-5xl">
          No Available Data.
-        
+       
       </div>
-      <div v-else-if="dashboardoption =='individual' && currentUser.login_type == 'standarduser' && data?.length > 0">
+      <div v-else-if="dashboardoption =='individual' && currentUser.login_type == 'standarduser'  && data?.length > 0">
               
             <p class="text-gray-800 font-bold text-3xl mb-2 text-center">Individual Results</p>
             <p  class="text-gray-800 font-bold text-lg mb-2 text-center">Target Vs ShipOk  as of: <span class="text-red-600">( {{ month }} {{ year }})</span></p>
-        <table class="w-full table-auto border-collapse bg-white">
+        <table class="w-full table-auto border-collapse bg-white mb-10">
           <thead>
             <tr class="bg-gradient-to-r from-blue-200 to-blue-300 text-gray-800">
               <th class="py-2 px-2  border text-center text-medium font-bold ">ID</th>
@@ -361,7 +361,7 @@
     const month = ref(months[new Date().getMonth()])
     const year = ref(new Date().getFullYear())
 
-    const itemsPerPage = 10;
+    const itemsPerPage = 100;  //adjust base on GOM request
     const currentPage = ref(1);
 
     const dashboardoption = ref("")
