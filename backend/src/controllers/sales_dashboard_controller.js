@@ -9,6 +9,13 @@ const sqlQueries = require('../sql/sql')
 
 const { monthMap, monthNames } = require('./helper_scripts/global_variables_and_functions')
 
+// Who sees every agent / team (the others see only their own): the admin and poweruser (admin login), the sales manager,
+// and the GOM (position level 15, view only like the poweruser).
+const seesEveryone = (user) =>
+    (['admin', 'poweruser'].includes(user.role) && user.login_type == 'standarduser') ||
+    (user.role == 'manager' && user.agent_type == 2) ||
+    Number(user.position_level) === 15
+
 exports.fetchAgentDashboard = async (req,res,next) => {
     // const errors = validationResult(req);
     // if (!errors.isEmpty()) {
@@ -438,8 +445,8 @@ exports.fetchAgentDashboard = async (req,res,next) => {
 
 
     if (dashboarOption == 'individual'){
-   
-         if((loginUser.role =='admin' && loginUser.login_type == 'standarduser') || (loginUser.role =='poweruser' && loginUser.login_type == 'standarduser') || (loginUser.role == 'manager' && loginUser.agent_type == 2 ) ){
+
+         if(seesEveryone(loginUser)){
 
              if(!year_summary){
                 individualTargets  =  await  fetchIndividualTargetShipok("", `${dashboarddMasterQuery}  ORDER BY team_id ASC;`, givenMonth, givenYear)
@@ -507,8 +514,8 @@ exports.fetchAgentDashboard = async (req,res,next) => {
       
       }else if (dashboarOption == 'team'){
         let teamTargets = []
-      
-        if((loginUser.role =='admin' && loginUser.login_type == 'standarduser') || (loginUser.role =='poweruser' && loginUser.login_type == 'standarduser') || (loginUser.role == 'manager' && loginUser.agent_type == 2 ) ){
+
+        if(seesEveryone(loginUser)){
 
 
           const [result] = await pool.execute(

@@ -10,7 +10,7 @@
          No Available Data.
        
       </div>
-      <div v-else-if="dashboardoption =='individual' && currentUser.login_type == 'standarduser'  && data?.length > 0">
+      <div v-else-if="dashboardoption =='individual' && (currentUser.login_type == 'standarduser' || Number(currentUser.position_level) === 15) && data?.length > 0">
               
             <p class="text-gray-800 font-bold text-3xl mb-2 text-center">Individual Results</p>
             <p  class="text-gray-800 font-bold text-lg mb-2 text-center">Target Vs ShipOk  as of: <span class="text-red-600">( {{ month }} {{ year }})</span></p>
