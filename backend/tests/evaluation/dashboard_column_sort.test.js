@@ -14,8 +14,10 @@ const getWholeNumberPercentage = (target, shipok) =>
 const build = (rows) => {
     const ref = (value) => ({ value })
     const computed = (getter) => ({ get value() { return getter() } })
+    const currentPage = ref(3)
     const code = `${block}\nreturn { sortKey, sortDirection, toggleSort, sortMark, sortedAgents }`
-    return new Function('ref', 'computed', 'data', 'currentPage', 'getWholeNumberPercentage', code)(ref, computed, ref(rows), ref(3), getWholeNumberPercentage)
+    const table = new Function('ref', 'computed', 'data', 'currentPage', 'getWholeNumberPercentage', code)(ref, computed, ref(rows), currentPage, getWholeNumberPercentage)
+    return { ...table, currentPage }
 }
 
 const rows = [
